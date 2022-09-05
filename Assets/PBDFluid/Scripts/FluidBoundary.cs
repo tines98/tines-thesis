@@ -27,14 +27,18 @@ namespace PBDFluid
 
         private ParticleSource source;
         private Matrix4x4 RTS;
+        private ComputeBuffer Particle2Buffer;
+        private ComputeBuffer BoundsVectors;
 
-        public FluidBoundary(ParticleSource source, float radius, float density, Matrix4x4 RTS)
+        public FluidBoundary(ParticleSource source, float radius, float density, Matrix4x4 RTS, ComputeBuffer particle2Buffer, ComputeBuffer boundsVectors)
         {
             this.source = source;
             this.RTS = RTS;
             NumParticles = source.NumParticles;
             ParticleRadius = radius;
             Density = density;
+            Particle2Buffer = particle2Buffer;
+            BoundsVectors = boundsVectors;
 
             CreateParticles();
             CreateBoundryPsi();

@@ -12,7 +12,9 @@ namespace MeshVoxelizerProject
 
         public bool drawAABBTree;
 
-        private MeshVoxelizer m_voxelizer;
+        public MeshVoxelizer m_voxelizer;
+
+        public List<Box3> Voxels;
 
         void Start()
         {
@@ -74,6 +76,7 @@ namespace MeshVoxelizerProject
         {
             List<Vector3> verts = new List<Vector3>();
             List<int> indices = new List<int>();
+            Voxels = new List<Box3>();
 
             for (int z = 0; z < size; z++)
             {
@@ -84,6 +87,8 @@ namespace MeshVoxelizerProject
                         if (voxels[x, y, z] != 1) continue;
 
                         Vector3 pos = min + new Vector3(x * scale.x, y * scale.y, z * scale.z);
+                        var box = new Box3(pos,pos+scale);
+                        Voxels.Add(box);
 
                         if (x == size - 1 || voxels[x + 1, y, z] == 0)
                             AddRightQuad(verts, indices, scale, pos);

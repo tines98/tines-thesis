@@ -1,12 +1,11 @@
 using UnityEngine;
 using System.Collections.Generic;
+using MeshVoxelizerProject;
+using UnityEngine.Assertions;
 
 namespace PBDFluid
 {
-
-    public enum SIMULATION_SIZE {  LOW, MEDIUM, HIGH }
-
-    public class FluidBodyDemo : MonoBehaviour
+    public class FluidBodyMeshDemo : MonoBehaviour
     {
         //Constants
         private const float timeStep = 1.0f / 60.0f;
@@ -14,7 +13,8 @@ namespace PBDFluid
         //Serialized Fields
         public Camera m_mainCamera;
         public Bounds simulationBounds;
-        public Bounds fluidBounds;
+        
+        public VoxelizerDemo fluidBounds;
         public List<Bounds> boundaryInfos = new List<Bounds>();
 
         [Header("Materials")]
@@ -32,6 +32,8 @@ namespace PBDFluid
         [Header("Simulation Settings")]
         public SIMULATION_SIZE m_simulationSize = SIMULATION_SIZE.MEDIUM;
 
+        public int boundIndexToDraw = 0;
+
         private float radius = 0.01f;
         private float density;
 
@@ -42,11 +44,12 @@ namespace PBDFluid
         private FluidBoundary _boundary;
         private FluidSolver m_solver;
         private RenderVolume m_volume;
-        Bounds m_fluidSource;
+        // Bounds m_fluidSource;
         private bool wasError;
         private ParticlesFromSeveralBounds particleSource;
         private ComputeBuffer particles2BoundsBuffer;
         private ComputeBuffer boundsVectorsBuffer;
+        private ParticlesFromMesh _particlesFromMesh;
 
         private ComputeBuffer GenerateParticles2BoundsBuffer()
         {
@@ -97,13 +100,13 @@ namespace PBDFluid
             {
 
                 CreateBoundaries();
-                CreateFluid(radius, density, fluidBounds.center, fluidBounds.size);
-                var bounds = simulationBounds;
-                bounds.center += transform.position;
-                m_fluid.Bounds = bounds;
                 particles2BoundsBuffer = GenerateParticles2BoundsBuffer();
                 boundsVectorsBuffer = GenerateBoundsVectorsBuffer();
-                m_solver = new FluidSolver(m_fluid, bounds, _boundary,particles2BoundsBuffer,boundsVectorsBuffer);
+                CreateFluid(radius, density);
+                var bounds = simulationBounds;
+                // bounds.center += transform.position;
+                m_fluid.Bounds = bounds;
+                m_solver = new FluidSolver(m_fluid, bounds, _boundary, particles2BoundsBuffer, boundsVectorsBuffer);
 
                 m_volume = new RenderVolume(bounds, radius);
                 m_volume.CreateMesh(m_volumeMat);
@@ -164,7 +167,7 @@ namespace PBDFluid
                 //     DrawBounds(camera, Color.red, bounds);
                 // }
 
-                DrawBounds(camera, Color.blue, m_fluidSource);
+                // DrawBounds(camera, Color.blue, m_fluidSource);
             }
 
             if(m_drawGrid){
@@ -210,28 +213,18 @@ namespace PBDFluid
             
             _boundary = new FluidBoundary(particleSource, radius, density, transform.localToWorldMatrix, particles2BoundsBuffer, boundsVectorsBuffer);
         }
-
-        private void CreateFluid( float radius, float density, Vector3 center, Vector3 size)
-        {
-            Bounds bounds = new Bounds();
-            center += transform.position;
-            size.x += radius;
-            size.y += radius;
-            size.z += radius;
-
-            bounds.SetMinMax(center-size/2.0f, center+size/2.0f);
-
+        
+        private void CreateFluid( float radius, float density) {
             //The source will create a array of particles
             //evenly spaced inside the bounds. 
             //Multiple the spacing by 0.9 to pack more
             //particles into bounds.
             float diameter = radius * 2;
-            ParticlesFromBounds source = new ParticlesFromBounds(diameter * 0.9f, bounds);
-            Debug.Log("Fluid Particles = " + source.NumParticles);
+            Assert.IsNotNull(fluidBounds.m_voxelizer.Bounds);
+            _particlesFromMesh = new ParticlesFromMesh(diameter * 0.9f, fluidBounds.m_voxelizer, fluidBounds);
+            Debug.Log("Fluid Particles = " + _particlesFromMesh.NumParticles);
 
-            m_fluid = new FluidBody(source, radius, density, transform.localToWorldMatrix);
-
-            m_fluidSource = bounds;
+            m_fluid = new FluidBody(_particlesFromMesh, radius, density, fluidBounds.transform.localToWorldMatrix);
         }
 
         private static IList<int> m_cube = new int[]
@@ -268,18 +261,52 @@ namespace PBDFluid
             Gizmos.DrawWireCube(transform.position,simulationBounds.size);
 
             //Water Box
-            DrawFluidBodyGizmo();
+            // if (fluidBounds.m_voxelizer != null) DrawFluidBodyGizmo();
             
             float thickness = 1;
             float diameter = radius * 2;
             //Extra Boundaries
             boundaryInfos.ForEach(bounds => DrawBoundaryGizmo(bounds,diameter,thickness));
+            
+            if (_particlesFromMesh != null)
+            {
+                
+                // DrawEachParticleGizmo();
+                DrawEachVoxelBoxGizmo();
+                DrawFluidOuterBounds();
+                // DrawWeirdFluidTestGizmo();
+            }
+            
+            Gizmos.color = Color.red;
+            // Gizmos.DrawSphere(simulationBounds.center + transform.position, 0.5f);
+            
+            // if (m_fluid != null)
+            //     Gizmos.DrawWireCube(m_fluid.Bounds.center,m_fluid.Bounds.size);
+            
+
         }
 
-        private void DrawFluidBodyGizmo()
+        private void DrawFluidOuterBounds()
         {
             Gizmos.color = Color.blue;
-            Gizmos.DrawWireCube(transform.position+fluidBounds.center,fluidBounds.size);
+            var bounds = fluidBounds.m_voxelizer.Bounds[boundIndexToDraw];
+            Gizmos.DrawWireCube(bounds.Center,bounds.Size);
+        }
+        private void DrawEachVoxelBoxGizmo() {
+            Gizmos.color = Color.red;
+            var positions = _particlesFromMesh.Positions;
+            foreach (var position in positions){
+                Gizmos.DrawSphere(position,radius);
+            }
+        }
+
+        private void DrawEachParticleGizmo()
+        {
+            Gizmos.color = Color.blue;
+            foreach (var position in _particlesFromMesh.Positions)
+            {
+                Gizmos.DrawSphere(position,0.01f);
+            }
         }
         private void DrawBoundaryGizmo(Bounds bounds, float diameter, float thickness) {
             Gizmos.color = Color.green;
