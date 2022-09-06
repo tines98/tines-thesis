@@ -9,6 +9,7 @@ namespace PBDFluid
     {
         //Constants
         private const float timeStep = 1.0f / 60.0f;
+        public SerializedMatrix matrix;
         
         //Serialized Fields
         public Camera m_mainCamera;
