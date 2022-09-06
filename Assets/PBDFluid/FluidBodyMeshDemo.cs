@@ -31,11 +31,11 @@ namespace PBDFluid
 
         [Header("Simulation Settings")]
         public SIMULATION_SIZE m_simulationSize = SIMULATION_SIZE.MEDIUM;
+        public bool m_run = true;
+        public Mesh m_sphereMesh;
         
         private float radius = 0.01f;
         private float density;
-        public Mesh m_sphereMesh;
-        public bool m_run = true;
 
         private bool m_hasStarted = false;
         private FluidBody m_fluid;
