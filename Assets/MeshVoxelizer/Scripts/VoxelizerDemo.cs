@@ -37,6 +37,7 @@ namespace MeshVoxelizerProject
             renderer.enabled = false;
 
             Mesh mesh = filter.mesh;
+            Debug.Log($"Vertices count: {mesh.vertices.Length}");
             Material mat = renderer.material;
             nonVoxelizedChild = filter.gameObject;
 
