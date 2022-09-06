@@ -31,15 +31,13 @@ namespace PBDFluid
 
         [Header("Simulation Settings")]
         public SIMULATION_SIZE m_simulationSize = SIMULATION_SIZE.MEDIUM;
-
-        public int boundIndexToDraw = 0;
-
+        public bool m_run = true;
+        public Mesh m_sphereMesh;
+        
         private float radius = 0.01f;
         private float density;
 
         private bool m_hasStarted = false;
-        public bool m_run = true;
-        public Mesh m_sphereMesh;
         private FluidBody m_fluid;
         private FluidBoundary _boundary;
         private FluidSolver m_solver;
@@ -260,55 +258,12 @@ namespace PBDFluid
             //Simulation Bounds
             Gizmos.color = Color.yellow;
             Gizmos.DrawWireCube(transform.position,simulationBounds.size);
-
-            //Water Box
-            // if (fluidBounds.m_voxelizer != null) DrawFluidBodyGizmo();
             
             float thickness = 1;
             float diameter = radius * 2;
             //Extra Boundaries
             boundaryInfos.ForEach(bounds => DrawBoundaryGizmo(bounds,diameter,thickness));
-            
-            // if (_particlesFromMesh != null)
-            // {
-            //     
-            //     // DrawEachParticleGizmo();
-            //     DrawEachVoxelBoxGizmo();
-            //     DrawFluidOuterBounds();
-            //     // DrawWeirdFluidTestGizmo();
-            // }
-            
-            Gizmos.color = Color.red;
-            // Gizmos.DrawSphere(simulationBounds.center + transform.position, 0.5f);
-            
-            // if (m_fluid != null)
-            //     Gizmos.DrawWireCube(m_fluid.Bounds.center,m_fluid.Bounds.size);
-            
-
         }
-
-        // private void DrawFluidOuterBounds()
-        // {
-        //     Gizmos.color = Color.blue;
-        //     var bounds = fluidBounds.m_voxelizer.Bounds[boundIndexToDraw];
-        //     Gizmos.DrawWireCube(bounds.Center,bounds.Size);
-        // }
-        // private void DrawEachVoxelBoxGizmo() {
-        //     Gizmos.color = Color.red;
-        //     var positions = _particlesFromMesh.Positions;
-        //     foreach (var position in positions){
-        //         Gizmos.DrawSphere(position,radius);
-        //     }
-        // }
-        //
-        // private void DrawEachParticleGizmo()
-        // {
-        //     Gizmos.color = Color.blue;
-        //     foreach (var position in _particlesFromMesh.Positions)
-        //     {
-        //         Gizmos.DrawSphere(position,0.01f);
-        //     }
-        // }
         private void DrawBoundaryGizmo(Bounds bounds, float diameter, float thickness) {
             Gizmos.color = Color.green;
             Gizmos.DrawWireCube(transform.position+bounds.center,bounds.size);

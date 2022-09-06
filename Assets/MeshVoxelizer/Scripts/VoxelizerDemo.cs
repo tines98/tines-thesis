@@ -14,7 +14,9 @@ namespace MeshVoxelizerProject
 
         public MeshVoxelizer m_voxelizer;
 
+        // Voxels included in the mesh
         public List<Box3> Voxels;
+        // Voxels not included in the mesh
         public List<Box3> NonVoxels;
         public Box3 bounds;
         private GameObject nonVoxelizedChild;
