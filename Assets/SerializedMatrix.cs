@@ -10,6 +10,6 @@ public class SerializedMatrix
     public  Quaternion rotation = Quaternion.identity;
     public Vector3 scale = Vector3.one;
 
-    public Matrix4x4 GetMatrix() => Matrix4x4.TRS(position, rotation, scale);
+    public Matrix4x4 GetMatrix() => Matrix4x4.TRS(position, rotation.normalized, scale);
 
 }
