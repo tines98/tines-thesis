@@ -26,6 +26,13 @@ namespace PBDFluid
             Exclusion.Add(exclusion);
             CreateParticles();
         }
+        
+        public ParticlesFromBounds(float spacing, Bounds bounds, List<Bounds> exclusion) : base(spacing)
+        {
+            Bounds = bounds;
+            Exclusion = exclusion;
+            CreateParticles();
+        }
 
         public override void CreateParticles()
         {

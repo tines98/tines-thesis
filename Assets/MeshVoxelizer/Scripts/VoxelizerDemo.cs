@@ -12,7 +12,14 @@ namespace MeshVoxelizerProject
 
         public bool drawAABBTree;
 
-        private MeshVoxelizer m_voxelizer;
+        public MeshVoxelizer m_voxelizer;
+
+        public List<Box3> Voxels;
+        public List<Box3> NonVoxels;
+        public Box3 bounds;
+        private GameObject nonVoxelizedChild;
+
+        private GameObject voxelizedGameObject;
 
         void Start()
         {
@@ -30,9 +37,11 @@ namespace MeshVoxelizerProject
             renderer.enabled = false;
 
             Mesh mesh = filter.mesh;
+            Debug.Log($"Vertices count: {mesh.vertices.Length}");
             Material mat = renderer.material;
+            nonVoxelizedChild = filter.gameObject;
 
-            Box3 bounds = new Box3(mesh.bounds.min, mesh.bounds.max);
+            bounds = new Box3(mesh.bounds.min, mesh.bounds.max);
 
             m_voxelizer = new MeshVoxelizer(size, size, size);
             m_voxelizer.Voxelize(mesh.vertices, mesh.triangles, bounds);
@@ -41,14 +50,14 @@ namespace MeshVoxelizerProject
             Vector3 m = new Vector3(bounds.Min.x, bounds.Min.y, bounds.Min.z);
             mesh = CreateMesh(m_voxelizer.Voxels, scale, m);
 
-            GameObject go = new GameObject("Voxelized");
-            go.transform.parent = transform;
-            go.transform.localPosition = Vector3.zero;
-            go.transform.localScale = Vector3.one;
-            go.transform.localRotation = Quaternion.identity;
+            voxelizedGameObject = new GameObject("Voxelized");
+            voxelizedGameObject.transform.parent = transform;
+            voxelizedGameObject.transform.localPosition = nonVoxelizedChild.transform.localPosition;
+            voxelizedGameObject.transform.localScale = nonVoxelizedChild.transform.localScale;
+            voxelizedGameObject.transform.localRotation = nonVoxelizedChild.transform.localRotation;
 
-            filter = go.AddComponent<MeshFilter>();
-            renderer = go.AddComponent<MeshRenderer>();
+            filter = voxelizedGameObject.AddComponent<MeshFilter>();
+            renderer = voxelizedGameObject.AddComponent<MeshRenderer>();
 
             filter.mesh = mesh;
             renderer.material = mat;
@@ -70,10 +79,16 @@ namespace MeshVoxelizerProject
 
         }
 
+        public void HideVoxelizedMesh() => voxelizedGameObject.GetComponent<Renderer>().enabled = false;
+
+        public Matrix4x4 GetVoxelizedMeshMatrix() => voxelizedGameObject.transform.localToWorldMatrix;
+
         private Mesh CreateMesh(int[,,] voxels, Vector3 scale, Vector3 min)
         {
             List<Vector3> verts = new List<Vector3>();
             List<int> indices = new List<int>();
+            Voxels = new List<Box3>();
+            NonVoxels = new List<Box3>();
 
             for (int z = 0; z < size; z++)
             {
@@ -81,9 +96,15 @@ namespace MeshVoxelizerProject
                 {
                     for (int x = 0; x < size; x++)
                     {
-                        if (voxels[x, y, z] != 1) continue;
-
                         Vector3 pos = min + new Vector3(x * scale.x, y * scale.y, z * scale.z);
+                        var box = new Box3(pos,pos+scale);
+                        if (voxels[x, y, z] != 1)
+                        {
+                            NonVoxels.Add(box);
+                            continue;
+                        }
+
+                        Voxels.Add(box);
 
                         if (x == size - 1 || voxels[x + 1, y, z] == 0)
                             AddRightQuad(verts, indices, scale, pos);
