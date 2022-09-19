@@ -139,10 +139,10 @@ namespace PBDFluid
         private int FindNumElements(int count)
         {
             if (count < MIN_ELEMENTS)
-                throw new ArgumentException("Data != MIN_ELEMENTS. Need to decrease Bitonic size.");
+                throw new ArgumentException($"Data({count}) < MIN_ELEMENTS({MIN_ELEMENTS}). Need to decrease Bitonic size({BITONIC_BLOCK_SIZE}).");
 
             if (count > MAX_ELEMENTS)
-                throw new ArgumentException("Data > MAX_ELEMENTS. Need to increase Bitonic size");
+                throw new ArgumentException($"Data({count}) > MAX_ELEMENTS({MAX_ELEMENTS}). Need to increase Bitonic size({BITONIC_BLOCK_SIZE}).");
 
             int NumElements;
 
