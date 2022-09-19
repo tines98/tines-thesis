@@ -78,7 +78,6 @@ namespace PBDFluid
 
             try
             {
-
                 CreateBoundaries();
                 CreateFluid(radius, density);
                 var bounds = simulationBounds;
@@ -256,21 +255,20 @@ namespace PBDFluid
             float diameter = radius * 2;
             //Extra Boundaries
             for (int i = 0; i < boundarySizes.Count; i++) {
-                var bound = new Bounds(boundsMatrices[i].position, boundarySizes[i]);
-                DrawBoundaryGizmo(bound,diameter,thickness);
+                DrawBoundaryGizmo(boundsMatrices[i],boundarySizes[i],diameter,thickness);
             }
         }
         
-        private void DrawBoundaryGizmo(Bounds bounds, float diameter, float thickness) {
+        private void DrawBoundaryGizmo(SerializedMatrix matrix, Vector3 size, float diameter, float thickness) {
             Gizmos.color = Color.green;
-            Gizmos.DrawWireCube(transform.position+bounds.center,bounds.size);
-            Vector3 newsize = bounds.size;
+            var pos = matrix.GetMatrix().MultiplyPoint(transform.position);
+            
+            Gizmos.DrawWireCube(pos,size);
+            Vector3 newsize = size;
             newsize.x -= diameter * thickness * 1.2f;
             newsize.y -= diameter * thickness * 1.2f;
             newsize.z -= diameter * thickness * 1.2f;
-            Gizmos.DrawWireCube(transform.position + bounds.center,newsize);
+            Gizmos.DrawWireCube(pos,newsize);
         }
-
     }
-
 }
