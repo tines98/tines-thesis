@@ -103,7 +103,7 @@ namespace PBDFluid
                 m_fluid.Bounds = bounds;
                 particles2BoundsBuffer = GenerateParticles2BoundsBuffer();
                 boundsVectorsBuffer = GenerateBoundsVectorsBuffer();
-                m_solver = new FluidSolver(m_fluid, bounds, _boundary,particles2BoundsBuffer,boundsVectorsBuffer);
+                m_solver = new FluidSolver(m_fluid, bounds, _boundary);
 
                 m_volume = new RenderVolume(bounds, radius);
                 m_volume.CreateMesh(m_volumeMat);
@@ -125,7 +125,8 @@ namespace PBDFluid
                 return;
             }
             if (m_run){
-                m_solver.StepPhysics(timeStep);
+                //TODO: fix particles2Bounds and boundsVectors 
+                m_solver.StepPhysics(timeStep,new int[2],new Matrix4x4[2]);
                 m_volume.FillVolume(m_fluid, m_solver.Hash, m_solver.Kernel);
             }
 
@@ -208,7 +209,8 @@ namespace PBDFluid
 
             particleSource.CreateParticles();
             
-            _boundary = new FluidBoundary(particleSource, radius, density, transform.localToWorldMatrix, particles2BoundsBuffer, boundsVectorsBuffer);
+            //TODO: Fix nulls
+            _boundary = new FluidBoundary(particleSource, radius, density, transform.localToWorldMatrix,null,null);
         }
 
         private void CreateFluid( float radius, float density, Vector3 center, Vector3 size)
