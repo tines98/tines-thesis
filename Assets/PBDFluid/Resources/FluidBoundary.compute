@@ -2,6 +2,8 @@
 float HashScale;
 float3 HashSize;
 float3 HashTranslate;
+int Particles2Boundary[8];
+float4x4 BoundaryMatrices[8];
 
 RWStructuredBuffer<int2> IndexMap;
 RWStructuredBuffer<int2> Table;
@@ -100,7 +102,8 @@ void ComputePsi(int id : SV_DispatchThreadID)
 
 	if (id < NumParticles)
 	{
-		float3 pi = Boundary[id].xyz;
+		float4x4 boundaryTRS = BoundaryMatrices[Particles2Boundary[id]];
+		float3 pi =  mul(boundaryTRS, Boundary[id]).xyz;
 		float psi = Compute(id, pi);
 
 		Boundary[id].w = psi;

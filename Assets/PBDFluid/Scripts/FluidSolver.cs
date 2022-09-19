@@ -17,8 +17,6 @@ namespace PBDFluid
         public int Groups { get; private set; }
 
         public FluidBoundary Boundary { get; private set; }
-        public ComputeBuffer Particles2Bounds { get; private set; }
-        public ComputeBuffer BoundsVectors { get; private set; }
 
         public FluidBody Body { get; private set; }
 
@@ -32,15 +30,13 @@ namespace PBDFluid
 
         private ComputeShader m_shader;
 
-        public FluidSolver(FluidBody body, Bounds simulationBounds, FluidBoundary boundary, ComputeBuffer particles2Bounds, ComputeBuffer boundVectors) {
+        public FluidSolver(FluidBody body, Bounds simulationBounds, FluidBoundary boundary) {
             SolverIterations = 2;
             ConstraintIterations = 2;
 
             Body = body;
             Boundary = boundary;
-            Particles2Bounds = particles2Bounds;
-            BoundsVectors = boundVectors;
-            
+
             float cellSize = Body.ParticleRadius * 4.0f;
             int total = Body.NumParticles + boundary.NumParticles;
             // Boundary at index 0 is the outer container
@@ -59,7 +55,7 @@ namespace PBDFluid
             Hash.Dispose();
         }
 
-        public void StepPhysics(float dt){
+        public void StepPhysics(float dt, int[] particles2Bounds, Matrix4x4[] boundsVectors){
             if (dt <= 0.0) return;
             if (SolverIterations <= 0 || ConstraintIterations <= 0) return;
 
@@ -72,6 +68,8 @@ namespace PBDFluid
             m_shader.SetFloat("Density", Body.Density);
             m_shader.SetFloat("Viscosity", Body.Viscosity);
             m_shader.SetFloat("ParticleMass", Body.ParticleMass);
+            m_shader.SetInts("Particles2Boundary", particles2Bounds);
+            m_shader.SetMatrixArray("BoundaryMatrices", boundsVectors);
 
             m_shader.SetFloat("KernelRadius", Kernel.Radius);
             m_shader.SetFloat("KernelRadius2", Kernel.Radius2);
@@ -92,7 +90,7 @@ namespace PBDFluid
             for (int i = 0; i < SolverIterations; i++)
             {
                 PredictPositions(dt);
-                Hash.Process(Body.Predicted[READ], Boundary.Positions, Particles2Bounds, BoundsVectors);
+                Hash.Process(Body.Predicted[READ], Boundary.Positions, particles2Bounds, boundsVectors);
 
                 ConstrainPositions();
                 UpdateVelocities(dt);
