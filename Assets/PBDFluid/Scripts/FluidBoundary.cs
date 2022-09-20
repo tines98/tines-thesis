@@ -26,16 +26,20 @@ namespace PBDFluid
         private ComputeBuffer m_argsBuffer;
 
         private ParticleSource source;
-        private Matrix4x4 RTS;
 
-        public FluidBoundary(ParticleSource source, float radius, float density, Matrix4x4 RTS, int[] particles2Boundary, Matrix4x4[] boundaryMatrices)
+        private int[] _particles2Boundary;
+        private Matrix4x4[] _boundaryMatrices;
+
+        public FluidBoundary(ParticleSource source, float radius, float density, int[] particles2Boundary, Matrix4x4[] boundaryMatrices)
         {
             this.source = source;
-            this.RTS = RTS;
             NumParticles = source.NumParticles;
             ParticleRadius = radius;
             Density = density;
 
+            _particles2Boundary = particles2Boundary;
+            _boundaryMatrices = boundaryMatrices;
+            
             CreateParticles();
             CreateBoundryPsi(particles2Boundary,boundaryMatrices);
         }
@@ -84,7 +88,7 @@ namespace PBDFluid
                 Vector4 pos;
                 try
                 {
-                    pos = RTS * source.Positions[i];
+                    pos = _boundaryMatrices[_particles2Boundary[i]] * source.Positions[i];
                 }
                 catch
                 {
