@@ -118,6 +118,9 @@ namespace PBDFluid
             m_shader.SetFloat("HashScale", InvCellSize);
             m_shader.SetVector("HashSize", Bounds.size);
             m_shader.SetVector("HashTranslate", Bounds.min);
+            m_shader.SetInts("Particle2Boundary",null);
+            m_shader.SetMatrixArray("BoundaryMatrices", null);
+
 
             m_shader.SetBuffer(m_hashKernel, "Particles", particles);
             m_shader.SetBuffer(m_hashKernel, "Boundary", particles); //unity 2018 complains if boundary not set in kernel
@@ -129,7 +132,7 @@ namespace PBDFluid
             MapTable();
         }
 
-        public void Process(ComputeBuffer particles, ComputeBuffer boundary, ComputeBuffer particle2Boundary, ComputeBuffer boundaryVectors)
+        public void Process(ComputeBuffer particles, ComputeBuffer boundary, int[] particle2Boundary, Matrix4x4[] boundaryVectors)
         {
             int numParticles = particles.count;
             int numBoundary = boundary.count;
@@ -144,12 +147,12 @@ namespace PBDFluid
             m_shader.SetFloat("HashScale", InvCellSize);
             m_shader.SetVector("HashSize", Bounds.size);
             m_shader.SetVector("HashTranslate", Bounds.min);
+            m_shader.SetInts("Particle2Boundary",particle2Boundary);
+            m_shader.SetMatrixArray("BoundaryMatrices", boundaryVectors);
 
             m_shader.SetBuffer(m_hashKernel, "Particles", particles);
             m_shader.SetBuffer(m_hashKernel, "Boundary", boundary);
             m_shader.SetBuffer(m_hashKernel, "IndexMap", IndexMap);
-            m_shader.SetBuffer(m_hashKernel, "Particle2Boundary", particle2Boundary);
-            m_shader.SetBuffer(m_hashKernel, "BoundaryVectors", boundaryVectors);
 
             //Assign the particles hash to x and index to y.
             m_shader.Dispatch(m_hashKernel, Groups, 1, 1);
@@ -164,6 +167,8 @@ namespace PBDFluid
             m_sort.Sort(IndexMap);
 
             m_shader.SetInt("TotalParticles", TotalParticles);
+            m_shader.SetInts("Particle2Boundary",null);
+            m_shader.SetMatrixArray("BoundaryMatrices", null);
             m_shader.SetBuffer(m_clearKernel, "Table", Table);
 
             //Clear the previous tables values as not all

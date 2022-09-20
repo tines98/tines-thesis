@@ -26,30 +26,24 @@ namespace PBDFluid
         private ComputeBuffer m_argsBuffer;
 
         private ParticleSource source;
-        private Matrix4x4 RTS;
-        private ComputeBuffer Particle2Buffer;
-        private ComputeBuffer BoundsVectors;
 
-        public FluidBoundary(ParticleSource source, float radius, float density, Matrix4x4 RTS, ComputeBuffer particle2Buffer, ComputeBuffer boundsVectors)
+        private int[] _particles2Boundary;
+        private Matrix4x4[] _boundaryMatrices;
+
+        public FluidBoundary(ParticleSource source, float radius, float density, int[] particles2Boundary, Matrix4x4[] boundaryMatrices)
         {
             this.source = source;
-            this.RTS = RTS;
             NumParticles = source.NumParticles;
             ParticleRadius = radius;
             Density = density;
-            Particle2Buffer = particle2Buffer;
-            BoundsVectors = boundsVectors;
 
+            _particles2Boundary = particles2Boundary;
+            _boundaryMatrices = boundaryMatrices;
+            
             CreateParticles();
-            CreateBoundryPsi();
+            CreateBoundryPsi(particles2Boundary,boundaryMatrices);
         }
-
-        public void UpdatePositions()
-        {
-            NumParticles = source.NumParticles;
-            CreateParticles();
-            CreateBoundryPsi();
-        }
+        
         
         /// <summary>
         /// Draws the mesh spheres when draw particles is enabled.
@@ -94,7 +88,7 @@ namespace PBDFluid
                 Vector4 pos;
                 try
                 {
-                    pos = RTS * source.Positions[i];
+                    pos = _boundaryMatrices[_particles2Boundary[i]] * source.Positions[i];
                 }
                 catch
                 {
@@ -138,7 +132,7 @@ namespace PBDFluid
             m_argsBuffer.SetData(args);
         }
 
-        private void CreateBoundryPsi()
+        private void CreateBoundryPsi(int[] particles2Boundary, Matrix4x4[] boundaryMatrices)
         {
 
             float cellSize = ParticleRadius * 4.0f;
@@ -157,6 +151,8 @@ namespace PBDFluid
             shader.SetFloat("Poly6", K.POLY6);
             shader.SetFloat("Poly6Zero", K.Poly6(Vector3.zero));
             shader.SetInt("NumParticles", NumParticles);
+            shader.SetInts("Particles2Boundary", particles2Boundary);
+            shader.SetMatrixArray("BoundaryMatrices", boundaryMatrices);
 
             shader.SetFloat("HashScale", grid.InvCellSize);
             shader.SetVector("HashSize", grid.Bounds.size);

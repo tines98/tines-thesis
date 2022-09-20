@@ -3,6 +3,9 @@
 float HashScale;
 float3 HashSize;
 float3 HashTranslate;
+//TODO: Do something about these static arrays
+int Particles2Boundary[8];
+float4x4 BoundaryMatrices[8];
 
 RWStructuredBuffer<int2> IndexMap;
 RWStructuredBuffer<int2> Table;
@@ -170,6 +173,8 @@ void ComputeDensityAndPressure(int id, float3 pi, out float density, out float p
 		else
 		{
 			int m = n - NumParticles;
+			
+			// float4 b = mul(BoundaryMatrices[Particles2Boundary[m]], Boundary[m]);
 			float4 b = Boundary[m];
 			diff = pi - b.xyz;
 			psi = b.w;
@@ -273,6 +278,7 @@ float3 SolveDensity(int id, float3 pi, float pressure)
 		else
 		{
 			int m = n - NumParticles;
+			// float4 b = mul(BoundaryMatrices[Particles2Boundary[m]], Boundary[m]);
 			float4 b = Boundary[m];
 			diff = pi - b.xyz;
 			psi = b.w;

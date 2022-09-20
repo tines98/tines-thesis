@@ -43,19 +43,22 @@ namespace MeshVoxelizerProject
             Material mat = renderer.material;
             nonVoxelizedChild = filter.gameObject;
 
-            bounds = new Box3(mesh.bounds.min, mesh.bounds.max);
+            var localScale = nonVoxelizedChild.transform.localScale;
+            var scaledMin = Vector3.Scale(mesh.bounds.min , localScale);
+            var scaledMax = Vector3.Scale(mesh.bounds.max , localScale);
+            bounds = new Box3(scaledMin, scaledMax);
 
             m_voxelizer = new MeshVoxelizer(size, size, size);
             m_voxelizer.Voxelize(mesh.vertices, mesh.triangles, bounds);
 
             Vector3 scale = new Vector3(bounds.Size.x / size, bounds.Size.y / size, bounds.Size.z / size);
             Vector3 m = new Vector3(bounds.Min.x, bounds.Min.y, bounds.Min.z);
-            mesh = CreateMesh(m_voxelizer.Voxels, scale, m);
+            mesh = CreateMesh(m_voxelizer.Voxels, scale,m);
 
             voxelizedGameObject = new GameObject("Voxelized");
             voxelizedGameObject.transform.parent = transform;
             voxelizedGameObject.transform.localPosition = nonVoxelizedChild.transform.localPosition;
-            voxelizedGameObject.transform.localScale = nonVoxelizedChild.transform.localScale;
+            voxelizedGameObject.transform.localScale = localScale;
             voxelizedGameObject.transform.localRotation = nonVoxelizedChild.transform.localRotation;
 
             filter = voxelizedGameObject.AddComponent<MeshFilter>();
@@ -84,6 +87,13 @@ namespace MeshVoxelizerProject
         public void HideVoxelizedMesh() => voxelizedGameObject.GetComponent<Renderer>().enabled = false;
 
         public Matrix4x4 GetVoxelizedMeshMatrix() => voxelizedGameObject.transform.localToWorldMatrix;
+
+        public Box3 GetVoxel(int x, int y, int z)
+        {
+            var scale = bounds.Size / size;
+            Vector3 pos = bounds.Min + new Vector3(x * scale.x, y * scale.y, z * scale.z);
+            return new Box3(pos,pos+scale);
+        }
 
         private Mesh CreateMesh(int[,,] voxels, Vector3 scale, Vector3 min)
         {
