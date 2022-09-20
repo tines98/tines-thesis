@@ -58,7 +58,6 @@ namespace MeshVoxelizerProject
             voxelizedGameObject = new GameObject("Voxelized");
             voxelizedGameObject.transform.parent = transform;
             voxelizedGameObject.transform.localPosition = nonVoxelizedChild.transform.localPosition;
-            Debug.Log($"localPosition is {voxelizedGameObject.transform.localPosition}");
             voxelizedGameObject.transform.localScale = localScale;
             voxelizedGameObject.transform.localRotation = nonVoxelizedChild.transform.localRotation;
 
