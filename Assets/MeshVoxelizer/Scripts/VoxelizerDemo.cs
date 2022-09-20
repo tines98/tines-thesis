@@ -57,9 +57,9 @@ namespace MeshVoxelizerProject
 
             voxelizedGameObject = new GameObject("Voxelized");
             voxelizedGameObject.transform.parent = transform;
-            voxelizedGameObject.transform.localPosition = nonVoxelizedChild.transform.localPosition;
+            voxelizedGameObject.transform.position = nonVoxelizedChild.transform.position;
+            voxelizedGameObject.transform.rotation = nonVoxelizedChild.transform.rotation;
             voxelizedGameObject.transform.localScale = localScale;
-            voxelizedGameObject.transform.localRotation = nonVoxelizedChild.transform.localRotation;
 
             filter = voxelizedGameObject.AddComponent<MeshFilter>();
             renderer = voxelizedGameObject.AddComponent<MeshRenderer>();
