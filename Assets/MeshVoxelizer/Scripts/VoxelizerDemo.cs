@@ -53,12 +53,13 @@ namespace MeshVoxelizerProject
 
             Vector3 scale = new Vector3(bounds.Size.x / size, bounds.Size.y / size, bounds.Size.z / size);
             Vector3 m = new Vector3(bounds.Min.x, bounds.Min.y, bounds.Min.z);
-            mesh = CreateMesh(m_voxelizer.Voxels, scale, m);
+            mesh = CreateMesh(m_voxelizer.Voxels, scale,m);
 
             voxelizedGameObject = new GameObject("Voxelized");
             voxelizedGameObject.transform.parent = transform;
             voxelizedGameObject.transform.localPosition = nonVoxelizedChild.transform.localPosition;
-            voxelizedGameObject.transform.localScale = nonVoxelizedChild.transform.localScale;
+            Debug.Log($"localPosition is {voxelizedGameObject.transform.localPosition}");
+            voxelizedGameObject.transform.localScale = localScale;
             voxelizedGameObject.transform.localRotation = nonVoxelizedChild.transform.localRotation;
 
             filter = voxelizedGameObject.AddComponent<MeshFilter>();
