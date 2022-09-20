@@ -11,6 +11,7 @@ namespace PBDFluid
         public bool[,,] visited;
         private int[,,] voxels;
         public List<Point> hullVoxels;
+        public bool[,,] hullVoxels2;
 
         public MeshHollower(int[,,] voxels)
         {
@@ -21,6 +22,7 @@ namespace PBDFluid
             
             //+2 due to padding
             visited = new bool[width+2, height+2, depth+2];
+            hullVoxels2 = new bool[width+2, height+2, depth+2];
             hullVoxels = new List<Point>();
             
             Point start = new Point(0, 0, 0);
@@ -30,32 +32,36 @@ namespace PBDFluid
         // ReSharper disable once InconsistentNaming
         private void DFS(Point point)
         {
-            SetVisited(point);
-            if (IsInMesh(point)) {
-                hullVoxels.Add(point);
-                return;
-            }
-            
-            if (CanGo(point.Move(1,0,0)))
-                DFS(point.Move(1,0,0));
-            
-            if (CanGo(point.Move(0,1, 0)))
-                DFS(point.Move(0,1,0));
-            
-            if (CanGo(point.Move(0,0,1)))
-                DFS(point.Move(0,0,1));
-            
-            if (CanGo(point.Move(-1,0,0)))
-                DFS(point.Move(-1,0,0));
-            
-            if (CanGo(point.Move(0,-1,0)))
-                DFS(point.Move(0, -1,0));
-            
-            if (CanGo(point.Move(0,0,-1)))
-                DFS(point.Move(0,0,-1));
+            while (true)
+            {
+                SetVisited(point);
+                if (IsInMesh(point))
+                {
+                    hullVoxels.Add(point);
+                    hullVoxels2[point.x, point.y, point.z] = true;
+                    return;
+                }
 
+                if (CanGo(point.Move(1, 0, 0))) DFS(point.Move(1, 0, 0));
+
+                if (CanGo(point.Move(0, 1, 0))) DFS(point.Move(0, 1, 0));
+
+                if (CanGo(point.Move(0, 0, 1))) DFS(point.Move(0, 0, 1));
+
+                if (CanGo(point.Move(-1, 0, 0))) DFS(point.Move(-1, 0, 0));
+
+                if (CanGo(point.Move(0, -1, 0))) DFS(point.Move(0, -1, 0));
+
+                if (CanGo(point.Move(0, 0, -1)))
+                {
+                    point = point.Move(0, 0, -1);
+                    continue;
+                }
+
+                break;
+            }
         }
-        
+
         /**
          * Returns true if Point is both within bounds, and not visited
          */
