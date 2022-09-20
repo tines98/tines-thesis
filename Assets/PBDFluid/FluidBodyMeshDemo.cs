@@ -27,7 +27,8 @@ namespace PBDFluid
         public bool m_drawBoundaryParticles = false;
         public bool m_drawFluidParticles = false;
         public bool m_drawFluidVolume = true;
-        public bool m_drawBoundaryBoxes;
+        public bool m_drawExteriorVoxels;
+        public bool m_drawInteriorVoxels;
 
         [Header("Simulation Settings")]
         public SIMULATION_SIZE m_simulationSize = SIMULATION_SIZE.MEDIUM;
@@ -82,7 +83,7 @@ namespace PBDFluid
                 m_fluidContainerFromMesh = new FluidContainerFromMesh(fluidBounds, radius, density);
                 CreateBoundaries();
                 // CreateFluid(radius, density);
-                m_fluid = new FluidBody(m_fluidContainerFromMesh.FluidParticlesFromBounds, radius, density,fluidBounds.GetVoxelizedMeshMatrix());
+                m_fluid = new FluidBody(m_fluidContainerFromMesh.FluidParticleSource, radius, density,fluidBounds.GetVoxelizedMeshMatrix());
                 
                 var bounds = simulationBounds;
                 m_fluid.Bounds = bounds;
@@ -192,7 +193,7 @@ namespace PBDFluid
             return new ParticlesFromBounds(diameter, outerBounds,innerBounds);
         }
         private void CreateBoundaries() {
-            ParticlesFromBounds[] particlesFromBoundsArray = new ParticlesFromBounds[boundarySizes.Count +1 ];
+            ParticleSource[] particlesFromBoundsArray = new ParticleSource[boundarySizes.Count +1 ];
             Vector3[] boundsVectors = new Vector3[boundarySizes.Count+1];
             int i;
             for (i=0; i < boundarySizes.Count; i++)
@@ -202,7 +203,7 @@ namespace PBDFluid
                 boundsVectors[i] = bound.center;
             }
 
-            particlesFromBoundsArray[i] = m_fluidContainerFromMesh.BoundaryParticlesFromBounds;
+            particlesFromBoundsArray[i] = m_fluidContainerFromMesh.BoundaryParticleSource;
             boundsVectors[i] = m_fluidContainerFromMesh.bounds.center;
 
             particleSource = new ParticlesFromSeveralBounds(radius * 2, particlesFromBoundsArray, boundsVectors);
@@ -270,7 +271,16 @@ namespace PBDFluid
 
             if (m_fluidContainerFromMesh != null)
             {
-                if (m_drawBoundaryBoxes) m_fluidContainerFromMesh.DrawBoundaryGizmo(radius);
+                if (m_drawInteriorVoxels)
+                {
+                    // m_fluidContainerFromMesh.DrawBoundaryGizmo();
+                    m_fluidContainerFromMesh.DrawInteriorVoxelsGizmo();
+                }
+
+                if (m_drawExteriorVoxels)
+                {
+                    m_fluidContainerFromMesh.DrawExteriorVoxelsGizmo();
+                }
             }
         }
 

@@ -88,11 +88,20 @@ namespace MeshVoxelizerProject
 
         public Matrix4x4 GetVoxelizedMeshMatrix() => voxelizedGameObject.transform.localToWorldMatrix;
 
-        public Box3 GetVoxel(int x, int y, int z)
+        public Box3 GetVoxel(int x, int y, int z, bool inWorldCoordinates = false)
         {
             var scale = bounds.Size / size;
-            Vector3 pos = bounds.Min + new Vector3(x * scale.x, y * scale.y, z * scale.z);
-            return new Box3(pos,pos+scale);
+            var point = new Vector3(x, y, z);
+            var min = bounds.Min + Vector3.Scale(point,scale);
+            var max = min + scale;
+            
+            if (!inWorldCoordinates) return new Box3(min, max);
+
+            var localToWorldMatrix = nonVoxelizedChild.transform.localToWorldMatrix;
+            return new Box3(
+                localToWorldMatrix.MultiplyPoint(min),
+                localToWorldMatrix.MultiplyPoint(max)
+            );
         }
 
         private Mesh CreateMesh(int[,,] voxels, Vector3 scale, Vector3 min)
