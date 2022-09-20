@@ -23,21 +23,14 @@ namespace PBDFluid
         {
             Positions = new List<Vector3>();
             particle2MatrixMap = new List<int>();
-            for (int boundsIndex = 0; boundsIndex < particlesFromBoundsArray.Length; boundsIndex++){
-                particlesFromBoundsArray[boundsIndex].CreateParticles();
-                Debug.Log($"Boundary at index {boundsIndex} has {particlesFromBoundsArray[boundsIndex].NumParticles} particles!");
-                Assert.IsTrue(particlesFromBoundsArray[boundsIndex].NumParticles > 0,
-                    $"particlesFromBounds at index {boundsVectors} has 0 NumParticles! its bounds is: {particlesFromBoundsArray[boundsIndex].Bounds}");
-                for (int particleIdx = 0; particleIdx < particlesFromBoundsArray[boundsIndex].NumParticles; particleIdx++) {
-                    Positions.Add(particlesFromBoundsArray[boundsIndex].Positions[particleIdx]);
-                    // Map each particle to a matrix index
-                    particle2MatrixMap.Add(boundsIndex);
+            for (var boundsIdx = 0; boundsIdx < particlesFromBoundsArray.Length; boundsIdx++){
+                particlesFromBoundsArray[boundsIdx].CreateParticles();
+                for (var particleIdx = 0; particleIdx < particlesFromBoundsArray[boundsIdx].NumParticles; particleIdx++) {
+                    Positions.Add(particlesFromBoundsArray[boundsIdx].Positions[particleIdx]);
+                    particle2MatrixMap.Add(boundsIdx);
                 }
             }
-
-            Assert.IsTrue(Positions.Count > 0);
         }
 
     }
-
 }
