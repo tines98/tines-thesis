@@ -27,6 +27,7 @@ namespace PBDFluid
         public bool m_drawBoundaryParticles = false;
         public bool m_drawFluidParticles = false;
         public bool m_drawFluidVolume = true;
+        public bool m_drawBoundaryBoxes;
 
         [Header("Simulation Settings")]
         public SIMULATION_SIZE m_simulationSize = SIMULATION_SIZE.MEDIUM;
@@ -78,8 +79,11 @@ namespace PBDFluid
 
             try
             {
+                m_fluidContainerFromMesh = new FluidContainerFromMesh(fluidBounds, radius, density);
                 CreateBoundaries();
-                CreateFluid(radius, density);
+                // CreateFluid(radius, density);
+                m_fluid = new FluidBody(m_fluidContainerFromMesh.FluidParticlesFromBounds, radius, density,fluidBounds.GetVoxelizedMeshMatrix());
+                
                 var bounds = simulationBounds;
                 m_fluid.Bounds = bounds;
                 m_solver = new FluidSolver(m_fluid, bounds, m_boundary);
@@ -131,10 +135,12 @@ namespace PBDFluid
 
         private Matrix4x4[] BoundsMatricesAsMatrix()
         {
-            var result = new Matrix4x4[boundsMatrices.Length];
-            for (int i = 0; i < boundsMatrices.Length; i++) {
+            var result = new Matrix4x4[boundsMatrices.Length+1];
+            int i;
+            for (i = 0; i < boundsMatrices.Length; i++) {
                 result[i] = boundsMatrices[i].GetMatrix();
             }
+            result[i] = fluidBounds.GetVoxelizedMeshMatrix();
             return result;
         }
 
@@ -186,20 +192,23 @@ namespace PBDFluid
             return new ParticlesFromBounds(diameter, outerBounds,innerBounds);
         }
         private void CreateBoundaries() {
-            ParticlesFromBounds[] particlesFromBoundsArray = new ParticlesFromBounds[boundarySizes.Count];
-            Vector3[] boundsVectors = new Vector3[boundarySizes.Count];
-            
-            for (var i = 0; i < boundarySizes.Count; i++)
+            ParticlesFromBounds[] particlesFromBoundsArray = new ParticlesFromBounds[boundarySizes.Count +1 ];
+            Vector3[] boundsVectors = new Vector3[boundarySizes.Count+1];
+            int i;
+            for (i=0; i < boundarySizes.Count; i++)
             {
                 var bound = new Bounds(boundsMatrices[i].position, boundarySizes[i]);
                 particlesFromBoundsArray[i] = CreateBoundary(bound);
                 boundsVectors[i] = bound.center;
             }
 
+            particlesFromBoundsArray[i] = m_fluidContainerFromMesh.BoundaryParticlesFromBounds;
+            boundsVectors[i] = m_fluidContainerFromMesh.bounds.center;
+
             particleSource = new ParticlesFromSeveralBounds(radius * 2, particlesFromBoundsArray, boundsVectors);
             particleSource.CreateParticles();
             particles2Bounds = particleSource.particle2MatrixMap.ToArray();
-            m_boundary = new FluidBoundary(particleSource, radius, density, transform.localToWorldMatrix, particles2Bounds, BoundsMatricesAsMatrix());
+            m_boundary = new FluidBoundary(particleSource, radius, density, particles2Bounds, BoundsMatricesAsMatrix());
         }
         
         private void CreateFluid( float radius, float density) {
@@ -255,20 +264,15 @@ namespace PBDFluid
             float diameter = radius * 2;
             //Extra Boundaries
             for (int i = 0; i < boundarySizes.Count; i++) {
-                DrawBoundaryGizmo(boundsMatrices[i],boundarySizes[i],diameter,thickness);
+                Gizmos.color = Color.green;
+                CustomGizmos.DrawRotatableCubeGizmo(boundsMatrices[i],boundarySizes[i]);
+            }
+
+            if (m_fluidContainerFromMesh != null)
+            {
+                if (m_drawBoundaryBoxes) m_fluidContainerFromMesh.DrawBoundaryGizmo(radius);
             }
         }
-        
-        private void DrawBoundaryGizmo(SerializedMatrix matrix, Vector3 size, float diameter, float thickness) {
-            Gizmos.color = Color.green;
-            var pos = matrix.GetMatrix().MultiplyPoint(transform.position);
-            
-            Gizmos.DrawWireCube(pos,size);
-            Vector3 newsize = size;
-            newsize.x -= diameter * thickness * 1.2f;
-            newsize.y -= diameter * thickness * 1.2f;
-            newsize.z -= diameter * thickness * 1.2f;
-            Gizmos.DrawWireCube(pos,newsize);
-        }
+
     }
 }

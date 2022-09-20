@@ -21,6 +21,7 @@ namespace PBDFluid
 
 
             bounds = new Bounds(voxelizerDemo.bounds.Center,voxelizerDemo.bounds.Size);
+            
             _meshHollower = new MeshHollower(_voxelizerDemo.m_voxelizer.Voxels);
             
             CalculateExterior();
@@ -71,14 +72,12 @@ namespace PBDFluid
         }
 
         private void CreateBoundary(float radius, float density) {
-            //Not visited + Non-Voxels
             float diameter = radius * 2;
             var exclusion = new List<Bounds>();
-            //Get all Non visited
             for (int x = 0; x < _meshHollower.visited.GetLength(0); x++) {
                 for (int y = 0; y < _meshHollower.visited.GetLength(1); y++) {
                     for (int z = 0; z < _meshHollower.visited.GetLength(2); z++) {
-                        if (!_meshHollower.visited[x, y, z])
+                        if (!_meshHollower.hullVoxels2[x, y, z])
                         {
                             var voxel = _voxelizerDemo.GetVoxel(x, y, z);
                             var bound = new Bounds(voxel.Center, voxel.Size);
@@ -87,13 +86,23 @@ namespace PBDFluid
                     }
                 }
             }
-
-            foreach (var nonVoxel in _voxelizerDemo.NonVoxels)
-            {
-                var bound = new Bounds(nonVoxel.Center, nonVoxel.Size);
-                exclusion.Add(bound);
-            }
             BoundaryParticlesFromBounds = new ParticlesFromBounds(diameter, bounds, exclusion);
         }
+        public void DrawBoundaryGizmo(float radius)
+        {
+            float diameter = radius * 2;
+            for (int x = 0; x < _meshHollower.visited.GetLength(0); x++) {
+                for (int y = 0; y < _meshHollower.visited.GetLength(1); y++) {
+                    for (int z = 0; z < _meshHollower.visited.GetLength(2); z++) {
+                        if (_meshHollower.hullVoxels2[x, y, z])
+                        {
+                            var voxel = _voxelizerDemo.GetVoxel(x, y, z);
+                            Gizmos.DrawCube(voxel.Center,voxel.Size);
+                        }
+                    }
+                }
+            }
+        }
+        
     }
 }

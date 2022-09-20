@@ -210,7 +210,7 @@ namespace PBDFluid
             particleSource.CreateParticles();
             
             //TODO: Fix nulls
-            _boundary = new FluidBoundary(particleSource, radius, density, transform.localToWorldMatrix,null,null);
+            _boundary = new FluidBoundary(particleSource, radius, density,null,null);
         }
 
         private void CreateFluid( float radius, float density, Vector3 center, Vector3 size)
