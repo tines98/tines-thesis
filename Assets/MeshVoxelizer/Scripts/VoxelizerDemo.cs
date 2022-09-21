@@ -8,7 +8,7 @@ namespace MeshVoxelizerProject
     public class VoxelizerDemo : MonoBehaviour
     {
 
-        public int size = 16;
+        public Vector3Int size = new Vector3Int(16,16,16);
 
         public bool drawAABBTree;
 
@@ -48,12 +48,16 @@ namespace MeshVoxelizerProject
             var scaledMax = Vector3.Scale(mesh.bounds.max , localScale);
             bounds = new Box3(scaledMin, scaledMax);
 
-            m_voxelizer = new MeshVoxelizer(size, size, size);
+            m_voxelizer = new MeshVoxelizer(size.x, size.y, size.z);
             m_voxelizer.Voxelize(mesh.vertices, mesh.triangles, bounds);
+            
+            var scale = new Vector3(
+                bounds.Size.x / size.x, 
+                bounds.Size.y / size.y, 
+                bounds.Size.z / size.z
+            );
 
-            Vector3 scale = new Vector3(bounds.Size.x / size, bounds.Size.y / size, bounds.Size.z / size);
-            Vector3 m = new Vector3(bounds.Min.x, bounds.Min.y, bounds.Min.z);
-            mesh = CreateMesh(m_voxelizer.Voxels, scale,m);
+            mesh = CreateMesh(m_voxelizer.Voxels, scale,bounds.Min);
 
             voxelizedGameObject = new GameObject("Voxelized");
             voxelizedGameObject.transform.parent = transform;
@@ -66,6 +70,8 @@ namespace MeshVoxelizerProject
 
             filter.mesh = mesh;
             renderer.material = mat;
+            
+            Debug.Log($"Num Voxels is {Voxels.Count}");
         }
 
         private void OnRenderObject()
@@ -90,7 +96,11 @@ namespace MeshVoxelizerProject
 
         public Box3 GetVoxel(int x, int y, int z, bool inWorldCoordinates = false)
         {
-            var scale = bounds.Size / size;
+            var scale = new Vector3(
+                bounds.Min.x/size.x,
+                bounds.Min.y/size.y,
+                bounds.Min.z/size.z
+            );
             var point = new Vector3(x, y, z);
             var min = bounds.Min + Vector3.Scale(point,scale);
             var max = min + scale;
@@ -111,11 +121,11 @@ namespace MeshVoxelizerProject
             Voxels = new List<Box3>();
             NonVoxels = new List<Box3>();
 
-            for (int z = 0; z < size; z++)
+            for (int z = 0; z < size.z; z++)
             {
-                for (int y = 0; y < size; y++)
+                for (int y = 0; y < size.y; y++)
                 {
-                    for (int x = 0; x < size; x++)
+                    for (int x = 0; x < size.x; x++)
                     {
                         Vector3 pos = min + new Vector3(x * scale.x, y * scale.y, z * scale.z);
                         var box = new Box3(pos,pos+scale);
@@ -127,19 +137,19 @@ namespace MeshVoxelizerProject
 
                         Voxels.Add(box);
 
-                        if (x == size - 1 || voxels[x + 1, y, z] == 0)
+                        if (x == size.x - 1 || voxels[x + 1, y, z] == 0)
                             AddRightQuad(verts, indices, scale, pos);
 
                         if (x == 0 || voxels[x - 1, y, z] == 0)
                             AddLeftQuad(verts, indices, scale, pos);
 
-                        if (y == size - 1 || voxels[x, y + 1, z] == 0)
+                        if (y == size.y - 1 || voxels[x, y + 1, z] == 0)
                             AddTopQuad(verts, indices, scale, pos);
 
                         if (y == 0 || voxels[x, y - 1, z] == 0)
                            AddBottomQuad(verts, indices, scale, pos);
 
-                        if (z == size - 1 || voxels[x, y, z + 1] == 0)
+                        if (z == size.z - 1 || voxels[x, y, z + 1] == 0)
                             AddFrontQuad(verts, indices, scale, pos);
 
                         if (z == 0 || voxels[x, y, z - 1] == 0)
@@ -260,6 +270,12 @@ namespace MeshVoxelizerProject
             indices.Add(count + 3); indices.Add(count + 4); indices.Add(count + 5);
         }
 
+        private void OnDrawGizmos()
+        {
+            //Draw Bounds
+            Gizmos.color = Color.green;
+            Gizmos.DrawWireCube(bounds.Center,bounds.Size);
+        }
     }
 
 }
