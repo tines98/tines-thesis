@@ -10,6 +10,7 @@ namespace PBDFluid
         public List<Box3> LocalExteriorVoxels;
         public List<Box3> ExteriorVoxels;
         public List<Box3> InteriorVoxels;
+        public List<Box3> LocalInteriorVoxels;
         public Bounds bounds;
         public ParticleSource FluidParticleSource;
         public ParticleSource BoundaryParticleSource;
@@ -45,11 +46,14 @@ namespace PBDFluid
 
         private void CalculateInterior() {
             InteriorVoxels = new List<Box3>();
+            LocalInteriorVoxels = new List<Box3>();
             for (int x = 0; x < _meshHollower.visited.GetLength(0); x++) {
                 for (int y = 0; y < _meshHollower.visited.GetLength(1); y++) {
                     for (int z = 0; z < _meshHollower.visited.GetLength(2); z++) {
-                        if (!_meshHollower.visited[x, y, z]) 
+                        if (!_meshHollower.visited[x, y, z]) {
                             InteriorVoxels.Add(_voxelizerDemo.GetVoxel(x,y,z,true));
+                            LocalInteriorVoxels.Add(_voxelizerDemo.GetVoxel(x,y,z));
+                        } 
                     }
                 }
             }
@@ -57,26 +61,28 @@ namespace PBDFluid
 
 
         private void CreateFluid(float radius) {
-            float diameter = radius * 2;
-            var exclusion = new List<Bounds>();
-            for (int x = 0; x < _meshHollower.visited.GetLength(0); x++) {
-                for (int y = 0; y < _meshHollower.visited.GetLength(1); y++) {
-                    for (int z = 0; z < _meshHollower.visited.GetLength(2); z++) {
-                        if (_meshHollower.visited[x, y, z])
-                        {
-                            var voxel = _voxelizerDemo.GetVoxel(x, y, z);
-                            var bound = new Bounds(voxel.Center, voxel.Size);
-                            exclusion.Add(bound);
-                        }
-                    }
-                }
-            }
-            FluidParticleSource = new ParticlesFromBounds(diameter, bounds, exclusion);
+            var diameter = radius * 2;
+            FluidParticleSource =
+                new ParticlesFromVoxels(diameter, LocalInteriorVoxels, _voxelizerDemo.GetVoxelizedMeshMatrix());
+            // var exclusion = new List<Bounds>();
+            // for (int x = 0; x < _meshHollower.visited.GetLength(0); x++) {
+            //     for (int y = 0; y < _meshHollower.visited.GetLength(1); y++) {
+            //         for (int z = 0; z < _meshHollower.visited.GetLength(2); z++) {
+            //             if (_meshHollower.visited[x, y, z])
+            //             {
+            //                 var voxel = _voxelizerDemo.GetVoxel(x, y, z);
+            //                 var bound = new Bounds(voxel.Center, voxel.Size);
+            //                 exclusion.Add(bound);
+            //             }
+            //         }
+            //     }
+            // }
+            // FluidParticleSource = new ParticlesFromBounds(diameter, bounds, exclusion);
         }
 
         private void CreateBoundary(float radius, float density) {
-            float diameter = radius * 2;
-            BoundaryParticleSource = new ParticlesFromVoxels(diameter, LocalExteriorVoxels);
+            var diameter = radius * 2;
+            BoundaryParticleSource = new ParticlesFromVoxels(diameter, LocalExteriorVoxels, _voxelizerDemo.GetVoxelizedMeshMatrix());
         }
         public void DrawBoundaryGizmo()
         {
