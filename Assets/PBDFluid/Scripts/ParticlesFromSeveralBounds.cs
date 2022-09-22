@@ -10,13 +10,11 @@ namespace PBDFluid
     public class ParticlesFromSeveralBounds : ParticleSource
     {
         public ParticleSource[] ParticleSources;
-        public Vector3[] boundsVectors;
         public List<int> particle2MatrixMap;
 
 
-        public ParticlesFromSeveralBounds(float spacing, ParticleSource[] particleSources, Vector3[] boundsVectors) : base(spacing){
+        public ParticlesFromSeveralBounds(float spacing, ParticleSource[] particleSources) : base(spacing){
             ParticleSources = particleSources;
-            this.boundsVectors = boundsVectors;
         }
 
         public override void CreateParticles()

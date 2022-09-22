@@ -39,20 +39,18 @@ namespace PBDFluid
             ExteriorVoxels = new List<Box3>();
             LocalExteriorVoxels = new List<Box3>();
             foreach (var point in _meshHollower.hullVoxels) {
-                ExteriorVoxels.Add(_voxelizerDemo.GetVoxel(point.x,point.y,point.z,true));
-                LocalExteriorVoxels.Add(_voxelizerDemo.GetVoxel(point.x,point.y,point.z));
+                ExteriorVoxels.Add(_voxelizerDemo.GetVoxel(point.x,point.y,point.z));
             }
         }
 
         private void CalculateInterior() {
             InteriorVoxels = new List<Box3>();
             LocalInteriorVoxels = new List<Box3>();
-            for (int x = 0; x < _meshHollower.visited.GetLength(0); x++) {
+            for (int z = 0; z < _meshHollower.visited.GetLength(2); z++) {
                 for (int y = 0; y < _meshHollower.visited.GetLength(1); y++) {
-                    for (int z = 0; z < _meshHollower.visited.GetLength(2); z++) {
+                    for (int x = 0; x < _meshHollower.visited.GetLength(0); x++) {
                         if (!_meshHollower.visited[x, y, z]) {
-                            InteriorVoxels.Add(_voxelizerDemo.GetVoxel(x,y,z,true));
-                            LocalInteriorVoxels.Add(_voxelizerDemo.GetVoxel(x,y,z));
+                            InteriorVoxels.Add(_voxelizerDemo.GetVoxel(x,y,z));
                         } 
                     }
                 }
@@ -62,33 +60,32 @@ namespace PBDFluid
 
         private void CreateFluid(float radius) {
             var diameter = radius * 2;
-            FluidParticleSource =
-                new ParticlesFromVoxels(diameter, LocalInteriorVoxels, _voxelizerDemo.GetVoxelizedMeshMatrix());
-            // var exclusion = new List<Bounds>();
-            // for (int x = 0; x < _meshHollower.visited.GetLength(0); x++) {
-            //     for (int y = 0; y < _meshHollower.visited.GetLength(1); y++) {
-            //         for (int z = 0; z < _meshHollower.visited.GetLength(2); z++) {
-            //             if (_meshHollower.visited[x, y, z])
-            //             {
-            //                 var voxel = _voxelizerDemo.GetVoxel(x, y, z);
-            //                 var bound = new Bounds(voxel.Center, voxel.Size);
-            //                 exclusion.Add(bound);
-            //             }
-            //         }
-            //     }
-            // }
-            // FluidParticleSource = new ParticlesFromBounds(diameter, bounds, exclusion);
+
+            var exclusion = new List<Bounds>();
+            for (int x = 0; x < _meshHollower.visited.GetLength(0); x++) {
+                for (int y = 0; y < _meshHollower.visited.GetLength(1); y++) {
+                    for (int z = 0; z < _meshHollower.visited.GetLength(2); z++) {
+                        if (_meshHollower.visited[x, y, z])
+                        {
+                            var voxel = _voxelizerDemo.GetVoxel(x, y, z);
+                            var bound = new Bounds(voxel.Center, voxel.Size);
+                            exclusion.Add(bound);
+                        }
+                    }
+                }
+            }
+            FluidParticleSource = new ParticlesFromBounds(diameter, bounds, exclusion);
         }
 
         private void CreateBoundary(float radius, float density) {
             var diameter = radius * 2;
-            BoundaryParticleSource = new ParticlesFromVoxels(diameter, LocalExteriorVoxels, _voxelizerDemo.GetVoxelizedMeshMatrix());
+            BoundaryParticleSource = new ParticlesFromVoxels(diameter, ExteriorVoxels);
         }
         public void DrawBoundaryGizmo()
         {
-            for (int x = 0; x < _meshHollower.visited.GetLength(0); x++) {
+            for (int z = 0; z < _meshHollower.visited.GetLength(2); z++) {
                 for (int y = 0; y < _meshHollower.visited.GetLength(1); y++) {
-                    for (int z = 0; z < _meshHollower.visited.GetLength(2); z++) {
+                    for (int x = 0; x < _meshHollower.visited.GetLength(0); x++) {
                         if (_meshHollower.hullVoxels2[x, y, z])
                         {
                             var voxel = _voxelizerDemo.GetVoxel(x, y, z, true);
@@ -113,7 +110,7 @@ namespace PBDFluid
             Gizmos.color = Color.red;
             foreach (var voxel in ExteriorVoxels)
             {
-                Gizmos.DrawWireCube(voxel.Center,voxel.Size);
+                Gizmos.DrawWireCube( voxel.Center,voxel.Size);
             }
         }
         

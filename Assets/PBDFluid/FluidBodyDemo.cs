@@ -56,12 +56,12 @@ namespace PBDFluid
             return buffer;
         }
         
-        private ComputeBuffer GenerateBoundsVectorsBuffer()
-        {
-            var buffer = new ComputeBuffer(particleSource.boundsVectors.Length, 3 * sizeof(float));
-            buffer.SetData(particleSource.boundsVectors);
-            return buffer;
-        }
+        // private ComputeBuffer GenerateBoundsVectorsBuffer()
+        // {
+        //     var buffer = new ComputeBuffer(particleSource.boundsVectors.Length, 3 * sizeof(float));
+        //     buffer.SetData(particleSource.boundsVectors);
+        //     return buffer;
+        // }
         
         private void StartDemo()
         {
@@ -102,7 +102,7 @@ namespace PBDFluid
                 bounds.center += transform.position;
                 m_fluid.Bounds = bounds;
                 particles2BoundsBuffer = GenerateParticles2BoundsBuffer();
-                boundsVectorsBuffer = GenerateBoundsVectorsBuffer();
+                // boundsVectorsBuffer = GenerateBoundsVectorsBuffer();
                 m_solver = new FluidSolver(m_fluid, bounds, _boundary);
 
                 m_volume = new RenderVolume(bounds, radius);
@@ -176,7 +176,7 @@ namespace PBDFluid
         private ParticlesFromBounds CreateBoundary(Bounds bounds)
         {
             Bounds outerBounds = new Bounds();
-            var center = transform.position + bounds.center;
+            var center = bounds.center;
             var size = bounds.size;
             outerBounds.SetMinMax(center-(size/2.0f), center+(size/2.0f));
             // outerBounds.SetMinMax(size/2.0f, size/2.0f);
@@ -205,7 +205,7 @@ namespace PBDFluid
                 particlesFromBoundsArray[i] = CreateBoundary(boundaryInfos[i]);
                 boundsVectors[i] = boundaryInfos[i].center;
             }
-            particleSource = new ParticlesFromSeveralBounds(radius * 2, particlesFromBoundsArray, boundsVectors);
+            particleSource = new ParticlesFromSeveralBounds(radius * 2, particlesFromBoundsArray);
 
             particleSource.CreateParticles();
             

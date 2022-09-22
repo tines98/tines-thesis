@@ -205,7 +205,7 @@ namespace PBDFluid
             particlesFromBoundsArray[i] = m_fluidContainerFromMesh.BoundaryParticleSource;
             boundsVectors[i] = fluidBounds.bounds.Center;
 
-            particleSource = new ParticlesFromSeveralBounds(radius * 2, particlesFromBoundsArray, boundsVectors);
+            particleSource = new ParticlesFromSeveralBounds(radius * 2, particlesFromBoundsArray);
             particleSource.CreateParticles();
             particles2Bounds = particleSource.particle2MatrixMap.ToArray();
             m_boundary = new FluidBoundary(particleSource, radius, density, particles2Bounds, BoundsMatricesAsMatrix());
