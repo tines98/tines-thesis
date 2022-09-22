@@ -128,7 +128,7 @@ namespace PBDFluid
 
         private void OnDestroy()
         {
-            m_boundary.Dispose();
+            m_boundary?.Dispose();
             m_fluid.Dispose();
             m_solver.Dispose();
             m_volume.Dispose();
