@@ -39,7 +39,7 @@ namespace PBDFluid
 
         private ComputeBuffer m_argsBuffer;
 
-        public FluidBody(ParticleSource source, float radius, float density, Matrix4x4 RTS)
+        public FluidBody(ParticleSource source, float radius, float density, Matrix4x4 TRS)
         {
             NumParticles = source.NumParticles;
             Density = density;
@@ -53,7 +53,7 @@ namespace PBDFluid
             Densities = new ComputeBuffer(NumParticles, sizeof(float));
             Pressures = new ComputeBuffer(NumParticles, sizeof(float));
 
-            CreateParticles(source, RTS);
+            CreateParticles(source, TRS);
         }
 
         /// <summary>
@@ -67,6 +67,7 @@ namespace PBDFluid
             material.SetBuffer("positions", Positions);
             material.SetColor("color", Color.white);
             material.SetFloat("diameter", ParticleDiameter);
+            material.SetInt("useMatrix",0);
 
             ShadowCastingMode castShadow = ShadowCastingMode.Off;
             bool recieveShadow = false;
@@ -100,7 +101,7 @@ namespace PBDFluid
             CBUtility.Release(ref m_argsBuffer);
         }
 
-        private void CreateParticles(ParticleSource source, Matrix4x4 RTS)
+        private void CreateParticles(ParticleSource source, Matrix4x4 trs)
         {
             Vector4[] positions = new Vector4[NumParticles];
             Vector4[] predicted = new Vector4[NumParticles];
@@ -112,7 +113,7 @@ namespace PBDFluid
 
             for (int i = 0; i < NumParticles; i++)
             {
-                Vector4 pos = RTS * source.Positions[i];
+                var pos = trs * source.Positions[i];
                 positions[i] = pos;
                 predicted[i] = pos;
 

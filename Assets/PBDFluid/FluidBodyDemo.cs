@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using PBDFluid.Scripts;
 
 namespace PBDFluid
 {
@@ -50,7 +51,7 @@ namespace PBDFluid
 
         private ComputeBuffer GenerateParticles2BoundsBuffer()
         {
-            var particle2BoundsArray = particleSource.particle2MatrixMap.ToArray();
+            var particle2BoundsArray = particleSource.Particle2MatrixMap.ToArray();
             var buffer = new ComputeBuffer(particle2BoundsArray.Length, sizeof(int));
             buffer.SetData(particle2BoundsArray);
             return buffer;

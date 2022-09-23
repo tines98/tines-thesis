@@ -29,6 +29,7 @@ namespace PBDFluid
 
         private int[] _particles2Boundary;
         private Matrix4x4[] _boundaryMatrices;
+        private ComputeBuffer _particles2BoundaryBuffer;
 
         public FluidBoundary(ParticleSource source, float radius, float density, int[] particles2Boundary, Matrix4x4[] boundaryMatrices)
         {
@@ -39,6 +40,14 @@ namespace PBDFluid
 
             _particles2Boundary = particles2Boundary;
             _boundaryMatrices = boundaryMatrices;
+            for (var index = 0; index < _boundaryMatrices.Length; index++)
+            {
+                var boundaryMatrix = _boundaryMatrices[index];
+                Debug.Log($"Boundary matrix {index}: {boundaryMatrix}");
+            }
+
+            _particles2BoundaryBuffer = new ComputeBuffer(_particles2Boundary.Length, sizeof(int));
+            _particles2BoundaryBuffer.SetData(_particles2Boundary);
             
             CreateParticles();
             CreateBoundryPsi(particles2Boundary,boundaryMatrices);
@@ -54,8 +63,12 @@ namespace PBDFluid
                 CreateArgBuffer(mesh.GetIndexCount(0));
 
             material.SetBuffer("positions", Positions);
+            material.SetBuffer("particles2Boundary", _particles2BoundaryBuffer);
             material.SetColor("color", color);
             material.SetFloat("diameter", ParticleDiameter);
+            material.SetMatrixArray("boundaryMatrices",_boundaryMatrices);
+            material.SetInt("useMatrix",1);
+
 
             ShadowCastingMode castShadow = ShadowCastingMode.Off;
             bool recieveShadow = false;
@@ -65,11 +78,11 @@ namespace PBDFluid
 
         public void Dispose()
         {
-            if(Positions != null)
-            {
-                Positions.Release();
-                Positions = null;
-            }
+            Positions?.Release();
+            Positions = null;
+
+            _particles2BoundaryBuffer?.Dispose();
+            _particles2BoundaryBuffer = null;
 
             CBUtility.Release(ref m_argsBuffer);
 

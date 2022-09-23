@@ -1,9 +1,8 @@
 using System;
 using System.Collections.Generic;
-
 using UnityEngine;
 
-namespace MeshVoxelizerProject
+namespace MeshVoxelizer.Scripts
 {
 
     public struct MeshRay

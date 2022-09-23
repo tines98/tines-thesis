@@ -1,23 +1,18 @@
 using System;
 using System.Collections.Generic;
-
 using UnityEngine;
 
-namespace MeshVoxelizerProject
-{
+namespace MeshVoxelizer.Scripts {
+	public class MeshVoxelizer {
+		private int Count { get; set; }
 
-    public class MeshVoxelizer
-    {
+		private int Width { get; }
 
-        public int Count { get; private set; }
+		private int Height { get; }
 
-        public int Width { get; private set; }
+		private int Depth { get; }
 
-        public int Height { get; private set; }
-
-        public int Depth { get; private set; }
-
-        public int[,,] Voxels { get; private set; }
+        public int[,,] Voxels { get; }
 
         public List<Box3> Bounds { get; private set; }
 
@@ -35,43 +30,41 @@ namespace MeshVoxelizerProject
             Array.Clear(Voxels, 0, Voxels.Length);
 
             // build an aabb tree of the mesh
-            MeshRayTracer tree = new MeshRayTracer(vertices, indices);
+            var tree = new MeshRayTracer(vertices, indices);
             Bounds = tree.GetBounds();
 
             // parity count method, single pass
-            Vector3 extents = bounds.Size;
-	        Vector3 delta = new Vector3(extents.x/Width, extents.y/Height, extents.z/Depth);
-	        Vector3 offset = new Vector3(0.5f/Width, 0.5f/Height, 0.5f/Depth);
+            var extents = bounds.Size;
+	        var delta = new Vector3(extents.x/Width, extents.y/Height, extents.z/Depth);
+	        var offset = new Vector3(0.5f/Width, 0.5f/Height, 0.5f/Depth);
 
-            float eps = 1e-7f * extents.z;
+            var eps = 1e-7f * extents.z;
 
-            for (int x = 0; x < Width; ++x)
+            for (var x = 0; x < Width; ++x)
 	        {
-		        for (int y = 0; y < Height; ++y)
+		        for (var y = 0; y < Height; ++y)
 		        {
-			        bool inside = false;
-			        Vector3 rayDir = new Vector3(0.0f, 0.0f, 1.0f);
+			        var inside = false;
+			        var rayDir = new Vector3(0.0f, 0.0f, 1.0f);
 
                      // z-coord starts somewhat outside bounds 
-			        Vector3 rayStart = bounds.Min + new Vector3(x*delta.x + offset.x, y*delta.y + offset.y, -0.0f*extents.z);
+			        var rayStart = bounds.Min + new Vector3(x*delta.x + offset.x, y*delta.y + offset.y, -0.0f*extents.z);
 
 			        while(true)
 			        {
-                        MeshRay ray = tree.TraceRay(rayStart, rayDir);
+                        var ray = tree.TraceRay(rayStart, rayDir);
 
                         if (ray.hit)
 				        {
                             // calculate cell in which intersection occurred
-                            float zpos = rayStart.z + ray.distance * rayDir.z;
-                            float zhit = (zpos - bounds.Min.z) / delta.z;
+                            var zPos = rayStart.z + ray.distance * rayDir.z;
+                            var zHit = (zPos - bounds.Min.z) / delta.z;
 
-                            int z = (int)((rayStart.z - bounds.Min.z) / delta.z);
-                            int zend = (int)Math.Min(zhit, Depth - 1);
+                            var z = (int)((rayStart.z - bounds.Min.z) / delta.z);
+                            var zEnd = (int)Math.Min(zHit, Depth - 1);
 
-                            if (inside)
-                            {
-                                for (int k = z; k <= zend; ++k)
-                                {
+                            if (inside) {
+                                for (int k = z; k <= zEnd; ++k) {
                                     Voxels[x, y, k] = 1;
                                     Count++;
                                 }
