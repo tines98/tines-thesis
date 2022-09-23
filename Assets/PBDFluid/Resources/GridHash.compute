@@ -1,8 +1,6 @@
 ﻿float HashScale;
 float3 HashSize;
 float3 HashTranslate;
-//TODO: FIX
-int Particle2Boundary[8];
 float4x4 BoundaryMatrices[8];
 
 RWStructuredBuffer<int2> IndexMap;
@@ -20,6 +18,7 @@ int Hash(float3 p)
 
 StructuredBuffer<float4> Particles;
 StructuredBuffer<float4> Boundary;
+StructuredBuffer<int> Particles2Boundary;
 
 int NumParticles;
 int TotalParticles;
@@ -40,8 +39,9 @@ void HashParticles(int id : SV_DispatchThreadID)
 	else if (id < TotalParticles)
 	{
 		int k = id - NumParticles;
-		const float4x4 boundaryVector = BoundaryMatrices[Particle2Boundary[k]];
-		const float3 p = mul(boundaryVector, Boundary[k]).xyz;
+		// const float4x4 boundaryVector = BoundaryMatrices[Particles2Boundary[k]];
+		// const float3 p = mul(boundaryVector, Boundary[k]).xyz;
+		float3 p = Boundary[k].xyz;
 		index.x = Hash(p);
 		IndexMap[id] = index;
 	}

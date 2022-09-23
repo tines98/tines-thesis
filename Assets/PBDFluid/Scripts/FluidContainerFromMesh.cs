@@ -49,8 +49,7 @@ namespace PBDFluid.Scripts
                         if (!meshHollower.Visited[x, y, z])
                             interiorVoxels.Add(voxelizerDemo.GetVoxel(x,y,z));
         }
-
-
+        
         private void CreateFluid(float radius) {
             var diameter = radius * 2;
             var exclusion = new List<Bounds>();

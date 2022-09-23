@@ -87,7 +87,7 @@ namespace MeshVoxelizer.Scripts
 
         public Matrix4x4 GetVoxelizedMeshMatrix() => voxelizedGameObject.transform.localToWorldMatrix;
 
-        public Box3 GetVoxel(int x, int y, int z, bool inWorldCoordinates = false)
+        public Box3 GetVoxel(int x, int y, int z)
         {
             var point = new Vector3(x, y, z);
             var scale = new Vector3(
@@ -98,13 +98,8 @@ namespace MeshVoxelizer.Scripts
             var min = Bounds.Min + Vector3.Scale(point, scale);
             var max = min + scale;
 
-            if (!inWorldCoordinates) return new Box3(min, max);
+            return new Box3(min, max);
 
-            var localToWorldMatrix = nonVoxelizedGameObject.transform.localToWorldMatrix;
-            return new Box3(
-                localToWorldMatrix *min,
-                localToWorldMatrix * max
-            );
         }
 
         private Mesh CreateMesh(int[,,] voxels, Vector3 scale, Vector3 min)

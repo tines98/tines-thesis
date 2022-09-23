@@ -33,7 +33,7 @@ namespace PBDFluid
         public FluidSolver(FluidBody body, Bounds simulationBounds, FluidBoundary boundary) {
             SolverIterations = 2;
             ConstraintIterations = 2;
-
+    
             Body = body;
             Boundary = boundary;
 
@@ -48,6 +48,7 @@ namespace PBDFluid
             if (numParticles % THREADS != 0) Groups++;
 
             m_shader = Resources.Load("FluidSolver") as ComputeShader;
+
         }
 
         public void Dispose()
@@ -55,7 +56,7 @@ namespace PBDFluid
             Hash.Dispose();
         }
 
-        public void StepPhysics(float dt, int[] particles2Bounds, Matrix4x4[] boundsVectors){
+        public void StepPhysics(float dt, Matrix4x4[] boundaryMatrices, ComputeBuffer particles2Bounds){
             if (dt <= 0.0) return;
             if (SolverIterations <= 0 || ConstraintIterations <= 0) return;
 
@@ -68,8 +69,7 @@ namespace PBDFluid
             m_shader.SetFloat("Density", Body.Density);
             m_shader.SetFloat("Viscosity", Body.Viscosity);
             m_shader.SetFloat("ParticleMass", Body.ParticleMass);
-            m_shader.SetInts("Particles2Boundary", particles2Bounds);
-            m_shader.SetMatrixArray("BoundaryMatrices", boundsVectors);
+            m_shader.SetMatrixArray("BoundaryMatrices", boundaryMatrices);
 
             m_shader.SetFloat("KernelRadius", Kernel.Radius);
             m_shader.SetFloat("KernelRadius2", Kernel.Radius2);
@@ -90,9 +90,9 @@ namespace PBDFluid
             for (int i = 0; i < SolverIterations; i++)
             {
                 PredictPositions(dt);
-                Hash.Process(Body.Predicted[READ], Boundary.Positions, particles2Bounds, boundsVectors);
+                Hash.Process(Body.Predicted[READ], Boundary.Positions,particles2Bounds, boundaryMatrices);
 
-                ConstrainPositions();
+                ConstrainPositions(particles2Bounds);
                 UpdateVelocities(dt);
                 SolveViscosity();
                 UpdatePositions();
@@ -114,18 +114,20 @@ namespace PBDFluid
             Swap(Body.Velocities);
         }
 
-        public void ConstrainPositions(){
+        public void ConstrainPositions(ComputeBuffer particles2Bounds){
             int computeKernel = m_shader.FindKernel("ComputeDensity");
             int solveKernel = m_shader.FindKernel("SolveConstraint");
 
             m_shader.SetBuffer(computeKernel, "Densities", Body.Densities);
             m_shader.SetBuffer(computeKernel, "Pressures", Body.Pressures);
             m_shader.SetBuffer(computeKernel, "Boundary", Boundary.Positions);
+            m_shader.SetBuffer(computeKernel, "Particles2Boundary", particles2Bounds);
             m_shader.SetBuffer(computeKernel, "IndexMap", Hash.IndexMap);
             m_shader.SetBuffer(computeKernel, "Table", Hash.Table);
 
             m_shader.SetBuffer(solveKernel, "Pressures", Body.Pressures);
             m_shader.SetBuffer(solveKernel, "Boundary", Boundary.Positions);
+            m_shader.SetBuffer(solveKernel, "Particles2Boundary", particles2Bounds);
             m_shader.SetBuffer(solveKernel, "IndexMap", Hash.IndexMap);
             m_shader.SetBuffer(solveKernel, "Table", Hash.Table);
 

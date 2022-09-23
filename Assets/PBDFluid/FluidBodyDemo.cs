@@ -127,7 +127,7 @@ namespace PBDFluid
             }
             if (m_run){
                 //TODO: fix particles2Bounds and boundsVectors 
-                m_solver.StepPhysics(timeStep,new int[2],new Matrix4x4[2]);
+                m_solver.StepPhysics(timeStep,new Matrix4x4[2],null);
                 m_volume.FillVolume(m_fluid, m_solver.Hash, m_solver.Kernel);
             }
 

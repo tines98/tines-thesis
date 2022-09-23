@@ -45,7 +45,7 @@ namespace PBDFluid
         private RenderVolume volume;
         private bool wasError;
         private ParticlesFromSeveralBounds particleSource;
-        private int[] particles2Bounds;
+        private ComputeBuffer particles2Bounds;
         private FluidContainerFromMesh fluidContainerFromMesh;
 
         // ReSharper disable Unity.PerformanceAnalysis
@@ -109,7 +109,7 @@ namespace PBDFluid
             }
             if (run) {
                 // ReSharper disable once Unity.PerformanceCriticalCodeInvocation
-                solver.StepPhysics(TimeStep, particles2Bounds, BoundsMatricesAsMatrix());
+                solver.StepPhysics(TimeStep, BoundsMatricesAsMatrixArray(),particles2Bounds);
                 volume.FillVolume(fluid, solver.Hash, solver.Kernel);
             }
 
@@ -121,24 +121,24 @@ namespace PBDFluid
                 fluid.Draw(mainCamera, sphereMesh, fluidParticleMat, 0);
         }
 
-        private void OnDestroy()
-        {
+        private void OnDestroy() {
             boundary?.Dispose();
-            fluid.Dispose();
-            solver.Dispose();
-            volume.Dispose();
+            fluid?.Dispose();
+            solver?.Dispose();
+            volume?.Dispose();
         }
 
-        private Matrix4x4[] BoundsMatricesAsMatrix() {
+        private Matrix4x4[] BoundsMatricesAsMatrixArray() {
             var extra = fluidBounds.IsFinished() ? 1 : 0;
             var result = new Matrix4x4[boundsMatrices.Length + extra];
+            var localToWorldMatrix = transform.localToWorldMatrix;
             
             int i;
             for (i = 0; i < boundsMatrices.Length; i++)
-                result[i] = transform.localToWorldMatrix * boundsMatrices[i].GetMatrix();
+                result[i] = boundsMatrices[i].GetMatrix();
             
             if (extra>0)
-                result[i] = transform.localToWorldMatrix * fluidBounds.GetVoxelizedMeshMatrix();
+                result[i] = fluidBounds.GetVoxelizedMeshMatrix();
             
             return result;
         }
@@ -187,9 +187,10 @@ namespace PBDFluid
             
             particleSource = new ParticlesFromSeveralBounds(radius * 2, particlesFromBoundsArray);
             particleSource.CreateParticles();
-            
-            particles2Bounds = particleSource.Particle2MatrixMap.ToArray();
-            boundary = new FluidBoundary(particleSource, radius, density, particles2Bounds, BoundsMatricesAsMatrix());
+
+            particles2Bounds = new ComputeBuffer(particleSource.Particle2MatrixMap.Count, sizeof(int));
+            particles2Bounds.SetData(particleSource.Particle2MatrixMap.ToArray());
+            boundary = new FluidBoundary(particleSource, radius, density, particles2Bounds, BoundsMatricesAsMatrixArray());
         }
         
         private void CreateFluid() {
@@ -222,7 +223,7 @@ namespace PBDFluid
         
         private void DrawBoundariesGizmo()
         {
-            var a = BoundsMatricesAsMatrix();
+            var a = BoundsMatricesAsMatrixArray();
             for (var i = 0; i < a.Length; i++) {
                 // var pos = transform.position + boundsMatrices[i].position;
                 var pos = a[i].MultiplyPoint(Vector3.zero);
