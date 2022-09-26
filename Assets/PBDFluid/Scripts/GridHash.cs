@@ -108,7 +108,7 @@ namespace PBDFluid
             }
         }
 
-        public void Process(ComputeBuffer particles, ComputeBuffer particles2Bounds)
+        public void Process(ComputeBuffer particles)
         {
             if (particles.count != TotalParticles)
                 throw new ArgumentException("particles.Length != TotalParticles");
@@ -124,7 +124,6 @@ namespace PBDFluid
 
             m_shader.SetBuffer(m_hashKernel, "Particles", particles);
             m_shader.SetBuffer(m_hashKernel, "Boundary", particles); //unity 2018 complains if boundary not set in kernel
-            m_shader.SetBuffer(m_hashKernel, "Particles2Boundary", particles2Bounds);
             m_shader.SetBuffer(m_hashKernel, "IndexMap", IndexMap);
 
             //Assign the particles hash to x and index to y.
@@ -133,7 +132,7 @@ namespace PBDFluid
             MapTable();
         }
 
-        public void Process(ComputeBuffer particles, ComputeBuffer boundary, ComputeBuffer particle2Boundary, Matrix4x4[] boundaryVectors)
+        public void Process(ComputeBuffer particles, ComputeBuffer boundary)
         {
             int numParticles = particles.count;
             int numBoundary = boundary.count;
@@ -148,12 +147,10 @@ namespace PBDFluid
             m_shader.SetFloat("HashScale", InvCellSize);
             m_shader.SetVector("HashSize", Bounds.size);
             m_shader.SetVector("HashTranslate", Bounds.min);
-            m_shader.SetMatrixArray("BoundaryMatrices", boundaryVectors);
 
             m_shader.SetBuffer(m_hashKernel, "Particles", particles);
             m_shader.SetBuffer(m_hashKernel, "Boundary", boundary);
             m_shader.SetBuffer(m_hashKernel, "IndexMap", IndexMap);
-            m_shader.SetBuffer(m_hashKernel, "Particles2Boundary", particle2Boundary);
 
             //Assign the particles hash to x and index to y.
             m_shader.Dispatch(m_hashKernel, Groups, 1, 1);

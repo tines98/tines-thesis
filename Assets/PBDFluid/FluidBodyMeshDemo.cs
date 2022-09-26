@@ -1,7 +1,9 @@
+using System;
 using UnityEngine;
 using System.Collections.Generic;
 using MeshVoxelizer.Scripts;
 using PBDFluid.Scripts;
+using UnityEngine.Assertions;
 
 namespace PBDFluid
 {
@@ -13,9 +15,7 @@ namespace PBDFluid
         [SerializeField] private Camera mainCamera;
         [SerializeField] private Bounds simulationBounds;
         
-        [SerializeField] private VoxelizerDemo fluidBounds;
-        [SerializeField] private SerializedMatrix[] boundsMatrices; 
-        [SerializeField] private List<Vector3> boundarySizes;
+        // [SerializeField] private VoxelizerDemo fluidBounds;
 
         [Header("Materials")]
         [SerializeField] private Material fluidParticleMat;
@@ -27,16 +27,17 @@ namespace PBDFluid
         [SerializeField] private bool drawBoundaryParticles;
         [SerializeField] private bool drawFluidParticles;
         [SerializeField] private bool drawFluidVolume;
-        [SerializeField] private bool drawExteriorVoxels; 
-        [SerializeField] private bool drawInteriorVoxels;
+        [SerializeField] private bool drawSimulationBounds;
         
         [Header("Simulation Settings")]
         [SerializeField] private SIMULATION_SIZE simulationSize = SIMULATION_SIZE.MEDIUM;
         [SerializeField] private bool run = true;
         [SerializeField] private Mesh sphereMesh;
+
+        private FluidBoundaryObject[] fluidBoundaryObjects;
+        private FluidObject[] fluidObjects;
         
-        private float radius = 0.01f;
-        private float density;
+        [NonSerialized] private const float Density = 1000.0f;
 
         private bool hasStarted;
         private FluidBody fluid;
@@ -44,52 +45,29 @@ namespace PBDFluid
         private FluidSolver solver;
         private RenderVolume volume;
         private bool wasError;
-        private ParticlesFromSeveralBounds particleSource;
-        private ComputeBuffer particles2Bounds;
-        private FluidContainerFromMesh fluidContainerFromMesh;
+
+        /**
+         * TODO:
+         * I have changed to a system where i get fluidBoundary components from child gameobjects within this gameobject
+         * They are still offset but still work
+         */
 
         // ReSharper disable Unity.PerformanceAnalysis
-        private void StartDemo()
-        {
-            radius = 0.08f;
-            density = 1000.0f;
+        private void StartDemo() {
+            try {
+                GetFluidBoundaryObjects();
+                GetFluidObjects();
+                Debug.Log($"found {fluidBoundaryObjects.Length} fluidBoundaryObjects!");
+                Debug.Log($"found {fluidObjects.Length} fluidObjects!");
 
-            //A smaller radius means more particles.
-            //If the number of particles is to low or high
-            //the bitonic sort shader will throw a exception 
-            //as it has a set range it can handle but this 
-            //can be manually changes in the BitonicSort.cs script.
-
-            //A smaller radius may also require more solver steps
-            //as the boundary is thinner and the fluid many step
-            //through and leak out.
-
-            switch(simulationSize)
-            {
-                case SIMULATION_SIZE.LOW:
-                    radius = 0.1f;
-                    break;
-
-                case SIMULATION_SIZE.MEDIUM:
-                    radius = 0.08f;
-                    break;
-
-                case SIMULATION_SIZE.HIGH:
-                    radius = 0.06f;
-                    break;
-            }
-
-            try
-            {
-                fluidContainerFromMesh = new FluidContainerFromMesh(fluidBounds, radius, density);
-                CreateBoundaries();
                 CreateFluid();
+                CreateBoundary();
                 
                 var bounds = simulationBounds;
                 fluid.Bounds = bounds;
                 solver = new FluidSolver(fluid, bounds, boundary);
 
-                volume = new RenderVolume(bounds, radius);
+                volume = new RenderVolume(bounds, Radius());
                 volume.CreateMesh(volumeMat);
             }
             catch{
@@ -97,19 +75,47 @@ namespace PBDFluid
                 throw;
             }
             hasStarted = true;
-            fluidBounds.HideVoxelizedMesh();
         }
+        
+        /**Adjusts the Radius based on the SIMULATION_SIZE enum.
+            A smaller radius means more particles.
+            If the number of particles is to low or high
+            the bitonic sort shader will throw a exception
+            as it has a set range it can handle but this can be manually changes in the BitonicSort.cs script.
 
-        private void Update()
-        {
+            A smaller radius may also require more solver steps
+            as the boundary is thinner and the fluid many step
+            through and leak out.
+         */
+        public float Radius() =>  simulationSize switch {
+            SIMULATION_SIZE.LOW => 0.1f,
+            SIMULATION_SIZE.MEDIUM => 0.08f,
+            SIMULATION_SIZE.HIGH => 0.06f,
+            _ => 0.08f
+        };
+
+        // ReSharper disable Unity.PerformanceAnalysis
+        /**
+         * Gets all FluidBoundaryObjects components in children
+         */
+        private void GetFluidBoundaryObjects() => fluidBoundaryObjects = GetComponentsInChildren<FluidBoundaryObject>();
+        
+        // ReSharper disable Unity.PerformanceAnalysis
+        private void GetFluidObjects() => fluidObjects = GetComponentsInChildren<FluidObject>();
+
+        private void Update() {
             if(wasError) return;
             if (!hasStarted){
-                if (run) StartDemo();
+                if (run)
+                {
+                    StartDemo();
+                }
+
                 return;
             }
             if (run) {
                 // ReSharper disable once Unity.PerformanceCriticalCodeInvocation
-                solver.StepPhysics(TimeStep, BoundsMatricesAsMatrixArray(),particles2Bounds);
+                solver.StepPhysics(TimeStep);
                 volume.FillVolume(fluid, solver.Hash, solver.Kernel);
             }
 
@@ -128,21 +134,6 @@ namespace PBDFluid
             volume?.Dispose();
         }
 
-        private Matrix4x4[] BoundsMatricesAsMatrixArray() {
-            var extra = fluidBounds.IsFinished() ? 1 : 0;
-            var result = new Matrix4x4[boundsMatrices.Length + extra];
-            var localToWorldMatrix = transform.localToWorldMatrix;
-            
-            int i;
-            for (i = 0; i < boundsMatrices.Length; i++)
-                result[i] = boundsMatrices[i].GetMatrix();
-            
-            if (extra>0)
-                result[i] = fluidBounds.GetVoxelizedMeshMatrix();
-            
-            return result;
-        }
-
         private void OnRenderObject() {
             var cam = Camera.current;
             if (cam != Camera.main) return;
@@ -151,86 +142,35 @@ namespace PBDFluid
                 solver.Hash.DrawGrid(cam, Color.yellow);
         }
 
-        private ParticlesFromBounds CreateBoundary(Bounds bounds)
-        {
-            Bounds outerBounds = new Bounds();
-            var center = bounds.center;
-            var size = bounds.size;
-            outerBounds.SetMinMax(center-(size/2.0f), center+(size/2.0f));
-                
-            //Make the boundary 1 particle thick.
-            //The multiple by 1.2 adds a little of extra
-            //thickness in case the radius does not evenly
-            //divide into the bounds size. You might have
-            //particles missing from one side of the source
-            //bounds other wise.
-            const float thickness = 1;
-            var diameter = radius * 2;
-            size.x -= diameter * thickness * 1.2f;
-            size.y -= diameter * thickness * 1.2f;
-            size.z -= diameter * thickness * 1.2f;
-            var innerBounds = new Bounds();
-            innerBounds.SetMinMax(center-(size/2.0f), center+(size/2.0f));
-            //The source will create a array of particles
-            //evenly spaced between the inner and outer bounds.
-            return new ParticlesFromBounds(diameter, outerBounds,innerBounds);
-        }
-        private void CreateBoundaries() {
-            var particlesFromBoundsArray = new ParticleSource[boundarySizes.Count +1 ];
-            int i;
-            for (i=0; i < boundarySizes.Count; i++)
-            {
-                var bound = new Bounds(boundsMatrices[i].position, boundarySizes[i]);
-                particlesFromBoundsArray[i] = CreateBoundary(bound);
-            }
-            particlesFromBoundsArray[i] = fluidContainerFromMesh.BoundaryParticleSource;
-            
-            particleSource = new ParticlesFromSeveralBounds(radius * 2, particlesFromBoundsArray);
+        private void CreateBoundary() {
+            var particleSources = new ParticleSource[fluidBoundaryObjects.Length];
+            for (var index = 0; index < fluidBoundaryObjects.Length; index++)
+                particleSources[index] = fluidBoundaryObjects[index].ParticleSource;
+            var particleSource = new ParticlesFromSeveralBounds(Radius() * 2, particleSources);
             particleSource.CreateParticles();
-
-            particles2Bounds = new ComputeBuffer(particleSource.Particle2MatrixMap.Count, sizeof(int));
-            particles2Bounds.SetData(particleSource.Particle2MatrixMap.ToArray());
-            boundary = new FluidBoundary(particleSource, radius, density, particles2Bounds, BoundsMatricesAsMatrixArray());
+            boundary = new FluidBoundary(particleSource,Radius(),Density);
         }
         
-        private void CreateFluid() {
-            fluidContainerFromMesh.FluidParticleSource.CreateParticles();
-            fluid = new FluidBody(fluidContainerFromMesh.FluidParticleSource, radius, density,fluidBounds.GetVoxelizedMeshMatrix());
+        
+        private void CreateFluid()
+        {
+            var particleSources = new ParticleSource[fluidObjects.Length];
+            for (var index = 0; index < fluidObjects.Length; index++)
+                particleSources[index] = fluidObjects[index].ParticleSource;
+            Assert.IsTrue(particleSources.Length > 0);
+            var particleSource = new ParticlesFromSeveralBounds(Radius() * 2, particleSources);
+            particleSource.CreateParticles();
+            fluid = new FluidBody(particleSource, Radius(), Density, transform.localToWorldMatrix);
         }
         
         private void OnDrawGizmos() {
             //Simulation Bounds
             Gizmos.color = Color.yellow;
-            DrawSimulationBounds();
-
-            //Extra Boundaries
-            Gizmos.color = Color.green;
-            DrawBoundariesGizmo();
-            
-            //Interior Voxels
-            Gizmos.color = Color.blue;
-            if (drawInteriorVoxels)
-                fluidContainerFromMesh?.DrawInteriorVoxelsGizmo();
-
-            //Exterior Voxels
-            Gizmos.color = Color.green;
-            if (drawExteriorVoxels) 
-                fluidContainerFromMesh?.DrawExteriorVoxelsGizmo();
+            if (drawSimulationBounds) DrawSimulationBounds();
         }
 
         private void DrawSimulationBounds() => 
             Gizmos.DrawWireCube(transform.position+simulationBounds.center,simulationBounds.size);
-        
-        private void DrawBoundariesGizmo()
-        {
-            var a = BoundsMatricesAsMatrixArray();
-            for (var i = 0; i < a.Length; i++) {
-                // var pos = transform.position + boundsMatrices[i].position;
-                var pos = a[i].MultiplyPoint(Vector3.zero);
-                var size = i < boundarySizes.Count ? boundarySizes[i] : Vector3.one;
-                CustomGizmos.DrawRotatableCubeGizmo(a[i],pos,size);
-            }
-        }
 
     }
 }

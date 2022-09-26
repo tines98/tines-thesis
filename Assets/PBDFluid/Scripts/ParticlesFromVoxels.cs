@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using MeshVoxelizer.Scripts;
 using UnityEngine;
+using UnityEngine.Assertions;
 
 namespace PBDFluid.Scripts
 {
@@ -13,24 +15,19 @@ namespace PBDFluid.Scripts
         {
             this.voxels = voxels;
             voxelSize = voxels[0].Size;
+            Assert.IsFalse(AreVoxelsSmallerThanRadius(),$"Voxels are too small, voxel size is {voxelSize}, and can't be smaller than {Spacing}");
+            Positions = new List<Vector3>();
         }
 
-        public override void CreateParticles()
-        {
-            Positions = new List<Vector3>();
-            foreach (var voxel in voxels) {
-                CreateParticlesInVoxel(voxel);
-            }
-        }
+        public override void CreateParticles() => voxels.ForEach(voxel => CreateParticlesInVoxel(voxel));
 
         private void CreateParticlesInVoxel(Box3 voxel)
         {
             int numX = (int)((voxel.Size.x + HalfSpacing) / Spacing);
             int numY = (int)((voxel.Size.y + HalfSpacing) / Spacing);
             int numZ = (int)((voxel.Size.z + HalfSpacing) / Spacing);
-
-            Positions = new List<Vector3>();
-
+            Assert.IsTrue(numX>0 || numY>0 || numZ>0, "Voxel too small for particle size");
+            
             for (int z = 0; z < numZ; z++)
             {
                 for (int y = 0; y < numY; y++)
@@ -46,5 +43,10 @@ namespace PBDFluid.Scripts
                 }
             }
         }
+
+        private bool AreVoxelsSmallerThanRadius() => voxelSize.x < Spacing 
+                                            || voxelSize.y < Spacing
+                                            || voxelSize.z < Spacing;
     }
+    
 }

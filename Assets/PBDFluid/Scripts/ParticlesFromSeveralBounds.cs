@@ -18,7 +18,8 @@ namespace PBDFluid.Scripts
             Positions = new List<Vector3>();
             Particle2MatrixMap = new List<int>();
             for (var boundsIdx = 0; boundsIdx < particleSources.Length; boundsIdx++){
-                particleSources[boundsIdx].CreateParticles();
+                if (particleSources[boundsIdx].NumParticles == 0) 
+                    particleSources[boundsIdx].CreateParticles();
                 for (var particleIdx = 0; particleIdx < particleSources[boundsIdx].NumParticles; particleIdx++) {
                     Positions.Add(particleSources[boundsIdx].Positions[particleIdx]);
                     Particle2MatrixMap.Add(boundsIdx);

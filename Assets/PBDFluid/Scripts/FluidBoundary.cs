@@ -27,21 +27,15 @@ namespace PBDFluid
 
         private ParticleSource source;
 
-        private ComputeBuffer _particles2Boundary;
-        private Matrix4x4[] _boundaryMatrices;
-
-        public FluidBoundary(ParticleSource source, float radius, float density, ComputeBuffer particles2Boundary, Matrix4x4[] boundaryMatrices)
+        public FluidBoundary(ParticleSource source, float radius, float density)
         {
             this.source = source;
             NumParticles = source.NumParticles;
             ParticleRadius = radius;
             Density = density;
 
-            _particles2Boundary = particles2Boundary;
-            _boundaryMatrices = boundaryMatrices;
-
             CreateParticles();
-            CreateBoundryPsi(particles2Boundary,boundaryMatrices);
+            CreateBoundryPsi();
         }
         
         
@@ -54,10 +48,8 @@ namespace PBDFluid
                 CreateArgBuffer(mesh.GetIndexCount(0));
 
             material.SetBuffer("positions", Positions);
-            material.SetBuffer("particles2Boundary", _particles2Boundary);
             material.SetColor("color", color);
             material.SetFloat("diameter", ParticleDiameter);
-            material.SetMatrixArray("boundaryMatrices",_boundaryMatrices);
             material.SetInt("useMatrix",1);
 
 
@@ -71,9 +63,6 @@ namespace PBDFluid
         {
             Positions?.Release();
             Positions = null;
-
-            _particles2Boundary?.Dispose();
-            _particles2Boundary = null;
 
             CBUtility.Release(ref m_argsBuffer);
 
@@ -120,7 +109,7 @@ namespace PBDFluid
 
             Bounds = new Bounds();
             Bounds.SetMinMax(min, max);
-
+            Debug.Log($"num particles is {NumParticles}");
             Positions = new ComputeBuffer(NumParticles, 4 * sizeof(float));
             Positions.SetData(positions);
 
@@ -136,14 +125,14 @@ namespace PBDFluid
             m_argsBuffer.SetData(args);
         }
 
-        private void CreateBoundryPsi(ComputeBuffer particles2Boundary, Matrix4x4[] boundaryMatrices)
+        private void CreateBoundryPsi()
         {
 
             float cellSize = ParticleRadius * 4.0f;
             SmoothingKernel K = new SmoothingKernel(cellSize);
 
-            GridHash grid = new GridHash(Bounds, NumParticles, cellSize);
-            grid.Process(Positions, particles2Boundary);
+                GridHash grid = new GridHash(Bounds, NumParticles, cellSize);
+            grid.Process(Positions);
 
             ComputeShader shader = Resources.Load("FluidBoundary") as ComputeShader;
 
@@ -155,7 +144,6 @@ namespace PBDFluid
             shader.SetFloat("Poly6", K.POLY6);
             shader.SetFloat("Poly6Zero", K.Poly6(Vector3.zero));
             shader.SetInt("NumParticles", NumParticles);
-            shader.SetMatrixArray("BoundaryMatrices", boundaryMatrices);
 
             shader.SetFloat("HashScale", grid.InvCellSize);
             shader.SetVector("HashSize", grid.Bounds.size);
@@ -164,7 +152,6 @@ namespace PBDFluid
             shader.SetBuffer(kernel, "Table", grid.Table);
 
             shader.SetBuffer(kernel, "Boundary", Positions);
-            shader.SetBuffer(kernel,"Particles2Boundary", particles2Boundary);
 
             int groups = NumParticles / THREADS;
             if (NumParticles % THREADS != 0) groups++;

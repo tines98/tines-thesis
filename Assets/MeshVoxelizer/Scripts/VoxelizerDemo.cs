@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using PBDFluid.Scripts;
 using UnityEngine;
+using UnityEngine.Assertions;
 
 namespace MeshVoxelizer.Scripts
 {
@@ -31,20 +33,21 @@ namespace MeshVoxelizer.Scripts
                 filter = GetComponentInChildren<MeshFilter>();
                 meshRenderer = GetComponentInChildren<MeshRenderer>();
             }
-
+            
             if (filter == null || meshRenderer == null) return;
-
             meshRenderer.enabled = false;
 
             var mesh = filter.mesh;
+            Assert.IsNotNull(mesh);
             var mat = meshRenderer.material;
             nonVoxelizedGameObject = filter.gameObject;
 
-            var localScale = nonVoxelizedGameObject.transform.localScale;
-            var scaledMin = Vector3.Scale(mesh.bounds.min , localScale);
-            var scaledMax = Vector3.Scale(mesh.bounds.max , localScale);
+            var objScale = nonVoxelizedGameObject.transform.localScale;
+            var scaledMin = Vector3.Scale(mesh.bounds.min , objScale);
+            var scaledMax = Vector3.Scale(mesh.bounds.max , objScale);
+            Debug.Log($"scaledMin {scaledMin}, scaledMax {scaledMax}");
             Bounds = new Box3(scaledMin, scaledMax);
-
+            
             Voxelizer = new MeshVoxelizer(size.x, size.y, size.z);
             Voxelizer.Voxelize(mesh.vertices, mesh.triangles, Bounds);
 
@@ -56,26 +59,35 @@ namespace MeshVoxelizer.Scripts
 
             mesh = CreateMesh(Voxelizer.Voxels, scale, Bounds.Min);
 
+            CreateVoxelizedGameObject(mesh, mat, objScale);
+
+            Debug.Log($"Num Voxels is {Voxels.Count}");
+        }
+
+        private void CreateVoxelizedGameObject(Mesh mesh, Material mat, Vector3 scale)
+        {
             voxelizedGameObject = new GameObject("Voxelized") {
                 transform = {
                     parent = transform,
                     position = nonVoxelizedGameObject.transform.position,
                     rotation = nonVoxelizedGameObject.transform.rotation,
-                    localScale = localScale
+                    localScale = scale
                 }
             };
 
-            filter = voxelizedGameObject.AddComponent<MeshFilter>();
-            meshRenderer = voxelizedGameObject.AddComponent<MeshRenderer>();
+            var filter = voxelizedGameObject.AddComponent<MeshFilter>();
+            var meshRenderer = voxelizedGameObject.AddComponent<MeshRenderer>();
 
             filter.mesh = mesh;
             meshRenderer.material = mat;
 
-            Debug.Log($"Num Voxels is {Voxels.Count}");
+            var fluidContainerizer = voxelizedGameObject.AddComponent<FluidContainerizer>();
+            var fluidBoundaryVoxels = voxelizedGameObject.AddComponent<FluidBoundaryVoxels>();
+            var fluidVoxels = voxelizedGameObject.AddComponent<FluidVoxels>();
+            
         }
 
-        private void OnRenderObject()
-        {
+        private void OnRenderObject() {
             if (drawAABBTree) 
                 Voxelizer?.Bounds.ForEach(box => DrawLines.DrawBounds(Camera.current, Color.red, box, transform.localToWorldMatrix));
         }
@@ -91,15 +103,16 @@ namespace MeshVoxelizer.Scripts
         {
             var point = new Vector3(x, y, z);
             var scale = new Vector3(
-                Bounds.Min.x / size.x,
-                Bounds.Min.y / size.y,
-                Bounds.Min.z / size.z
+                Bounds.Size.x / size.x,
+                Bounds.Size.y / size.y,
+                Bounds.Size.z / size.z
             );
+            Assert.IsTrue(size.x > 0 || size.y > 0 || size.z > 0, "Size is 0");
+            Assert.IsTrue(scale.x > 0 || scale.y > 0 || scale.z > 0, "Scale is 0");
             var min = Bounds.Min + Vector3.Scale(point, scale);
             var max = min + scale;
-
-            return new Box3(min, max);
-
+            var box = new Box3(min, max);
+            return box;
         }
 
         private Mesh CreateMesh(int[,,] voxels, Vector3 scale, Vector3 min)
