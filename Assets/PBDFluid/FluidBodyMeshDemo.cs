@@ -11,12 +11,10 @@ namespace PBDFluid
     {
         //Constants
         private const float TimeStep = 1.0f / 60.0f;
-        //Serialized Fields
+        
         [SerializeField] private Camera mainCamera;
         [SerializeField] private Bounds simulationBounds;
         
-        // [SerializeField] private VoxelizerDemo fluidBounds;
-
         [Header("Materials")]
         [SerializeField] private Material fluidParticleMat;
         [SerializeField] private Material boundaryParticleMat;
@@ -106,11 +104,7 @@ namespace PBDFluid
         private void Update() {
             if(wasError) return;
             if (!hasStarted){
-                if (run)
-                {
-                    StartDemo();
-                }
-
+                if (run) StartDemo();
                 return;
             }
             if (run) {
@@ -150,8 +144,7 @@ namespace PBDFluid
             particleSource.CreateParticles();
             boundary = new FluidBoundary(particleSource,Radius(),Density);
         }
-        
-        
+
         private void CreateFluid()
         {
             var particleSources = new ParticleSource[fluidObjects.Length];
