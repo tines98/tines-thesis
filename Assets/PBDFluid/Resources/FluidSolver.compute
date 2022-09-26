@@ -1,11 +1,9 @@
 ﻿
-
+#define NUM_MATRICES 8
 float HashScale;
 float3 HashSize;
 float3 HashTranslate;
-//TODO: Do something about these static arrays
-int Particles2Boundary[8];
-float4x4 BoundaryMatrices[8];
+float4x4 BoundaryMatrices[NUM_MATRICES];
 
 RWStructuredBuffer<int2> IndexMap;
 RWStructuredBuffer<int2> Table;
@@ -63,6 +61,7 @@ RWStructuredBuffer<float> Densities;
 RWStructuredBuffer<float> Pressures;
 
 StructuredBuffer<float4> Boundary;
+StructuredBuffer<int> Particles2Boundary;
 
 float3 Gravity;
 float Dampning;

@@ -1,8 +1,7 @@
-using UnityEngine;
-using System;
 using System.Collections.Generic;
+using UnityEngine;
 
-namespace MeshVoxelizerProject
+namespace MeshVoxelizer.Scripts
 {
 
     public static class DrawLines

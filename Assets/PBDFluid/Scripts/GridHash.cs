@@ -132,7 +132,7 @@ namespace PBDFluid
             MapTable();
         }
 
-        public void Process(ComputeBuffer particles, ComputeBuffer boundary, int[] particle2Boundary, Matrix4x4[] boundaryVectors)
+        public void Process(ComputeBuffer particles, ComputeBuffer boundary)
         {
             int numParticles = particles.count;
             int numBoundary = boundary.count;
@@ -147,8 +147,6 @@ namespace PBDFluid
             m_shader.SetFloat("HashScale", InvCellSize);
             m_shader.SetVector("HashSize", Bounds.size);
             m_shader.SetVector("HashTranslate", Bounds.min);
-            m_shader.SetInts("Particle2Boundary",particle2Boundary);
-            m_shader.SetMatrixArray("BoundaryMatrices", boundaryVectors);
 
             m_shader.SetBuffer(m_hashKernel, "Particles", particles);
             m_shader.SetBuffer(m_hashKernel, "Boundary", boundary);

@@ -1,278 +1,169 @@
+using System;
 using UnityEngine;
 using System.Collections.Generic;
-using MeshVoxelizerProject;
+using MeshVoxelizer.Scripts;
+using PBDFluid.Scripts;
+using UnityEngine.Assertions;
 
 namespace PBDFluid
 {
     public class FluidBodyMeshDemo : MonoBehaviour
     {
         //Constants
-        private const float timeStep = 1.0f / 60.0f;
-        //Serialized Fields
-        public Camera m_mainCamera;
-        public Bounds simulationBounds;
+        private const float TimeStep = 1.0f / 60.0f;
         
-        public VoxelizerDemo fluidBounds;
-        public SerializedMatrix[] boundsMatrices; 
-        public List<Vector3> boundarySizes;
-
+        [SerializeField] private Camera mainCamera;
+        [SerializeField] private Bounds simulationBounds;
+        
         [Header("Materials")]
-        public Material m_fluidParticleMat;
-        public Material m_boundaryParticleMat;
-        public Material m_volumeMat;
-
-        [Header("Render Booleans")]
-        public bool m_drawLines = true;
-        public bool m_drawGrid = false;
-        public bool m_drawBoundaryParticles = false;
-        public bool m_drawFluidParticles = false;
-        public bool m_drawFluidVolume = true;
-        public bool m_drawBoundaryBoxes;
-
-        [Header("Simulation Settings")]
-        public SIMULATION_SIZE m_simulationSize = SIMULATION_SIZE.MEDIUM;
-        public bool m_run = true;
-        public Mesh m_sphereMesh;
+        [SerializeField] private Material fluidParticleMat;
+        [SerializeField] private Material boundaryParticleMat;
+        [SerializeField] private Material volumeMat;
         
-        private float radius = 0.01f;
-        private float density;
+        [Header("Render Booleans")]
+        [SerializeField] private bool drawGrid;
+        [SerializeField] private bool drawBoundaryParticles;
+        [SerializeField] private bool drawFluidParticles;
+        [SerializeField] private bool drawFluidVolume;
+        [SerializeField] private bool drawSimulationBounds;
+        
+        [Header("Simulation Settings")]
+        [SerializeField] private SIMULATION_SIZE simulationSize = SIMULATION_SIZE.MEDIUM;
+        [SerializeField] private bool run = true;
+        [SerializeField] private Mesh sphereMesh;
 
-        private bool m_hasStarted;
-        private FluidBody m_fluid;
-        private FluidBoundary m_boundary;
-        private FluidSolver m_solver;
-        private RenderVolume m_volume;
+        private FluidBoundaryObject[] fluidBoundaryObjects;
+        private FluidObject[] fluidObjects;
+        
+        [NonSerialized] private const float Density = 1000.0f;
+
+        private bool hasStarted;
+        private FluidBody fluid;
+        private FluidBoundary boundary;
+        private FluidSolver solver;
+        private RenderVolume volume;
         private bool wasError;
-        private ParticlesFromSeveralBounds particleSource;
-        private int[] particles2Bounds;
-        private FluidContainerFromMesh m_fluidContainerFromMesh;
 
-        private void StartDemo()
-        {
-            radius = 0.08f;
-            density = 1000.0f;
+        /**
+         * TODO:
+         * I have changed to a system where i get fluidBoundary components from child gameobjects within this gameobject
+         * They are still offset but still work
+         */
 
-            //A smaller radius means more particles.
-            //If the number of particles is to low or high
-            //the bitonic sort shader will throw a exception 
-            //as it has a set range it can handle but this 
-            //can be manually changes in the BitonicSort.cs script.
+        // ReSharper disable Unity.PerformanceAnalysis
+        private void StartDemo() {
+            try {
+                GetFluidBoundaryObjects();
+                GetFluidObjects();
+                Debug.Log($"found {fluidBoundaryObjects.Length} fluidBoundaryObjects!");
+                Debug.Log($"found {fluidObjects.Length} fluidObjects!");
 
-            //A smaller radius may also requre more solver steps
-            //as the boundary is thinner and the fluid many step
-            //through and leak out.
-
-            switch(m_simulationSize)
-            {
-                case SIMULATION_SIZE.LOW:
-                    radius = 0.1f;
-                    break;
-
-                case SIMULATION_SIZE.MEDIUM:
-                    radius = 0.08f;
-                    break;
-
-                case SIMULATION_SIZE.HIGH:
-                    radius = 0.06f;
-                    break;
-            }
-
-            try
-            {
-                m_fluidContainerFromMesh = new FluidContainerFromMesh(fluidBounds, radius, density);
-                CreateBoundaries();
-                // CreateFluid(radius, density);
-                m_fluid = new FluidBody(m_fluidContainerFromMesh.FluidParticlesFromBounds, radius, density,fluidBounds.GetVoxelizedMeshMatrix());
+                CreateFluid();
+                CreateBoundary();
                 
                 var bounds = simulationBounds;
-                m_fluid.Bounds = bounds;
-                m_solver = new FluidSolver(m_fluid, bounds, m_boundary);
+                fluid.Bounds = bounds;
+                solver = new FluidSolver(fluid, bounds, boundary);
 
-                m_volume = new RenderVolume(bounds, radius);
-                m_volume.CreateMesh(m_volumeMat);
+                volume = new RenderVolume(bounds, Radius());
+                volume.CreateMesh(volumeMat);
             }
             catch{
                 wasError = true;
                 throw;
             }
-            m_hasStarted = true;
-            fluidBounds.HideVoxelizedMesh();
-        }
-
-        private void Update()
-        {
-            if(wasError) return;
-            if (!m_hasStarted){
-                if (m_run){
-                    StartDemo();
-                }
-                return;
-            }
-            if (m_run)
-            {
-                m_solver.StepPhysics(timeStep, particles2Bounds, BoundsMatricesAsMatrix());
-                m_volume.FillVolume(m_fluid, m_solver.Hash, m_solver.Kernel);
-            }
-
-            m_volume.Hide = !m_drawFluidVolume;
-
-            if (m_drawBoundaryParticles){
-                m_boundary.Draw(m_mainCamera, m_sphereMesh, m_boundaryParticleMat, 0, Color.red);
-            }
-
-            if (m_drawFluidParticles){
-                m_fluid.Draw(m_mainCamera, m_sphereMesh, m_fluidParticleMat, 0);
-            }
-        }
-
-        private void OnDestroy()
-        {
-            m_boundary.Dispose();
-            m_fluid.Dispose();
-            m_solver.Dispose();
-            m_volume.Dispose();
-        }
-
-        private Matrix4x4[] BoundsMatricesAsMatrix()
-        {
-            var result = new Matrix4x4[boundsMatrices.Length+1];
-            int i;
-            for (i = 0; i < boundsMatrices.Length; i++) {
-                result[i] = boundsMatrices[i].GetMatrix();
-            }
-            result[i] = fluidBounds.GetVoxelizedMeshMatrix();
-            return result;
-        }
-
-        private void OnRenderObject()
-        {
-            Camera camera = Camera.current;
-            if (camera != Camera.main) return;
-
-            if (m_drawLines){                
-                //Outer Container Bounds
-                // foreach (Bounds bounds in particleSource.BoundsList){
-                //     DrawBounds(camera, Color.green, bounds);
-                // }
-                // foreach (Bounds bounds in particleSource.Exclusion){
-                //     DrawBounds(camera, Color.red, bounds);
-                // }
-
-                // DrawBounds(camera, Color.blue, m_fluidSource);
-            }
-
-            if(m_drawGrid){
-                m_solver.Hash.DrawGrid(camera, Color.yellow);
-            }
-        }
-
-        private ParticlesFromBounds CreateBoundary(Bounds bounds)
-        {
-            Bounds outerBounds = new Bounds();
-            var center = transform.position + bounds.center;
-            var size = bounds.size;
-            outerBounds.SetMinMax(center-(size/2.0f), center+(size/2.0f));
-            // outerBounds.SetMinMax(size/2.0f, size/2.0f);
-                
-            //Make the boundary 1 particle thick.
-            //The multiple by 1.2 adds a little of extra
-            //thickness in case the radius does not evenly
-            //divide into the bounds size. You might have
-            //particles missing from one side of the source
-            //bounds other wise.
-            float thickness = 1;
-            float diameter = radius * 2;
-            size.x -= diameter * thickness * 1.2f;
-            size.y -= diameter * thickness * 1.2f;
-            size.z -= diameter * thickness * 1.2f;
-            Bounds innerBounds = new Bounds();
-            innerBounds.SetMinMax(center-(size/2.0f), center+(size/2.0f));
-            //The source will create a array of particles
-            //evenly spaced between the inner and outer bounds.
-            return new ParticlesFromBounds(diameter, outerBounds,innerBounds);
-        }
-        private void CreateBoundaries() {
-            ParticlesFromBounds[] particlesFromBoundsArray = new ParticlesFromBounds[boundarySizes.Count +1 ];
-            Vector3[] boundsVectors = new Vector3[boundarySizes.Count+1];
-            int i;
-            for (i=0; i < boundarySizes.Count; i++)
-            {
-                var bound = new Bounds(boundsMatrices[i].position, boundarySizes[i]);
-                particlesFromBoundsArray[i] = CreateBoundary(bound);
-                boundsVectors[i] = bound.center;
-            }
-
-            particlesFromBoundsArray[i] = m_fluidContainerFromMesh.BoundaryParticlesFromBounds;
-            boundsVectors[i] = m_fluidContainerFromMesh.bounds.center;
-
-            particleSource = new ParticlesFromSeveralBounds(radius * 2, particlesFromBoundsArray, boundsVectors);
-            particleSource.CreateParticles();
-            particles2Bounds = particleSource.particle2MatrixMap.ToArray();
-            m_boundary = new FluidBoundary(particleSource, radius, density, particles2Bounds, BoundsMatricesAsMatrix());
+            hasStarted = true;
         }
         
-        private void CreateFluid( float radius, float density) {
-            //The source will create a array of particles
-            //evenly spaced inside the bounds. 
-            //Multiple the spacing by 0.9 to pack more
-            //particles into bounds.
-            float diameter = radius * 2;
-            var bounds = new Bounds(fluidBounds.bounds.Center, fluidBounds.bounds.Size);
-            var exclusion = new List<Bounds>();
-            foreach (var nonVoxel in fluidBounds.NonVoxels) {
-                exclusion.Add(new Bounds(nonVoxel.Center,nonVoxel.Size));
-            }
-            var particlesFromBounds = new ParticlesFromBounds(diameter, bounds, exclusion);
-            Debug.Log("Fluid Particles = " + particlesFromBounds.NumParticles);
-            m_fluid = new FluidBody(particlesFromBounds, radius, density, fluidBounds.GetVoxelizedMeshMatrix());
-        }
+        /**Adjusts the Radius based on the SIMULATION_SIZE enum.
+            A smaller radius means more particles.
+            If the number of particles is to low or high
+            the bitonic sort shader will throw a exception
+            as it has a set range it can handle but this can be manually changes in the BitonicSort.cs script.
 
-        private static IList<int> m_cube = new int[]
-        {
-            0, 1, 1, 2, 2, 3, 3, 0,
-            4, 5, 5, 6, 6, 7, 7, 4,
-            0, 4, 1, 5, 2, 6, 3, 7
+            A smaller radius may also require more solver steps
+            as the boundary is thinner and the fluid many step
+            through and leak out.
+         */
+        public float Radius() =>  simulationSize switch {
+            SIMULATION_SIZE.LOW => 0.1f,
+            SIMULATION_SIZE.MEDIUM => 0.08f,
+            SIMULATION_SIZE.HIGH => 0.06f,
+            _ => 0.08f
         };
 
-        Vector4[] m_corners = new Vector4[8];
-        public void GetCorners(Bounds b)
-        {
-            m_corners[0] = new Vector4(b.min.x, b.min.y, b.min.z, 1);
-            m_corners[1] = new Vector4(b.min.x, b.min.y, b.max.z, 1);
-            m_corners[2] = new Vector4(b.max.x, b.min.y, b.max.z, 1);
-            m_corners[3] = new Vector4(b.max.x, b.min.y, b.min.z, 1);
+        // ReSharper disable Unity.PerformanceAnalysis
+        /**
+         * Gets all FluidBoundaryObjects components in children
+         */
+        private void GetFluidBoundaryObjects() => fluidBoundaryObjects = GetComponentsInChildren<FluidBoundaryObject>();
+        
+        // ReSharper disable Unity.PerformanceAnalysis
+        private void GetFluidObjects() => fluidObjects = GetComponentsInChildren<FluidObject>();
 
-            m_corners[4] = new Vector4(b.min.x, b.max.y, b.min.z, 1);
-            m_corners[5] = new Vector4(b.min.x, b.max.y, b.max.z, 1);
-            m_corners[6] = new Vector4(b.max.x, b.max.y, b.max.z, 1);
-            m_corners[7] = new Vector4(b.max.x, b.max.y, b.min.z, 1);
+        private void Update() {
+            if(wasError) return;
+            if (!hasStarted){
+                if (run) StartDemo();
+                return;
+            }
+            if (run) {
+                // ReSharper disable once Unity.PerformanceCriticalCodeInvocation
+                solver.StepPhysics(TimeStep);
+                volume.FillVolume(fluid, solver.Hash, solver.Kernel);
+            }
+
+            volume.Hide = !drawFluidVolume;
+
+            if (drawBoundaryParticles)
+                boundary.Draw(mainCamera, sphereMesh, boundaryParticleMat, 0, Color.red);
+            if (drawFluidParticles)
+                fluid.Draw(mainCamera, sphereMesh, fluidParticleMat, 0);
         }
 
-        private void DrawBounds(Camera cam, Color col, Bounds bounds)
-        {
-            GetCorners(bounds);
-            DrawLines.LineMode = LINE_MODE.LINES;
-            DrawLines.Draw(cam, m_corners, col, Matrix4x4.identity, m_cube);
+        private void OnDestroy() {
+            boundary?.Dispose();
+            fluid?.Dispose();
+            solver?.Dispose();
+            volume?.Dispose();
         }
 
+        private void OnRenderObject() {
+            var cam = Camera.current;
+            if (cam != Camera.main) return;
+            
+            if(drawGrid)
+                solver.Hash.DrawGrid(cam, Color.yellow);
+        }
+
+        private void CreateBoundary() {
+            var particleSources = new ParticleSource[fluidBoundaryObjects.Length];
+            for (var index = 0; index < fluidBoundaryObjects.Length; index++)
+                particleSources[index] = fluidBoundaryObjects[index].ParticleSource;
+            var particleSource = new ParticlesFromSeveralBounds(Radius() * 2, particleSources);
+            particleSource.CreateParticles();
+            boundary = new FluidBoundary(particleSource,Radius(),Density);
+        }
+
+        private void CreateFluid()
+        {
+            var particleSources = new ParticleSource[fluidObjects.Length];
+            for (var index = 0; index < fluidObjects.Length; index++)
+                particleSources[index] = fluidObjects[index].ParticleSource;
+            Assert.IsTrue(particleSources.Length > 0);
+            var particleSource = new ParticlesFromSeveralBounds(Radius() * 2, particleSources);
+            particleSource.CreateParticles();
+            fluid = new FluidBody(particleSource, Radius(), Density, transform.localToWorldMatrix);
+        }
+        
         private void OnDrawGizmos() {
             //Simulation Bounds
             Gizmos.color = Color.yellow;
-            Gizmos.DrawWireCube(transform.position,simulationBounds.size);
-            
-            float thickness = 1;
-            float diameter = radius * 2;
-            //Extra Boundaries
-            for (int i = 0; i < boundarySizes.Count; i++) {
-                Gizmos.color = Color.green;
-                CustomGizmos.DrawRotatableCubeGizmo(boundsMatrices[i],boundarySizes[i]);
-            }
-
-            if (m_fluidContainerFromMesh != null)
-            {
-                if (m_drawBoundaryBoxes) m_fluidContainerFromMesh.DrawBoundaryGizmo(radius);
-            }
+            if (drawSimulationBounds) DrawSimulationBounds();
         }
+
+        private void DrawSimulationBounds() => 
+            Gizmos.DrawWireCube(transform.position+simulationBounds.center,simulationBounds.size);
 
     }
 }

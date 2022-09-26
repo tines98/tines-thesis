@@ -1,33 +1,28 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
-using UnityEngine.Assertions;
 
-namespace PBDFluid
+namespace PBDFluid.Scripts
 {
-
     public class ParticlesFromSeveralBounds : ParticleSource
     {
-        public ParticlesFromBounds[] particlesFromBoundsArray;
-        public Vector3[] boundsVectors;
-        public List<int> particle2MatrixMap;
+        private readonly ParticleSource[] particleSources;
+        public List<int> Particle2MatrixMap;
 
 
-        public ParticlesFromSeveralBounds(float spacing, ParticlesFromBounds[] particlesFromBoundsArray, Vector3[] boundsVectors) : base(spacing){
-            this.particlesFromBoundsArray = particlesFromBoundsArray;
-            this.boundsVectors = boundsVectors;
+        public ParticlesFromSeveralBounds(float spacing, ParticleSource[] particleSources) : base(spacing){
+            this.particleSources = particleSources;
         }
 
         public override void CreateParticles()
         {
             Positions = new List<Vector3>();
-            particle2MatrixMap = new List<int>();
-            for (var boundsIdx = 0; boundsIdx < particlesFromBoundsArray.Length; boundsIdx++){
-                particlesFromBoundsArray[boundsIdx].CreateParticles();
-                for (var particleIdx = 0; particleIdx < particlesFromBoundsArray[boundsIdx].NumParticles; particleIdx++) {
-                    Positions.Add(particlesFromBoundsArray[boundsIdx].Positions[particleIdx]);
-                    particle2MatrixMap.Add(boundsIdx);
+            Particle2MatrixMap = new List<int>();
+            for (var boundsIdx = 0; boundsIdx < particleSources.Length; boundsIdx++){
+                if (particleSources[boundsIdx].NumParticles == 0) 
+                    particleSources[boundsIdx].CreateParticles();
+                for (var particleIdx = 0; particleIdx < particleSources[boundsIdx].NumParticles; particleIdx++) {
+                    Positions.Add(particleSources[boundsIdx].Positions[particleIdx]);
+                    Particle2MatrixMap.Add(boundsIdx);
                 }
             }
         }

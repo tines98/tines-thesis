@@ -1,17 +1,15 @@
-using System.Collections.Generic;
-using MeshVoxelizerProject;
-using UnityEngine;
 using UnityEngine.Assertions;
 
-namespace PBDFluid
+namespace PBDFluid.Scripts
 {
     public class MeshHollower
     {
-        private int width, height, depth;
-        public bool[,,] visited;
-        private int[,,] voxels;
-        public List<Point> hullVoxels;
-        public bool[,,] hullVoxels2;
+        private readonly int width;
+        private readonly int height;
+        private readonly int depth;
+        public readonly bool[,,] Visited;
+        public readonly bool[,,] HullVoxels2;
+        private readonly int[,,] voxels;
 
         public MeshHollower(int[,,] voxels)
         {
@@ -21,9 +19,8 @@ namespace PBDFluid
             depth = voxels.GetLength(2);
             
             //+2 due to padding
-            visited = new bool[width+2, height+2, depth+2];
-            hullVoxels2 = new bool[width+2, height+2, depth+2];
-            hullVoxels = new List<Point>();
+            Visited = new bool[width+2, height+2, depth+2];
+            HullVoxels2 = new bool[width+2, height+2, depth+2];
             
             Point start = new Point(0, 0, 0);
             DFS(start);
@@ -37,8 +34,7 @@ namespace PBDFluid
                 SetVisited(point);
                 if (IsInMesh(point))
                 {
-                    hullVoxels.Add(point);
-                    hullVoxels2[point.x, point.y, point.z] = true;
+                    HullVoxels2[point.X, point.Y, point.Z] = true;
                     return;
                 }
 
@@ -65,7 +61,7 @@ namespace PBDFluid
         /**
          * Returns true if Point is both within bounds, and not visited
          */
-        private bool CanGo(Point point) => CanGo(point.x, point.y, point.z);
+        private bool CanGo(Point point) => CanGo(point.X, point.Y, point.Z);
         private bool CanGo(int x, int y, int z) =>
             OutOfBounds(x,y,z) &&
             !IsVisited(x,y,z);
@@ -79,41 +75,43 @@ namespace PBDFluid
         /**
          * Returns whether a point is out of bounds without regards to padding 
          */
-        private bool OutOfBoundsNoPadding(Point point) => OutOfBoundsNoPadding(point.x, point.y, point.z);
+        private bool OutOfBoundsNoPadding(Point point) => OutOfBoundsNoPadding(point.X, point.Y, point.Z);
         private bool OutOfBoundsNoPadding(int x, int y, int z) => (x >= 1 && x < width) &&
                                                                (y >= 1 && y < height) &&
                                                                (z >= 1 && z < depth);
         /**
          * Sets this point as visited
          */
-        private void SetVisited(Point point) => visited[point.x, point.y, point.z] = true;
+        private void SetVisited(Point point) => Visited[point.X, point.Y, point.Z] = true;
         
         /**
          * Returns true if point is visited
          */
-        private bool IsVisited(int x, int y, int z) => visited[x, y, z];
+        private bool IsVisited(int x, int y, int z) => Visited[x, y, z];
 
         /**
          * Returns true if Point is within the voxelized mesh
          */
         private bool IsInMesh(Point point) => 
             OutOfBoundsNoPadding(point) &&
-            voxels[point.x-1, point.y-1, point.z-1] > 0;
+            voxels[point.X-1, point.Y-1, point.Z-1] > 0;
 
-        public struct Point
+        public readonly struct Point
         {
-            public int x, y, z;
+            public readonly int X;
+            public readonly int Y;
+            public readonly int Z;
 
             public Point(int x, int y, int z)
             {
-                this.x = x;
-                this.y = y;
-                this.z = z;
+                this.X = x;
+                this.Y = y;
+                this.Z = z;
             }
 
             public Point Move(int x, int y, int z) {
                 Assert.AreNotEqual(x+y+z,0, "Can't move in no direction");
-                return new Point(this.x + x, this.y + y, this.z + z);
+                return new Point(this.X + x, this.Y + y, this.Z + z);
             }
         }
     }

@@ -4,13 +4,16 @@ using UnityEngine;
 
 public class CustomGizmos
 {
-    public static void DrawRotatableCubeGizmo(SerializedMatrix matrix, Vector3 size) {
-        var rotatedForward = matrix.GetMatrix().MultiplyVector(Vector3.forward * size.z);
-        var rotatedUp = matrix.GetMatrix().MultiplyVector(Vector3.up * size.y);
-        var rotatedRight = matrix.GetMatrix().MultiplyVector(Vector3.right * size.x);
+    public static void DrawRotatableCubeGizmo(SerializedMatrix matrix, Vector3 size) => 
+        DrawRotatableCubeGizmo(matrix.GetMatrix(),matrix.position,size);
+
+    public static void DrawRotatableCubeGizmo(Matrix4x4 matrix, Vector3 position, Vector3 size) {
+        var rotatedForward = matrix.MultiplyVector(Vector3.forward * size.z);
+        var rotatedUp = matrix.MultiplyVector(Vector3.up * size.y);
+        var rotatedRight = matrix.MultiplyVector(Vector3.right * size.x);
 
         var centering = rotatedForward + rotatedUp + rotatedRight;
-        var minMinMinPos = matrix.position - centering * 0.5f;
+        var minMinMinPos = position - centering * 0.5f;
         var minMinMaxPos = minMinMinPos + rotatedRight;
         var minMaxMinPos = minMinMinPos + rotatedUp;
         var minMaxMaxPos = minMinMaxPos + rotatedUp;
