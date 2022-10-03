@@ -10,12 +10,13 @@ namespace PBDFluid.Scripts
     {
         private readonly List<Box3> voxels;
         private Vector3 voxelSize;
+        private Matrix4x4 trs;
     
-        public ParticlesFromVoxels(float spacing, List<Box3> voxels) : base(spacing)
-        {
+        public ParticlesFromVoxels(float spacing, List<Box3> voxels, Matrix4x4 trs) : base(spacing) {
             this.voxels = voxels;
+            this.trs = trs;
+            Assert.IsTrue(voxels.Count > 0, "voxels is empty");
             voxelSize = voxels[0].Size;
-            Assert.IsFalse(AreVoxelsSmallerThanRadius(),$"Voxels are too small, voxel size is {voxelSize}, and can't be smaller than {Spacing}");
             Positions = new List<Vector3>();
         }
 
@@ -23,30 +24,29 @@ namespace PBDFluid.Scripts
 
         private void CreateParticlesInVoxel(Box3 voxel)
         {
-            int numX = (int)((voxel.Size.x + HalfSpacing) / Spacing);
-            int numY = (int)((voxel.Size.y + HalfSpacing) / Spacing);
-            int numZ = (int)((voxel.Size.z + HalfSpacing) / Spacing);
+            var numX = (int)((voxel.Size.x + HalfSpacing) / Spacing);
+            var numY = (int)((voxel.Size.y + HalfSpacing) / Spacing);
+            var numZ = (int)((voxel.Size.z + HalfSpacing) / Spacing);
             Assert.IsTrue(numX>0 || numY>0 || numZ>0, "Voxel too small for particle size");
             
-            for (int z = 0; z < numZ; z++)
-            {
-                for (int y = 0; y < numY; y++)
-                {
-                    for (int x = 0; x < numX; x++)
-                    {
-                        Vector3 pos = new Vector3();
-                        pos.x = Spacing * x + voxel.Min.x + HalfSpacing;
-                        pos.y = Spacing * y + voxel.Min.y + HalfSpacing;
-                        pos.z = Spacing * z + voxel.Min.z + HalfSpacing;
-                        Positions.Add(pos);
+            for (var z = 0; z < numZ; z++) {
+                for (var y = 0; y < numY; y++) {
+                    for (var x = 0; x < numX; x++) {
+                        var pos = new Vector3 {
+                            x = Spacing * x + voxel.Min.x + HalfSpacing,
+                            y = Spacing * y + voxel.Min.y + HalfSpacing,
+                            z = Spacing * z + voxel.Min.z + HalfSpacing
+                        };
+                        Positions.Add(trs*pos);
                     }
                 }
             }
         }
 
+        /** Returns true if voxel size is smaller than radius */
         private bool AreVoxelsSmallerThanRadius() => voxelSize.x < Spacing 
-                                            || voxelSize.y < Spacing
-                                            || voxelSize.z < Spacing;
+                                                     || voxelSize.y < Spacing 
+                                                     || voxelSize.z < Spacing;
     }
     
 }

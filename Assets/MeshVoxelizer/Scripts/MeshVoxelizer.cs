@@ -16,17 +16,14 @@ namespace MeshVoxelizer.Scripts {
 
         public List<Box3> Bounds { get; private set; }
 
-        public MeshVoxelizer(int width, int height, int depth)
-        {
-
-            Width = width;
+        public MeshVoxelizer(int width, int height, int depth) {
+	        Width = width;
             Height = height;
             Depth = depth;
             Bounds = new List<Box3>();
             Voxels = new int[width, height, depth];
         }
-        public void Voxelize(IList<Vector3> vertices, IList<int> indices, Box3 bounds)
-        {
+        public void Voxelize(IList<Vector3> vertices, IList<int> indices, Box3 bounds) {
             Array.Clear(Voxels, 0, Voxels.Length);
 
             // build an aabb tree of the mesh

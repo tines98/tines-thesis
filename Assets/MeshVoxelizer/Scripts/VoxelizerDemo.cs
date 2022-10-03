@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using PBDFluid;
 using PBDFluid.Scripts;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -8,7 +10,9 @@ namespace MeshVoxelizer.Scripts
     public class VoxelizerDemo : MonoBehaviour
     {
 
-        [SerializeField] private Vector3Int size = new Vector3Int(16, 16, 16);
+        // [SerializeField] private Vector3Int size = new Vector3Int(16, 16, 16);
+        private float radius;
+        private Vector3Int numVoxels;
 
         [SerializeField] private bool drawAABBTree;
 
@@ -24,8 +28,9 @@ namespace MeshVoxelizer.Scripts
 
         private GameObject nonVoxelizedGameObject;
         private GameObject voxelizedGameObject;
+        private FluidBodyMeshDemo fluidBodyMeshDemo;
 
-        void Start()
+        private void StartVoxelization()
         {
             var filter = GetComponent<MeshFilter>();
             var meshRenderer = GetComponent<MeshRenderer>();
@@ -47,21 +52,35 @@ namespace MeshVoxelizer.Scripts
             var scaledMax = Vector3.Scale(mesh.bounds.max , objScale);
             Debug.Log($"scaledMin {scaledMin}, scaledMax {scaledMax}");
             Bounds = new Box3(scaledMin, scaledMax);
-            
-            Voxelizer = new MeshVoxelizer(size.x, size.y, size.z);
-            Voxelizer.Voxelize(mesh.vertices, mesh.triangles, Bounds);
 
-            var scale = new Vector3(
-                Bounds.Size.x / size.x, 
-                Bounds.Size.y / size.y, 
-                Bounds.Size.z / size.z
+            numVoxels = new Vector3Int(
+                (int) (Bounds.Size.x / radius),
+                (int) (Bounds.Size.y / radius),
+                (int) (Bounds.Size.z / radius)
             );
+            
+            Voxelizer = new MeshVoxelizer(numVoxels.x, numVoxels.y, numVoxels.z);
+            Voxelizer.Voxelize(mesh.vertices, mesh.triangles, Bounds);
+            
 
-            mesh = CreateMesh(Voxelizer.Voxels, scale, Bounds.Min);
+            mesh = CreateMesh(Voxelizer.Voxels, Scale(), Bounds.Min);
 
             CreateVoxelizedGameObject(mesh, mat, objScale);
 
             Debug.Log($"Num Voxels is {Voxels.Count}");
+        }
+
+        Vector3 Scale() => new Vector3(
+            Bounds.Size.x / numVoxels.x,
+            Bounds.Size.y / numVoxels.y,
+            Bounds.Size.z / numVoxels.z);
+
+        void Start()
+        {
+            fluidBodyMeshDemo = GetComponentInParent<FluidBodyMeshDemo>();
+            Assert.IsNotNull(fluidBodyMeshDemo);
+            radius = fluidBodyMeshDemo.Radius();
+            StartVoxelization();
         }
 
         private void CreateVoxelizedGameObject(Mesh mesh, Material mat, Vector3 scale)
@@ -81,10 +100,9 @@ namespace MeshVoxelizer.Scripts
             filter.mesh = mesh;
             meshRenderer.material = mat;
 
-            var fluidContainerizer = voxelizedGameObject.AddComponent<FluidContainerizer>();
-            var fluidBoundaryVoxels = voxelizedGameObject.AddComponent<FluidBoundaryVoxels>();
-            var fluidVoxels = voxelizedGameObject.AddComponent<FluidVoxels>();
-            
+            voxelizedGameObject.AddComponent<FluidContainerizer>();
+            voxelizedGameObject.AddComponent<FluidBoundaryVoxels>();
+            voxelizedGameObject.AddComponent<FluidVoxels>();
         }
 
         private void OnRenderObject() {
@@ -102,16 +120,13 @@ namespace MeshVoxelizer.Scripts
         public Box3 GetVoxel(int x, int y, int z)
         {
             var point = new Vector3(x, y, z);
-            var scale = new Vector3(
-                Bounds.Size.x / size.x,
-                Bounds.Size.y / size.y,
-                Bounds.Size.z / size.z
-            );
-            Assert.IsTrue(size.x > 0 || size.y > 0 || size.z > 0, "Size is 0");
+            var scale = Scale();
+            Assert.IsTrue(numVoxels.x > 0 || numVoxels.y > 0 || numVoxels.z > 0, "Size is 0");
             Assert.IsTrue(scale.x > 0 || scale.y > 0 || scale.z > 0, "Scale is 0");
             var min = Bounds.Min + Vector3.Scale(point, scale);
             var max = min + scale;
             var box = new Box3(min, max);
+            Assert.IsTrue((box.Size.x - radius*1.2f) < 0.01f, $"boxSize{box.Size.x} is wrong {radius*1.2f} = {box.Size.x - radius*1.2f}");
             return box;
         }
 
@@ -121,12 +136,13 @@ namespace MeshVoxelizer.Scripts
             List<int> indices = new List<int>();
             Voxels = new List<Box3>();
 
-            for (int z = 0; z < size.z; z++)
+            for (int z = 0; z < numVoxels.z; z++)
             {
-                for (int y = 0; y < size.y; y++)
+                for (int y = 0; y < numVoxels.y; y++)
                 {
-                    for (int x = 0; x < size.x; x++)
+                    for (int x = 0; x < numVoxels.x; x++)
                     {
+                        Assert.IsTrue(x<voxels.GetLength(0));
                         if (voxels[x, y, z] != 1) continue;
                         Vector3 pos = min + new Vector3(x * scale.x, y * scale.y, z * scale.z);
                         var box = new Box3(pos, pos + scale);
@@ -134,19 +150,19 @@ namespace MeshVoxelizer.Scripts
 
                         Voxels.Add(box);
 
-                        if (x == size.x - 1 || voxels[x + 1, y, z] == 0)
+                        if (x == numVoxels.x - 1 || voxels[x + 1, y, z] == 0)
                             AddRightQuad(verts, indices, scale, pos);
 
                         if (x == 0 || voxels[x - 1, y, z] == 0)
                             AddLeftQuad(verts, indices, scale, pos);
 
-                        if (y == size.y - 1 || voxels[x, y + 1, z] == 0)
+                        if (y == numVoxels.y - 1 || voxels[x, y + 1, z] == 0)
                             AddTopQuad(verts, indices, scale, pos);
 
                         if (y == 0 || voxels[x, y - 1, z] == 0)
                             AddBottomQuad(verts, indices, scale, pos);
 
-                        if (z == size.z - 1 || voxels[x, y, z + 1] == 0)
+                        if (z == numVoxels.z - 1 || voxels[x, y, z + 1] == 0)
                             AddFrontQuad(verts, indices, scale, pos);
 
                         if (z == 0 || voxels[x, y, z - 1] == 0)
