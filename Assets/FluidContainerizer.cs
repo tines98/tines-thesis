@@ -1,8 +1,5 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using MeshVoxelizer.Scripts;
-using PBDFluid;
 using PBDFluid.Scripts;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -32,38 +29,10 @@ public class FluidContainerizer : MonoBehaviour
 
     public bool IsReady() => ExteriorVoxels.Count > 0 && InteriorVoxels.Count > 0;
     
-    private void CalculateExterior()
-    {
+    private void CalculateExterior() {
         ExteriorVoxels = new List<Box3>();
-        for (var z = 0; z < meshHollower.HullVoxels.GetLength(2); z++)
-            for (var y = 0; y < meshHollower.HullVoxels.GetLength(1); y++)
-                for (var x = 0; x < meshHollower.HullVoxels.GetLength(0); x++)
-                    if (meshHollower.HullVoxels[x, y, z])
-                        ExteriorVoxels.Add(voxelizerDemo.GetVoxel(x,y,z));
+        meshHollower.HullVoxels.ForEach(point => ExteriorVoxels.Add(voxelizerDemo.GetVoxel(point.X,point.Y,point.Z)));
     }
 
-    private void CalculateInterior() {
-        InteriorVoxels = new List<Box3>();
-        for (var z = 0; z < meshHollower.Visited.GetLength(2); z++)
-            for (var y = 0; y < meshHollower.Visited.GetLength(1); y++)
-                for (var x = 0; x < meshHollower.Visited.GetLength(0); x++)
-                    if (!meshHollower.Visited[x, y, z])
-                        InteriorVoxels.Add(voxelizerDemo.GetVoxel(x,y,z));
-    }
-
-    private void OnDrawGizmos()
-    {
-        DrawInteriorVoxelsGizmo();
-        DrawExteriorVoxelsGizmo();
-    }
-    
-    //GIZMOS
-    private void DrawInteriorVoxelsGizmo() => 
-        InteriorVoxels.ForEach(voxel => Gizmos.DrawWireCube(voxel.Center,voxel.Size));
-
-    private void DrawExteriorVoxelsGizmo() => 
-        ExteriorVoxels.ForEach(voxel => Gizmos.DrawWireCube(voxel.Center,voxel.Size));
-    
-    
-    
+    private void CalculateInterior() => InteriorVoxels = voxelizerDemo.Voxels;
 }
