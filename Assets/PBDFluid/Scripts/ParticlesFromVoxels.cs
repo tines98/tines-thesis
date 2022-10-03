@@ -10,10 +10,12 @@ namespace PBDFluid.Scripts
     {
         private readonly List<Box3> voxels;
         private Vector3 voxelSize;
+        private Matrix4x4 trs;
     
-        public ParticlesFromVoxels(float spacing, List<Box3> voxels) : base(spacing)
-        {
+        public ParticlesFromVoxels(float spacing, List<Box3> voxels, Matrix4x4 trs) : base(spacing) {
             this.voxels = voxels;
+            this.trs = trs;
+            Assert.IsTrue(voxels.Count > 0, "voxels is empty");
             voxelSize = voxels[0].Size;
             Assert.IsFalse(AreVoxelsSmallerThanRadius(),$"Voxels are too small, voxel size is {voxelSize}, and can't be smaller than {Spacing}");
             Positions = new List<Vector3>();
@@ -38,15 +40,15 @@ namespace PBDFluid.Scripts
                         pos.x = Spacing * x + voxel.Min.x + HalfSpacing;
                         pos.y = Spacing * y + voxel.Min.y + HalfSpacing;
                         pos.z = Spacing * z + voxel.Min.z + HalfSpacing;
-                        Positions.Add(pos);
+                        Positions.Add(trs*pos);
                     }
                 }
             }
         }
 
         private bool AreVoxelsSmallerThanRadius() => voxelSize.x < Spacing 
-                                            || voxelSize.y < Spacing
-                                            || voxelSize.z < Spacing;
+                                                     || voxelSize.y < Spacing 
+                                                     || voxelSize.z < Spacing;
     }
     
 }

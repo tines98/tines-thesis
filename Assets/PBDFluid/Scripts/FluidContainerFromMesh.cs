@@ -67,7 +67,7 @@ namespace PBDFluid.Scripts
         }
 
         private void CreateBoundary(float radius) => 
-            BoundaryParticleSource = new ParticlesFromVoxels(radius*2, exteriorVoxels);
+            BoundaryParticleSource = new ParticlesFromVoxels(radius*2, exteriorVoxels, Matrix4x4.identity);
         
         public void DrawBoundaryGizmo() {
             for (var z = 0; z < meshHollower.Visited.GetLength(2); z++) {
