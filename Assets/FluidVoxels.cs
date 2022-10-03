@@ -33,7 +33,7 @@ public class FluidVoxels : FluidObject
     {
         start = true;
         voxels = fluidContainerizer.InteriorVoxels;
-        ParticleSource = new ParticlesFromVoxels(fluidBodyMeshDemo.Radius(), voxels, transform.localToWorldMatrix);
+        ParticleSource = new ParticlesFromVoxels(fluidBodyMeshDemo.Radius() * 2, voxels, transform.localToWorldMatrix);
         ParticleSource.CreateParticles();
         
         Debug.Log($"Fluid Particles for object {name} is {ParticleSource.NumParticles}");
