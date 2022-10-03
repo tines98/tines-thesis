@@ -1,5 +1,6 @@
 using System.Collections.Generic;
-using UnityEngine.Assertions;
+using System.Linq;
+using DefaultNamespace;
 
 namespace PBDFluid.Scripts
 {
@@ -45,28 +46,10 @@ namespace PBDFluid.Scripts
             }
         }
 
-        private List<Point> Neighbours(Point point) {
-            var neighbours = new List<Point>();
-            if (CanGo(point.Move(1, 0, 0)))
-                neighbours.Add(point.Move(1, 0, 0));
-
-            if (CanGo(point.Move(0, 1, 0))) 
-                neighbours.Add(point.Move(0, 1, 0));
-
-            if (CanGo(point.Move(0, 0, 1)))
-                neighbours.Add(point.Move(0, 0, 1));
-
-            if (CanGo(point.Move(-1, 0, 0)))
-                neighbours.Add(point.Move(-1, 0, 0));
-
-            if (CanGo(point.Move(0, -1, 0)))
-                neighbours.Add(point.Move(0, -1, 0));
-
-            if (CanGo(point.Move(0, 0, -1)))
-                neighbours.Add(point.Move(0, 0, -1));
-            
-            return neighbours;
-        }
+        private List<Point> Neighbours(Point point) => (
+                from point1 in Point.TwentySixNeighbourhood 
+                where CanGo(point.Move(point1)) 
+                select point.Move(point1)).ToList();
 
         /**
          * Returns true if Point is both within bounds, and not visited
@@ -107,24 +90,6 @@ namespace PBDFluid.Scripts
             OutOfBoundsNoPadding(point) &&
             voxels[point.X-1, point.Y-1, point.Z-1] > 0;
 
-        public readonly struct Point
-        {
-            public readonly int X;
-            public readonly int Y;
-            public readonly int Z;
-
-            public Point(int x, int y, int z)
-            {
-                this.X = x;
-                this.Y = y;
-                this.Z = z;
-            }
-
-            public Point Move(int x, int y, int z) {
-                Assert.AreNotEqual(x+y+z,0, "Can't move in no direction");
-                return new Point(this.X + x, this.Y + y, this.Z + z);
-            }
-            
-        }
+        
     }
 }
