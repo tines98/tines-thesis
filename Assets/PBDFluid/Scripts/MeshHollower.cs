@@ -10,7 +10,7 @@ namespace PBDFluid.Scripts
         private readonly int height;
         private readonly int depth;
         public readonly bool[,,] Visited;
-        public readonly bool[,,] HullVoxels2;
+        public readonly bool[,,] HullVoxels;
         private readonly int[,,] voxels;
 
         public MeshHollower(int[,,] voxels)
@@ -22,7 +22,7 @@ namespace PBDFluid.Scripts
             
             //+2 due to padding
             Visited = new bool[width+2, height+2, depth+2];
-            HullVoxels2 = new bool[width+2, height+2, depth+2];
+            HullVoxels = new bool[width+2, height+2, depth+2];
 
             DFS();
         }
@@ -38,7 +38,7 @@ namespace PBDFluid.Scripts
                 if (IsVisited(point)) continue;
                 SetVisited(point);
                 if (IsInMesh(point)) {
-                    HullVoxels2[point.X, point.Y, point.Z] = true;
+                    HullVoxels[point.X, point.Y, point.Z] = true;
                     continue;
                 }
                 var neighbours = Neighbours(point);
@@ -56,20 +56,20 @@ namespace PBDFluid.Scripts
          */
         private bool CanGo(Point point) => CanGo(point.X, point.Y, point.Z);
         private bool CanGo(int x, int y, int z) =>
-            OutOfBounds(x,y,z) &&
+            IsWithinBounds(x,y,z) &&
             !IsVisited(x,y,z);
         
         /**
-         * Returns whether a point is out of bounds with regards to padding 
+         * Returns true if a point is within bounds with regards to padding 
          */
-        private bool OutOfBounds(int x, int y, int z) => (x >= 0 && x < width+2) &&
+        private bool IsWithinBounds(int x, int y, int z) => (x >= 0 && x < width+2) &&
                                                          (y >= 0 && y < height+2) &&
                                                          (z >= 0 && z < depth+2);
         /**
-         * Returns whether a point is out of bounds without regards to padding 
+         * Returns true if a point is within bounds without regards to padding 
          */
-        private bool OutOfBoundsNoPadding(Point point) => OutOfBoundsNoPadding(point.X, point.Y, point.Z);
-        private bool OutOfBoundsNoPadding(int x, int y, int z) => (x >= 1 && x < width) &&
+        private bool IsWithinBoundsNoPadding(Point point) => IsWithinBoundsNoPadding(point.X, point.Y, point.Z);
+        private bool IsWithinBoundsNoPadding(int x, int y, int z) => (x >= 1 && x < width) &&
                                                                (y >= 1 && y < height) &&
                                                                (z >= 1 && z < depth);
         /**
@@ -87,7 +87,7 @@ namespace PBDFluid.Scripts
          * Returns true if Point is within the voxelized mesh
          */
         private bool IsInMesh(Point point) => 
-            OutOfBoundsNoPadding(point) &&
+            IsWithinBoundsNoPadding(point) &&
             voxels[point.X-1, point.Y-1, point.Z-1] > 0;
 
         

@@ -35,10 +35,10 @@ public class FluidContainerizer : MonoBehaviour
     private void CalculateExterior()
     {
         ExteriorVoxels = new List<Box3>();
-        for (var z = 0; z < meshHollower.HullVoxels2.GetLength(2); z++)
-            for (var y = 0; y < meshHollower.HullVoxels2.GetLength(1); y++)
-                for (var x = 0; x < meshHollower.HullVoxels2.GetLength(0); x++)
-                    if (meshHollower.HullVoxels2[x, y, z])
+        for (var z = 0; z < meshHollower.HullVoxels.GetLength(2); z++)
+            for (var y = 0; y < meshHollower.HullVoxels.GetLength(1); y++)
+                for (var x = 0; x < meshHollower.HullVoxels.GetLength(0); x++)
+                    if (meshHollower.HullVoxels[x, y, z])
                         ExteriorVoxels.Add(voxelizerDemo.GetVoxel(x,y,z));
     }
 

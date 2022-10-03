@@ -34,10 +34,10 @@ namespace PBDFluid.Scripts
         private void CalculateExterior()
         {
             exteriorVoxels = new List<Box3>();
-            for (var z = 0; z < meshHollower.HullVoxels2.GetLength(2); z++)
-                for (var y = 0; y < meshHollower.HullVoxels2.GetLength(1); y++)
-                    for (var x = 0; x < meshHollower.HullVoxels2.GetLength(0); x++)
-                        if (meshHollower.HullVoxels2[x, y, z])
+            for (var z = 0; z < meshHollower.HullVoxels.GetLength(2); z++)
+                for (var y = 0; y < meshHollower.HullVoxels.GetLength(1); y++)
+                    for (var x = 0; x < meshHollower.HullVoxels.GetLength(0); x++)
+                        if (meshHollower.HullVoxels[x, y, z])
                             exteriorVoxels.Add(voxelizerDemo.GetVoxel(x,y,z));
         }
 
@@ -73,7 +73,7 @@ namespace PBDFluid.Scripts
             for (var z = 0; z < meshHollower.Visited.GetLength(2); z++) {
                 for (var y = 0; y < meshHollower.Visited.GetLength(1); y++) {
                     for (var x = 0; x < meshHollower.Visited.GetLength(0); x++) {
-                        if (!meshHollower.HullVoxels2[x, y, z]) continue;
+                        if (!meshHollower.HullVoxels[x, y, z]) continue;
                         var voxel = voxelizerDemo.GetVoxel(x, y, z);
                         Gizmos.DrawCube(voxel.Center, voxel.Size);
                     }
