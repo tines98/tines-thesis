@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using MeshVoxelizer.Scripts;
@@ -13,6 +14,7 @@ public class FluidBoundaryVoxels : FluidBoundaryObject
     private VoxelizerDemo voxelizerDemo;
     private FluidContainerizer fluidContainerizer;
     private List<Box3> voxels;
+    private bool start = false;
     
     // Start is called before the first frame update
     void Start()
@@ -25,15 +27,25 @@ public class FluidBoundaryVoxels : FluidBoundaryObject
         
         voxelizerDemo = GetComponentInParent<VoxelizerDemo>();
         Assert.IsNotNull(voxelizerDemo);
-        
-        voxels = fluidContainerizer.exteriorVoxels;
-        ParticleSource = new ParticlesFromVoxels(fluidBodyMeshDemo.Radius(), voxels);
+    }
+
+    private void CreateParticles()
+    {
+        start = true;
+        voxels = fluidContainerizer.ExteriorVoxels;
+        ParticleSource = new ParticlesFromVoxels(fluidBodyMeshDemo.Radius(), voxels, transform.localToWorldMatrix);
         ParticleSource.CreateParticles();
         
-        Debug.Log($"Boundary Particles for object {this.name} is {ParticleSource.NumParticles}");
+        Debug.Log($"Boundary Particles for object {name} is {ParticleSource.NumParticles}");
         voxelizerDemo.HideVoxelizedMesh();
     }
-    
+
+    private void Update()
+    {
+        if (start) return;
+        if (fluidContainerizer.IsReady()) CreateParticles();
+    }
+
     private void OnDrawGizmos()
     {
         Gizmos.color = Color.red;
