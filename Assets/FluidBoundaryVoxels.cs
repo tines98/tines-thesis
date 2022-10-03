@@ -33,7 +33,7 @@ public class FluidBoundaryVoxels : FluidBoundaryObject
     {
         start = true;
         voxels = fluidContainerizer.ExteriorVoxels;
-        ParticleSource = new ParticlesFromVoxels(fluidBodyMeshDemo.Radius(), voxels, transform.localToWorldMatrix);
+        ParticleSource = new ParticlesFromVoxels(fluidBodyMeshDemo.Radius() * 2, voxels, transform.localToWorldMatrix);
         ParticleSource.CreateParticles();
         
         Debug.Log($"Boundary Particles for object {name} is {ParticleSource.NumParticles}");
