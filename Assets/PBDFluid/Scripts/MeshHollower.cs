@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine.Assertions;
 
 namespace PBDFluid.Scripts
@@ -13,7 +14,7 @@ namespace PBDFluid.Scripts
 
         public MeshHollower(int[,,] voxels)
         {
-            this.voxels = voxels; 
+            this.voxels = voxels;
             width = voxels.GetLength(0);
             height = voxels.GetLength(1);
             depth = voxels.GetLength(2);
@@ -21,41 +22,50 @@ namespace PBDFluid.Scripts
             //+2 due to padding
             Visited = new bool[width+2, height+2, depth+2];
             HullVoxels2 = new bool[width+2, height+2, depth+2];
-            
-            Point start = new Point(0, 0, 0);
-            DFS(start);
+
+            DFS();
         }
 
         // ReSharper disable once InconsistentNaming
-        private void DFS(Point point)
+        private void DFS()
         {
-            while (true)
-            {
+            var stack = new Stack<Point>();
+            var root = new Point(0,0,0);
+            stack.Push(root);
+            while (stack.Count > 0) {
+                var point = stack.Pop();
+                if (IsVisited(point)) continue;
                 SetVisited(point);
-                if (IsInMesh(point))
-                {
+                if (IsInMesh(point)) {
                     HullVoxels2[point.X, point.Y, point.Z] = true;
-                    return;
-                }
-
-                if (CanGo(point.Move(1, 0, 0))) DFS(point.Move(1, 0, 0));
-
-                if (CanGo(point.Move(0, 1, 0))) DFS(point.Move(0, 1, 0));
-
-                if (CanGo(point.Move(0, 0, 1))) DFS(point.Move(0, 0, 1));
-
-                if (CanGo(point.Move(-1, 0, 0))) DFS(point.Move(-1, 0, 0));
-
-                if (CanGo(point.Move(0, -1, 0))) DFS(point.Move(0, -1, 0));
-
-                if (CanGo(point.Move(0, 0, -1)))
-                {
-                    point = point.Move(0, 0, -1);
                     continue;
                 }
-
-                break;
+                var neighbours = Neighbours(point);
+                neighbours.ForEach(neighbour => stack.Push(neighbour));
             }
+        }
+
+        private List<Point> Neighbours(Point point) {
+            var neighbours = new List<Point>();
+            if (CanGo(point.Move(1, 0, 0)))
+                neighbours.Add(point.Move(1, 0, 0));
+
+            if (CanGo(point.Move(0, 1, 0))) 
+                neighbours.Add(point.Move(0, 1, 0));
+
+            if (CanGo(point.Move(0, 0, 1)))
+                neighbours.Add(point.Move(0, 0, 1));
+
+            if (CanGo(point.Move(-1, 0, 0)))
+                neighbours.Add(point.Move(-1, 0, 0));
+
+            if (CanGo(point.Move(0, -1, 0)))
+                neighbours.Add(point.Move(0, -1, 0));
+
+            if (CanGo(point.Move(0, 0, -1)))
+                neighbours.Add(point.Move(0, 0, -1));
+            
+            return neighbours;
         }
 
         /**
@@ -87,6 +97,7 @@ namespace PBDFluid.Scripts
         /**
          * Returns true if point is visited
          */
+        private bool IsVisited(Point point) => IsVisited(point.X,point.Y,point.Z);
         private bool IsVisited(int x, int y, int z) => Visited[x, y, z];
 
         /**
@@ -113,6 +124,7 @@ namespace PBDFluid.Scripts
                 Assert.AreNotEqual(x+y+z,0, "Can't move in no direction");
                 return new Point(this.X + x, this.Y + y, this.Z + z);
             }
+            
         }
     }
 }
