@@ -18,7 +18,7 @@ namespace DefaultNamespace
 
         public Point Move(Point point) => Move(point.X, point.Y, point.Z);
         public Point Move(int x, int y, int z) {
-            Assert.AreNotEqual(x+y+z,0, "Can't move in no direction");
+            Assert.IsFalse(x==0 && y==0 && z==0, "Can't move in no direction");
             return new Point(this.X + x, this.Y + y, this.Z + z);
         }
 
