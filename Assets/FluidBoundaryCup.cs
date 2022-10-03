@@ -14,11 +14,11 @@ public class FluidBoundaryCup : FluidBoundaryObject
         ParticleSource = new ParticlesFromBounds(fluidBodyMeshDemo.Radius() * 2, OuterBounds(), InnerBounds());
         Debug.Log($"particles for object {this.name} is {ParticleSource.NumParticles}");
     }
-    private Bounds OuterBounds() => new Bounds(Vector3.zero, size);
+    private Bounds OuterBounds() => new Bounds(transform.position, size);
 
     private Bounds InnerBounds()
     {
-        var innerBounds = new Bounds(Vector3.zero, size - (Vector3.one * fluidBodyMeshDemo.Radius() * 2f * 1.2f));
+        var innerBounds = new Bounds(transform.position, size - (Vector3.one * fluidBodyMeshDemo.Radius() * 2f * 1.2f));
         innerBounds.max = new Vector3(innerBounds.max.x,size.y/2f,innerBounds.max.z);
         return innerBounds;
     }
@@ -26,12 +26,11 @@ public class FluidBoundaryCup : FluidBoundaryObject
     private void OnDrawGizmos() {
         Gizmos.color = Color.green;
         var outerBounds = OuterBounds();
-        var position = transform.position;
-        Gizmos.DrawWireCube(position+outerBounds.center,outerBounds.size);
+        Gizmos.DrawWireCube(outerBounds.center,outerBounds.size);
 
         if (fluidBodyMeshDemo != null) {
             var innerBounds = InnerBounds();
-            Gizmos.DrawWireCube(position+innerBounds.center,innerBounds.size);
+            Gizmos.DrawWireCube(innerBounds.center,innerBounds.size);
         }
     }
 }

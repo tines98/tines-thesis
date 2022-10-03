@@ -13,8 +13,8 @@ public class FluidBoundaryBox : FluidBoundaryObject
         ParticleSource = new ParticlesFromBounds(fluidBodyMeshDemo.Radius() * 2, OuterBounds(), InnerBounds());
         Debug.Log($"particles for object {this.name} is {ParticleSource.NumParticles}");
     }
-    private Bounds OuterBounds() => new Bounds(Vector3.zero, size);
-    private Bounds InnerBounds() => new Bounds(Vector3.zero, size - (Vector3.one * fluidBodyMeshDemo.Radius() * 2f * 1.2f));
+    private Bounds OuterBounds() => new Bounds(transform.position, size);
+    private Bounds InnerBounds() => new Bounds(transform.position, size - (Vector3.one * fluidBodyMeshDemo.Radius() * 2f * 1.2f));
 
     private void OnDrawGizmos() {
         Gizmos.color = Color.green;
