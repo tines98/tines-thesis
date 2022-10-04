@@ -49,8 +49,13 @@ public class FluidVoxels : FluidObject
     private void OnDrawGizmos()
     {
         Gizmos.color = Color.blue;
-        if (drawGizmo) voxels.ForEach(voxel => Gizmos.DrawWireCube( 
-            transform.localToWorldMatrix *voxel.Center,
-            transform.localToWorldMatrix*voxel.Size));
+        if (drawGizmo)
+        {
+            var localToWorldMatrix = transform.localToWorldMatrix;
+            voxels.ForEach(voxel => Gizmos.DrawWireCube(
+                localToWorldMatrix.MultiplyPoint(voxel.Center), 
+                  localToWorldMatrix.MultiplyVector(voxel.Size)
+            ));
+        }
     }
 }

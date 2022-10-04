@@ -24,7 +24,7 @@ public class FluidBoundaryCup : FluidBoundaryObject
     }
 
     private void OnDrawGizmos() {
-        Gizmos.color = Color.green;
+        Gizmos.color = Color.red;
         var outerBounds = OuterBounds();
         Gizmos.DrawWireCube(outerBounds.center,outerBounds.size);
 

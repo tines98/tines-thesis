@@ -13,20 +13,32 @@ namespace PBDFluid.Scripts
         private readonly int height;
         private readonly int depth;
         private readonly bool[,,] visited;
-        private readonly int[,,] voxels;
+        public readonly int[,,] voxels;
 
         public MeshHollower(int[,,] voxels)
         {
-            this.voxels = voxels;
-            width = voxels.GetLength(0);
-            height = voxels.GetLength(1);
-            depth = voxels.GetLength(2);
+            this.voxels = PadGrid(voxels);
+            width = this.voxels.GetLength(0);
+            height = this.voxels.GetLength(1);
+            depth = this.voxels.GetLength(2);
             
             //+2 due to padding
-            visited = new bool[width+2, height+2, depth+2];
+            visited = new bool[width, height, depth];
             HullVoxels = new List<Point>();
             DFS(FindMeshVoxel());
             Debug.Log($"hull voxels size is {HullVoxels.Count}");
+        }
+
+        private static int[,,] PadGrid(int[,,] grid) {
+            var w = grid.GetLength(0) + 2;
+            var h = grid.GetLength(1) + 2;
+            var d = grid.GetLength(2) + 2;
+            var paddedGrid = new int[w,h,d];
+            for (var z = 1; z < d-1; z++) 
+                for (var y = 1; y < h-1; y++) 
+                    for (var x = 1; x < w-1; x++) 
+                        paddedGrid[x, y, z] = grid[x-1, y-1, z-1];
+            return paddedGrid;
         }
 
         /** Searches grid until it finds a voxel within mesh, then returns its position */
@@ -57,7 +69,6 @@ namespace PBDFluid.Scripts
 
         private void SetAsHullVoxel(Point point) => HullVoxels.Add(new Point(point.X-1,point.Y-1,point.Z-1));
         
-
         /** Searches through neighbouring cells, and returns those that can be moved to */
         private List<Point> Neighbours(Point point) => (from point1 in Point.TwentySixNeighbourhood 
                                                         where CanGo(point.Move(point1)) 
@@ -69,14 +80,9 @@ namespace PBDFluid.Scripts
                                                    !IsVisited(x,y,z);
         
         /** Returns true if a point is within bounds with regards to padding */
-        private bool IsWithinBounds(int x, int y, int z) => (x >= 0 && x < width+2) &&
-                                                            (y >= 0 && y < height+2) &&
-                                                            (z >= 0 && z < depth+2);
-        
-        /** Returns true if a point is within bounds without regards to padding */
-        private bool IsWithinBoundsNoPadding(int x, int y, int z) => (x >= 1 && x < width) &&
-                                                                     (y >= 1 && y < height) &&
-                                                                     (z >= 1 && z < depth);
+        private bool IsWithinBounds(int x, int y, int z) => (x >= 0 && x < width) &&
+                                                            (y >= 0 && y < height) &&
+                                                            (z >= 0 && z < depth);
         
         /** Sets this point as visited */
         private void SetVisited(Point point) => visited[point.X, point.Y, point.Z] = true;
@@ -87,8 +93,8 @@ namespace PBDFluid.Scripts
 
         /** Returns true if Point is within the voxelized mesh */
         private bool IsInMesh(Point point) => IsInMesh(point.X, point.Y, point.Z);
-        private bool IsInMesh(int x, int y, int z) => IsWithinBoundsNoPadding(x,y,z) &&
-                                                      voxels[x-1, y-1, z-1] > 0;
+        private bool IsInMesh(int x, int y, int z) => IsWithinBounds(x,y,z) &&
+                                                      voxels[x, y, z] > 0;
         
     }
 }
