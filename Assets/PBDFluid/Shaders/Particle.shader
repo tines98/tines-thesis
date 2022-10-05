@@ -7,6 +7,18 @@ Shader "PBDFluid/Particle"
 		_Glossiness("Smoothness", Range(0,1)) = 0.5
 		_Metallic("Metallic", Range(0,1)) = 0.0
 	}
+	CGINCLUDE
+	bool IsInDeathBox(float4 pos, float4 deathPlanePosition, float4 deathPlaneSize){
+		float4 comparePos = pos - deathPlanePosition;
+		float4 halfDeathPlaneSize = deathPlaneSize/2.0f;
+		return comparePos.x > -halfDeathPlaneSize.x &&
+			   comparePos.y >  0 &&
+			   comparePos.z > -halfDeathPlaneSize.z &&
+			   comparePos.x <  halfDeathPlaneSize.x &&
+			   comparePos.y <  deathPlaneSize.y &&
+			   comparePos.z <  halfDeathPlaneSize.z;
+	}
+	ENDCG
 	SubShader
 	{
 		Tags{ "RenderType" = "Opaque" }
@@ -25,6 +37,8 @@ Shader "PBDFluid/Particle"
 		float diameter;
 		float4x4 boundaryMatrices[8];
 		int useMatrix;
+		float4 deathPlanePosition;
+		float4 deathPlaneSize;
 
 		struct Input 
 		{
@@ -36,6 +50,9 @@ Shader "PBDFluid/Particle"
 			StructuredBuffer<float4> positions;
 			StructuredBuffer<int> particles2Boundary;
 		#endif
+
+		
+		
 		void setup()
 		{
 			#ifdef UNITY_PROCEDURAL_INSTANCING_ENABLED
@@ -48,6 +65,11 @@ Shader "PBDFluid/Particle"
 					pos = positions[unity_InstanceID];
 				}
 				float d = diameter;
+				if (IsInDeathBox(pos,deathPlanePosition,deathPlaneSize)){
+					pos = float4(999,999,999,0);
+					d = 0;
+					return;
+				}
 
 				unity_ObjectToWorld._11_21_31_41 = float4(d, 0, 0, 0);
 				unity_ObjectToWorld._12_22_32_42 = float4(0, d, 0, 0);

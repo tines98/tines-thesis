@@ -19,12 +19,13 @@ public class FluidBoundaryCup : FluidBoundaryObject
     private Bounds InnerBounds()
     {
         var innerBounds = new Bounds(transform.position, size - (Vector3.one * fluidBodyMeshDemo.Radius() * 2f * 1.2f));
-        innerBounds.max = new Vector3(innerBounds.max.x,size.y/2f,innerBounds.max.z);
+        Debug.Log(innerBounds.max);
+        innerBounds.max = new Vector3(innerBounds.max.x,innerBounds.center.y+size.y/2f,innerBounds.max.z);
         return innerBounds;
     }
 
     private void OnDrawGizmos() {
-        Gizmos.color = Color.green;
+        Gizmos.color = Color.red;
         var outerBounds = OuterBounds();
         Gizmos.DrawWireCube(outerBounds.center,outerBounds.size);
 

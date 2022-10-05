@@ -19,12 +19,11 @@ public class FluidBoundaryBox : FluidBoundaryObject
     private void OnDrawGizmos() {
         Gizmos.color = Color.green;
         var outerBounds = OuterBounds();
-        var position = transform.position;
-        Gizmos.DrawWireCube(position+outerBounds.center,outerBounds.size);
+        Gizmos.DrawWireCube(outerBounds.center,outerBounds.size);
 
         if (fluidBodyMeshDemo != null) {
             var innerBounds = InnerBounds();
-            Gizmos.DrawWireCube(position+innerBounds.center,innerBounds.size);
+            Gizmos.DrawWireCube(innerBounds.center,innerBounds.size);
         }
     }
 }

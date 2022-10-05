@@ -42,7 +42,7 @@ namespace PBDFluid
         /// <summary>
         /// Draws the mesh spheres when draw particles is enabled.
         /// </summary>
-        public void Draw(Camera cam, Mesh mesh, Material material, int layer, Color color)
+        public void Draw(Camera cam, Mesh mesh, Material material, int layer, Color color, Vector3 deathPlanePosition, Vector3 deathPlaneSize)
         {
             if (m_argsBuffer == null)
                 CreateArgBuffer(mesh.GetIndexCount(0));
@@ -51,6 +51,8 @@ namespace PBDFluid
             material.SetColor("color", color);
             material.SetFloat("diameter", ParticleDiameter);
             material.SetInt("useMatrix",1);
+            material.SetVector("deathPlanePosition", deathPlanePosition);
+            material.SetVector("deathPlaneSize", deathPlaneSize);
 
 
             ShadowCastingMode castShadow = ShadowCastingMode.Off;

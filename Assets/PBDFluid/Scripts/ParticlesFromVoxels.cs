@@ -37,7 +37,7 @@ namespace PBDFluid.Scripts
                             y = Spacing * y + voxel.Min.y + HalfSpacing,
                             z = Spacing * z + voxel.Min.z + HalfSpacing
                         };
-                        Positions.Add(trs*pos);
+                        Positions.Add(trs.MultiplyPoint(pos));
                     }
                 }
             }
@@ -45,8 +45,8 @@ namespace PBDFluid.Scripts
 
         /** Returns true if voxel size is smaller than radius */
         private bool AreVoxelsSmallerThanRadius() => voxelSize.x < Spacing 
-                                                     || voxelSize.y < Spacing 
-                                                     || voxelSize.z < Spacing;
+                                                  || voxelSize.y < Spacing 
+                                                  || voxelSize.z < Spacing;
     }
     
 }

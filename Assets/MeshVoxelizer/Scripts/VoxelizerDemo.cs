@@ -47,11 +47,10 @@ namespace MeshVoxelizer.Scripts
             var mat = meshRenderer.material;
             nonVoxelizedGameObject = filter.gameObject;
 
-            var objScale = nonVoxelizedGameObject.transform.localScale;
-            var scaledMin = Vector3.Scale(mesh.bounds.min , objScale);
-            var scaledMax = Vector3.Scale(mesh.bounds.max , objScale);
-            Debug.Log($"scaledMin {scaledMin}, scaledMax {scaledMax}");
-            Bounds = new Box3(scaledMin, scaledMax);
+            var scaledMin = mesh.bounds.min;
+            var scaledMax = mesh.bounds.max;
+            var localToWorldMatrix = transform.localToWorldMatrix;
+            Bounds = new Box3(localToWorldMatrix.MultiplyPoint(scaledMin), localToWorldMatrix.MultiplyPoint(scaledMax));
 
             numVoxels = new Vector3Int(
                 (int) (Bounds.Size.x / radius),
@@ -65,7 +64,7 @@ namespace MeshVoxelizer.Scripts
 
             mesh = CreateMesh(Voxelizer.Voxels, Scale(), Bounds.Min);
 
-            CreateVoxelizedGameObject(mesh, mat, objScale);
+            CreateVoxelizedGameObject(mesh, mat, nonVoxelizedGameObject.transform);
 
             Debug.Log($"Num Voxels is {Voxels.Count}");
         }
@@ -83,14 +82,14 @@ namespace MeshVoxelizer.Scripts
             StartVoxelization();
         }
 
-        private void CreateVoxelizedGameObject(Mesh mesh, Material mat, Vector3 scale)
+        private void CreateVoxelizedGameObject(Mesh mesh, Material mat, Transform copyTransform)
         {
             voxelizedGameObject = new GameObject("Voxelized") {
                 transform = {
                     parent = transform,
-                    position = nonVoxelizedGameObject.transform.position,
-                    rotation = nonVoxelizedGameObject.transform.rotation,
-                    localScale = scale
+                    position = copyTransform.position,
+                    rotation = copyTransform.rotation,
+                    localScale = copyTransform.localScale
                 }
             };
 
@@ -312,8 +311,12 @@ namespace MeshVoxelizer.Scripts
         {
             if (drawBounds)
             {
-                Gizmos.color = Color.green;
-                Gizmos.DrawWireCube(Bounds.Center, Bounds.Size);
+                if (voxelizedGameObject != null)
+                {
+                    Gizmos.color = Color.blue;
+                    var localToWorldMatrix = voxelizedGameObject.transform.localToWorldMatrix;
+                    Gizmos.DrawWireCube(localToWorldMatrix.MultiplyPoint(Bounds.Center), localToWorldMatrix.MultiplyVector(Bounds.Size));
+                }
             }
         }
     }

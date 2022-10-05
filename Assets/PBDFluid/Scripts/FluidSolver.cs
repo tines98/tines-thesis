@@ -56,7 +56,7 @@ namespace PBDFluid
             Hash.Dispose();
         }
 
-        public void StepPhysics(float dt){
+        public void StepPhysics(float dt, Vector3 deathPlanePosition, Vector3 deathPlaneSize){
             if (dt <= 0.0) return;
             if (SolverIterations <= 0 || ConstraintIterations <= 0) return;
 
@@ -69,6 +69,8 @@ namespace PBDFluid
             m_shader.SetFloat("Density", Body.Density);
             m_shader.SetFloat("Viscosity", Body.Viscosity);
             m_shader.SetFloat("ParticleMass", Body.ParticleMass);
+            m_shader.SetVector("deathPlanePosition", deathPlanePosition);
+            m_shader.SetVector("deathPlaneSize", deathPlaneSize);
 
             m_shader.SetFloat("KernelRadius", Kernel.Radius);
             m_shader.SetFloat("KernelRadius2", Kernel.Radius2);
