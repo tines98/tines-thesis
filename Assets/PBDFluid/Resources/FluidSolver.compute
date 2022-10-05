@@ -4,6 +4,8 @@ float HashScale;
 float3 HashSize;
 float3 HashTranslate;
 float4x4 BoundaryMatrices[NUM_MATRICES];
+float4 deathPlanePosition;
+float4 deathPlaneSize;
 
 RWStructuredBuffer<int2> IndexMap;
 RWStructuredBuffer<int2> Table;
@@ -47,6 +49,18 @@ float ViscLapKernel(float len2)
 {
 	float r = sqrt(len2);
 	return ViscLap * (KernelRadius - r);
+}
+
+bool IsInDeathBox(float4 pos)
+{
+	float4 comparePos = pos - deathPlanePosition;
+	float4 halfDeathPlaneSize = deathPlaneSize/2.0f;
+	return comparePos.x > -halfDeathPlaneSize.x &&
+		   comparePos.y >  0 &&
+		   comparePos.z > -halfDeathPlaneSize.z &&
+		   comparePos.x <  halfDeathPlaneSize.x &&
+		   comparePos.y <  deathPlaneSize.y &&
+		   comparePos.z <  halfDeathPlaneSize.z;
 }
 
 #define THREADS 128
@@ -175,6 +189,10 @@ void ComputeDensityAndPressure(int id, float3 pi, out float density, out float p
 			
 			// float4 b = mul(BoundaryMatrices[Particles2Boundary[m]], Boundary[m]);
 			float4 b = Boundary[m];
+			if (IsInDeathBox(b))
+			{
+				b = float4(999,999,999,0);
+			}
 			diff = pi - b.xyz;
 			psi = b.w;
 			dist2 = Length2(diff);
@@ -279,6 +297,10 @@ float3 SolveDensity(int id, float3 pi, float pressure)
 			int m = n - NumParticles;
 			// float4 b = mul(BoundaryMatrices[Particles2Boundary[m]], Boundary[m]);
 			float4 b = Boundary[m];
+			if (IsInDeathBox(b))
+			{
+				b = float4(999,999,999,0);
+			}
 			diff = pi - b.xyz;
 			psi = b.w;
 			dist2 = Length2(diff);
@@ -312,9 +334,9 @@ void SolveConstraint(int id : SV_DispatchThreadID)
 	{
 		float3 pi = PredictedREAD[id].xyz;
 		float pressure = Pressures[id];
-
+		
 		pi += SolveDensity(id, pi, pressure);
-
+		
 		PredictedWRITE[id] = float4(pi, 0);
 	}
 }

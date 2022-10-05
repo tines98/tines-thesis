@@ -34,6 +34,7 @@ namespace PBDFluid
 
         private FluidBoundaryObject[] fluidBoundaryObjects;
         private FluidObject[] fluidObjects;
+        private DeathPlane deathPlane;
         
         [NonSerialized] private const float Density = 1000.0f;
 
@@ -51,10 +52,14 @@ namespace PBDFluid
          */
 
         // ReSharper disable Unity.PerformanceAnalysis
-        private void StartDemo() {
-            try {
+        public void StartDemo() {
+            if (hasStarted) return;
+            try
+            {
+                run = true;
                 GetFluidBoundaryObjects();
                 GetFluidObjects();
+                GetDeathPlane();
                 Debug.Log($"found {fluidBoundaryObjects.Length} fluidBoundaryObjects!");
                 Debug.Log($"found {fluidObjects.Length} fluidObjects!");
 
@@ -101,6 +106,9 @@ namespace PBDFluid
         // ReSharper disable Unity.PerformanceAnalysis
         private void GetFluidObjects() => fluidObjects = GetComponentsInChildren<FluidObject>();
 
+        // ReSharper disable Unity.PerformanceAnalysis
+        private void GetDeathPlane() => deathPlane = GetComponentInChildren<DeathPlane>();
+
         private void Update() {
             if(wasError) return;
             if (!hasStarted){
@@ -109,14 +117,14 @@ namespace PBDFluid
             }
             if (run) {
                 // ReSharper disable once Unity.PerformanceCriticalCodeInvocation
-                solver.StepPhysics(TimeStep);
+                solver.StepPhysics(TimeStep, deathPlane.transform.position, deathPlane.size);
                 volume.FillVolume(fluid, solver.Hash, solver.Kernel);
             }
 
             volume.Hide = !drawFluidVolume;
 
             if (drawBoundaryParticles)
-                boundary.Draw(mainCamera, sphereMesh, boundaryParticleMat, 0, Color.red);
+                boundary.Draw(mainCamera, sphereMesh, boundaryParticleMat, 0, Color.red, deathPlane.transform.position, deathPlane.size);
             if (drawFluidParticles)
                 fluid.Draw(mainCamera, sphereMesh, fluidParticleMat, 0);
         }
