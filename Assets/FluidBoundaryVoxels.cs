@@ -14,7 +14,7 @@ public class FluidBoundaryVoxels : FluidBoundaryObject
     private VoxelizerDemo voxelizerDemo;
     private FluidContainerizer fluidContainerizer;
     private List<Box3> voxels;
-    private bool start = false;
+    private bool start;
     
     // Start is called before the first frame update
     void Start()
@@ -22,18 +22,19 @@ public class FluidBoundaryVoxels : FluidBoundaryObject
         fluidContainerizer = GetComponent<FluidContainerizer>();
         Assert.IsNotNull(fluidContainerizer);
         
-        fluidBodyMeshDemo = GetComponentInParent<FluidBodyMeshDemo>();
-        Assert.IsNotNull(fluidBodyMeshDemo);
+        FluidBodyMeshDemo = GetComponentInParent<FluidBodyMeshDemo>();
+        Assert.IsNotNull(FluidBodyMeshDemo);
         
         voxelizerDemo = GetComponentInParent<VoxelizerDemo>();
         Assert.IsNotNull(voxelizerDemo);
     }
 
+    /// <summary> Creates boundary particles </summary>
     private void CreateParticles()
     {
         start = true;
         voxels = fluidContainerizer.ExteriorVoxels;
-        ParticleSource = new ParticlesFromVoxels(fluidBodyMeshDemo.Radius() * 2, voxels, transform.localToWorldMatrix);
+        ParticleSource = new ParticlesFromVoxels(FluidBodyMeshDemo.Radius() * 2, voxels, transform.localToWorldMatrix);
         ParticleSource.CreateParticles();
         
         Debug.Log($"Boundary Particles for object {name} is {ParticleSource.NumParticles}");

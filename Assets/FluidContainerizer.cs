@@ -20,27 +20,33 @@ public class FluidContainerizer : MonoBehaviour
         voxelizerDemo = GetComponentInParent<VoxelizerDemo>();
             
         meshHollower = new MeshHollower(voxelizerDemo.Voxelizer.Voxels);
+        ExteriorVoxels = new List<Box3>(meshHollower.HullVoxels.Count);
         
         CalculateExterior();
         CalculateInterior();
-        
+
         Assert.IsTrue(ExteriorVoxels.Count > 0, "Exterior is empty");
         Assert.IsTrue(InteriorVoxels.Count > 0, "Interior is empty");
         Assert.IsTrue(IsReady(),"IsReady is implemented wrong");
     }
 
+    
+    /// <returns>True if the fluid container is done being containerized</returns>
     public bool IsReady() => ExteriorVoxels.Count > 0 && InteriorVoxels.Count > 0;
     
-    private void CalculateExterior() {
-        ExteriorVoxels = new List<Box3>();
-        meshHollower.HullVoxels.ForEach(point => ExteriorVoxels.Add(voxelizerDemo.GetVoxel(point.X,point.Y,point.Z)));
-    }
+    
+    /// <summary>
+    /// Calculates the voxels for each point in the hull voxels from meshHollower
+    /// <see cref="MeshHollower"/>
+    /// </summary>
+    private void CalculateExterior() => meshHollower.HullVoxels.ForEach(point => ExteriorVoxels.Add(voxelizerDemo.GetVoxel(point.X,point.Y,point.Z)));
 
-    private void CalculateInterior() {
-        InteriorVoxels = new List<Box3>(voxelizerDemo.Voxels.Count);
-        voxelizerDemo.Voxels.ForEach(voxel => InteriorVoxels.Add( new Box3( voxel.Min, voxel.Max)));
-    }
-
+    
+    /// <summary>
+    /// Puts the voxels from the voxelized mesh into InteriorVoxels
+    /// </summary>
+    private void CalculateInterior() => InteriorVoxels = voxelizerDemo.Voxels;
+    
     private void OnDrawGizmos()
     {
         if (!drawGrid) return;

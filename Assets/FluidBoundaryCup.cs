@@ -9,17 +9,25 @@ public class FluidBoundaryCup : FluidBoundaryObject
     [SerializeField] private Vector3 size;
     private void Start()
     {
-        fluidBodyMeshDemo = GetComponentInParent<FluidBodyMeshDemo>();
-        Assert.IsNotNull(fluidBodyMeshDemo);
-        ParticleSource = new ParticlesFromBounds(fluidBodyMeshDemo.Radius() * 2, OuterBounds(), InnerBounds());
+        FluidBodyMeshDemo = GetComponentInParent<FluidBodyMeshDemo>();
+        Assert.IsNotNull(FluidBodyMeshDemo);
+        ParticleSource = new ParticlesFromBounds(FluidBodyMeshDemo.Radius() * 2, OuterBounds(), InnerBounds());
         Debug.Log($"particles for object {this.name} is {ParticleSource.NumParticles}");
     }
+    
+    
+    /// <returns>The bounds of the cup</returns>
     private Bounds OuterBounds() => new Bounds(transform.position, size);
-
+    
+    
+    /// <summary>
+    /// Calculates the inner bounding box, so the walls of the cup is 1 particle thick
+    /// Also 
+    /// </summary>
+    /// <returns>The calculated inner bounds</returns>
     private Bounds InnerBounds()
     {
-        var innerBounds = new Bounds(transform.position, size - (Vector3.one * fluidBodyMeshDemo.Radius() * 2f * 1.2f));
-        Debug.Log(innerBounds.max);
+        var innerBounds = new Bounds(transform.position, size - (Vector3.one * FluidBodyMeshDemo.Radius() * 2f * 1.2f));
         innerBounds.max = new Vector3(innerBounds.max.x,innerBounds.center.y+size.y/2f,innerBounds.max.z);
         return innerBounds;
     }
@@ -29,7 +37,7 @@ public class FluidBoundaryCup : FluidBoundaryObject
         var outerBounds = OuterBounds();
         Gizmos.DrawWireCube(outerBounds.center,outerBounds.size);
 
-        if (fluidBodyMeshDemo != null) {
+        if (FluidBodyMeshDemo != null) {
             var innerBounds = InnerBounds();
             Gizmos.DrawWireCube(innerBounds.center,innerBounds.size);
         }
