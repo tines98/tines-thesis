@@ -9,9 +9,9 @@ namespace PBDFluid.Scripts
     public class ParticlesFromVoxels : ParticleSource
     {
         private readonly List<Box3> voxels;
-        private Vector3 voxelSize;
+        private readonly Vector3 voxelSize;
         private Matrix4x4 trs;
-    
+        
         public ParticlesFromVoxels(float spacing, List<Box3> voxels, Matrix4x4 trs) : base(spacing) {
             this.voxels = voxels;
             this.trs = trs;
@@ -20,8 +20,16 @@ namespace PBDFluid.Scripts
             Positions = new List<Vector3>();
         }
 
+        
+        /// <summary>
+        /// Seeds particles in each voxel
+        /// </summary>
         public override void CreateParticles() => voxels.ForEach(voxel => CreateParticlesInVoxel(voxel));
 
+        
+        /// <summary>
+        /// Seeds particles in a voxel
+        /// </summary>
         private void CreateParticlesInVoxel(Box3 voxel)
         {
             var numX = (int)((voxel.Size.x + HalfSpacing) / Spacing);
@@ -42,8 +50,8 @@ namespace PBDFluid.Scripts
                 }
             }
         }
-
-        /** Returns true if voxel size is smaller than radius */
+        
+        /// <returns>true if voxel size is smaller than radius</returns>
         private bool AreVoxelsSmallerThanRadius() => voxelSize.x < Spacing 
                                                   || voxelSize.y < Spacing 
                                                   || voxelSize.z < Spacing;

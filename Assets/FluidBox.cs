@@ -9,11 +9,18 @@ public class FluidBox : FluidObject
     [SerializeField] private Vector3 size;
     private void Start()
     {
-        fluidBodyMeshDemo = GetComponentInParent<FluidBodyMeshDemo>();
-        Assert.IsNotNull(fluidBodyMeshDemo);
-        ParticleSource = new ParticlesFromBounds(fluidBodyMeshDemo.Radius() * 2, OuterBounds());
+        FluidBodyMeshDemo = GetComponentInParent<FluidBodyMeshDemo>();
+        Assert.IsNotNull(FluidBodyMeshDemo);
+        ParticleSource = new ParticlesFromBounds(FluidBodyMeshDemo.Radius() * 2, OuterBounds());
     }
+    
+    /// <summary>
+    /// Creates a Bounds object corresponding to the fluid box
+    /// </summary>
+    /// <returns>The Bounds object</returns>
     private Bounds OuterBounds() => new Bounds(transform.position, size);
+    
+    
     private void OnDrawGizmos() {
         Gizmos.color = Color.blue;
         var outerBounds = OuterBounds();

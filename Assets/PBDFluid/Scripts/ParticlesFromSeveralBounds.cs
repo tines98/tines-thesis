@@ -13,6 +13,10 @@ namespace PBDFluid.Scripts
             this.particleSources = particleSources;
         }
 
+        /// <summary>
+        /// Goes through every particleSource, and calls CreateParticles method on them if not already called.
+        /// Then adds every particle from every particleSource into its own list
+        /// </summary>
         public override void CreateParticles()
         {
             Positions = new List<Vector3>();

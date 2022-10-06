@@ -45,13 +45,11 @@ namespace PBDFluid
         private RenderVolume volume;
         private bool wasError;
 
-        /**
-         * TODO:
-         * I have changed to a system where i get fluidBoundary components from child gameobjects within this gameobject
-         * They are still offset but still work
-         */
-
         // ReSharper disable Unity.PerformanceAnalysis
+        /// <summary>
+        /// Starts the fluid simulation
+        /// </summary>
+        /// <remarks>Can be called from the outside, such as from UI</remarks>
         public void StartDemo() {
             if (hasStarted) return;
             try
@@ -80,16 +78,20 @@ namespace PBDFluid
             hasStarted = true;
         }
         
-        /**Adjusts the Radius based on the SIMULATION_SIZE enum.
-            A smaller radius means more particles.
-            If the number of particles is to low or high
-            the bitonic sort shader will throw a exception
-            as it has a set range it can handle but this can be manually changes in the BitonicSort.cs script.
-
-            A smaller radius may also require more solver steps
-            as the boundary is thinner and the fluid many step
-            through and leak out.
-         */
+        
+        /// <summary>
+        /// Adjusts the Radius based on the SIMULATION_SIZE enum.
+        /// A smaller radius means more particles.
+        /// If the number of particles is to low or high
+        /// the bitonic sort shader will throw a exception
+        /// as it has a set range it can handle but this can be manually changes in the BitonicSort.cs script.
+        /// </summary>
+        /// <remarks>
+        /// A smaller radius may also require more solver steps
+        /// as the boundary is thinner and the fluid many step
+        /// through and leak out.
+        /// </remarks>
+        /// <returns>The radius for particles</returns>
         public float Radius() =>  simulationSize switch {
             SIMULATION_SIZE.LOW => 0.1f,
             SIMULATION_SIZE.MEDIUM => 0.08f,
@@ -97,16 +99,25 @@ namespace PBDFluid
             _ => 0.08f
         };
 
-        // ReSharper disable Unity.PerformanceAnalysis
-        /**
-         * Gets all FluidBoundaryObjects components in children
-         */
-        private void GetFluidBoundaryObjects() => fluidBoundaryObjects = GetComponentsInChildren<FluidBoundaryObject>();
         
         // ReSharper disable Unity.PerformanceAnalysis
+        /// <summary>
+        /// Searches child gameobjects for FluidBoundaryObjects
+        /// </summary>
+        private void GetFluidBoundaryObjects() => fluidBoundaryObjects = GetComponentsInChildren<FluidBoundaryObject>();
+        
+        
+        // ReSharper disable Unity.PerformanceAnalysis
+        /// <summary>
+        /// Searches child gameobjects for FluidObject components
+        /// </summary>
         private void GetFluidObjects() => fluidObjects = GetComponentsInChildren<FluidObject>();
 
+        
         // ReSharper disable Unity.PerformanceAnalysis
+        /// <summary>
+        /// Searches child gameobjects for a DeathPlane component
+        /// </summary>
         private void GetDeathPlane() => deathPlane = GetComponentInChildren<DeathPlane>();
 
         private void Update() {
@@ -144,6 +155,9 @@ namespace PBDFluid
                 solver.Hash.DrawGrid(cam, Color.yellow);
         }
 
+        /// <summary>
+        /// Puts every fluid boundary object into a particle source and creates a new FluidBody
+        /// </summary>
         private void CreateBoundary() {
             var particleSources = new ParticleSource[fluidBoundaryObjects.Length];
             for (var index = 0; index < fluidBoundaryObjects.Length; index++)
@@ -153,6 +167,9 @@ namespace PBDFluid
             boundary = new FluidBoundary(particleSource,Radius(),Density);
         }
 
+        /// <summary>
+        /// Puts every fluid object into a particle source and creates a new FluidBody
+        /// </summary>
         private void CreateFluid()
         {
             var particleSources = new ParticleSource[fluidObjects.Length];
@@ -170,6 +187,9 @@ namespace PBDFluid
             if (drawSimulationBounds) DrawSimulationBounds();
         }
 
+        /// <summary>
+        /// Draws a gizmo showing the simulation bounds
+        /// </summary>
         private void DrawSimulationBounds() => 
             Gizmos.DrawWireCube(transform.position+simulationBounds.center,simulationBounds.size);
 

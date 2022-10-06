@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using DefaultNamespace;
 using UnityEngine;
 
 namespace PBDFluid.Scripts
@@ -29,6 +28,12 @@ namespace PBDFluid.Scripts
             Debug.Log($"hull voxels size is {HullVoxels.Count}");
         }
 
+        
+        /// <summary>
+        /// Takes in a 3D grid and adds a padding around it
+        /// </summary>
+        /// <param name="grid">Grid to add padding to</param>
+        /// <returns>The new padded grid</returns>
         private static int[,,] PadGrid(int[,,] grid) {
             var w = grid.GetLength(0) + 2;
             var h = grid.GetLength(1) + 2;
@@ -41,7 +46,12 @@ namespace PBDFluid.Scripts
             return paddedGrid;
         }
 
-        /** Searches grid until it finds a voxel within mesh, then returns its position */
+        
+        /// <summary>
+        /// Searches grid until it finds a voxel within mesh
+        /// </summary>
+        /// <returns>The first point found</returns>
+        /// <exception cref="Exception">if no point is found</exception>
         private Point FindMeshVoxel() {
             for (var z = 0; z < depth; z++)
                 for (var y = 0; y < height; y++)
@@ -51,7 +61,13 @@ namespace PBDFluid.Scripts
             throw new Exception("Could not find the mesh");
         }
 
+        
         // ReSharper disable once InconsistentNaming
+        /// <summary>
+        /// Iterative Depth-First Search implementation
+        /// To find a hull of voxels around the mesh   
+        /// </summary>
+        /// <param name="start">Start point for the algorithm (must be within the mesh)</param>
         private void DFS(Point start) {
             var stack = new Stack<Point>();
             stack.Push(start);
@@ -67,32 +83,53 @@ namespace PBDFluid.Scripts
             }
         }
 
+        
+        /// <summary>
+        /// Adds a point into the HullVoxels list
+        /// </summary>
+        /// <param name="point">Point to add</param>
         private void SetAsHullVoxel(Point point) => HullVoxels.Add(new Point(point.X-1,point.Y-1,point.Z-1));
         
-        /** Searches through neighbouring cells, and returns those that can be moved to */
+
+        /// <summary>
+        /// Searches through neighbouring cells, and checks if they fulfill the CanGo method, then adds them to a list
+        /// </summary>
+        /// <param name="point"></param>
+        /// <returns>List of neighbouring cells that can be moved to</returns>
         private List<Point> Neighbours(Point point) => (from point1 in Point.TwentySixNeighbourhood 
                                                         where CanGo(point.Move(point1)) 
                                                         select point.Move(point1)).ToList();
 
-        /** Returns true if Point is both within bounds, and not visited */
+
+        /// <returns>Returns true if Point is both within bounds, and not visited</returns>
         private bool CanGo(Point point) => CanGo(point.X, point.Y, point.Z);
+        
+        /// <inheritdoc cref="CanGo(Point)"/>
         private bool CanGo(int x, int y, int z) => IsWithinBounds(x,y,z) &&
                                                    !IsVisited(x,y,z);
+   
         
-        /** Returns true if a point is within bounds with regards to padding */
+        /// <returns>Returns true if a point is within bounds with regards to padding</returns>
         private bool IsWithinBounds(int x, int y, int z) => (x >= 0 && x < width) &&
                                                             (y >= 0 && y < height) &&
                                                             (z >= 0 && z < depth);
+  
         
-        /** Sets this point as visited */
+        /// <summary> Sets a point as visited </summary>
         private void SetVisited(Point point) => visited[point.X, point.Y, point.Z] = true;
+   
         
-        /** Returns true if point is visited */
+        ///<returns> Returns true if point is visited </returns>
         private bool IsVisited(Point point) => IsVisited(point.X,point.Y,point.Z);
+        
+        /// <inheritdoc cref="IsVisited(Point)"/>
         private bool IsVisited(int x, int y, int z) => visited[x, y, z];
-
-        /** Returns true if Point is within the voxelized mesh */
+        
+        
+        /// <returns>Returns true if Point is within the voxelized mesh</returns>
         private bool IsInMesh(Point point) => IsInMesh(point.X, point.Y, point.Z);
+        
+        /// <inheritdoc cref="IsInMesh(Point)"/>
         private bool IsInMesh(int x, int y, int z) => IsWithinBounds(x,y,z) &&
                                                       voxels[x, y, z] > 0;
         
