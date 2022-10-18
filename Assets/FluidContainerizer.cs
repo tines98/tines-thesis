@@ -15,12 +15,13 @@ public class FluidContainerizer : MonoBehaviour
     public List<Box3> InteriorVoxels;
 
     // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
         voxelizerDemo = GetComponentInParent<VoxelizerDemo>();
             
         meshHollower = new MeshHollower(voxelizerDemo.Voxelizer.Voxels);
         ExteriorVoxels = new List<Box3>(meshHollower.HullVoxels.Count);
+        InteriorVoxels = new List<Box3>(voxelizerDemo.Voxels.Count);
         
         CalculateExterior();
         CalculateInterior();

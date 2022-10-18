@@ -38,7 +38,7 @@ public class FluidBoundaryVoxels : FluidBoundaryObject
         ParticleSource.CreateParticles();
         
         Debug.Log($"Boundary Particles for object {name} is {ParticleSource.NumParticles}");
-        voxelizerDemo.HideVoxelizedMesh();
+        // voxelizerDemo.HideVoxelizedMesh();
     }
 
     private void Update()

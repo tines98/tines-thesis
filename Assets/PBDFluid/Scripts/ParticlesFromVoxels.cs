@@ -35,7 +35,7 @@ namespace PBDFluid.Scripts
             var numX = (int)((voxel.Size.x + HalfSpacing) / Spacing);
             var numY = (int)((voxel.Size.y + HalfSpacing) / Spacing);
             var numZ = (int)((voxel.Size.z + HalfSpacing) / Spacing);
-            Assert.IsTrue(numX>0 || numY>0 || numZ>0, "Voxel too small for particle size");
+            Assert.IsTrue(numX>0 || numY>0 || numZ>0, $"Voxel too small for particle size {voxel.Size.x + HalfSpacing} {Spacing}");
             
             for (var z = 0; z < numZ; z++) {
                 for (var y = 0; y < numY; y++) {
@@ -45,7 +45,7 @@ namespace PBDFluid.Scripts
                             y = Spacing * y + voxel.Min.y + HalfSpacing,
                             z = Spacing * z + voxel.Min.z + HalfSpacing
                         };
-                        Positions.Add(trs.MultiplyPoint(pos));
+                        Positions.Add(pos);
                     }
                 }
             }

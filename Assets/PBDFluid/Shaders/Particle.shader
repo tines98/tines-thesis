@@ -67,8 +67,6 @@ Shader "PBDFluid/Particle"
 				float d = diameter;
 				if (IsInDeathBox(pos,deathPlanePosition,deathPlaneSize)){
 					pos = float4(999,999,999,0);
-					d = 0;
-					return;
 				}
 
 				unity_ObjectToWorld._11_21_31_41 = float4(d, 0, 0, 0);

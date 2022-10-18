@@ -39,7 +39,7 @@ public class FluidVoxels : FluidObject
         ParticleSource.CreateParticles();
         
         Debug.Log($"Fluid Particles for object {name} is {ParticleSource.NumParticles}");
-        voxelizerDemo.HideVoxelizedMesh();
+        // voxelizerDemo.HideVoxelizedMesh();
     }
     
     private void Update()
