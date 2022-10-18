@@ -25,7 +25,6 @@ namespace PBDFluid.Scripts
             visited = new bool[width, height, depth];
             HullVoxels = new List<Point>();
             DFS(FindMeshVoxel());
-            Debug.Log($"hull voxels size is {HullVoxels.Count}");
         }
 
         

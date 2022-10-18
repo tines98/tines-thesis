@@ -38,7 +38,7 @@ public class FluidVoxels : FluidObject
         ParticleSource = new ParticlesFromVoxels(FluidBodyMeshDemo.Radius() * 2, voxels, transform.localToWorldMatrix);
         ParticleSource.CreateParticles();
         
-        Debug.Log($"Fluid Particles for object {name} is {ParticleSource.NumParticles}");
+        LoggingUtility.LogInfo($"FluidVoxels {name} har a total of {ParticleSource.NumParticles} fluid particles!");
         // voxelizerDemo.HideVoxelizedMesh();
     }
     

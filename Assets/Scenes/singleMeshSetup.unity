@@ -169,8 +169,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   partOfFluidSim: 1
   radius: 0
-  drawAABBTree: 0
   drawBounds: 0
+  drawAABBTree: 0
+  drawMeshBox: 0
 --- !u!1 &934190881
 GameObject:
   m_ObjectHideFlags: 0
@@ -252,7 +253,7 @@ GameObject:
   m_Layer: 0
   m_Name: Sphere
   m_TagString: Untagged
-  m_Icon: {fileID: 0}
+  m_Icon: {fileID: -964228994112308473, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
@@ -302,7 +303,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: 8906b367c09321b448ac1f02e8a83821, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -402,7 +403,7 @@ GameObject:
   m_Layer: 0
   m_Name: Cup
   m_TagString: Untagged
-  m_Icon: {fileID: 0}
+  m_Icon: {fileID: 5132851093641282708, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
@@ -446,7 +447,7 @@ GameObject:
   m_Layer: 0
   m_Name: Death Plane
   m_TagString: Untagged
-  m_Icon: {fileID: 0}
+  m_Icon: {fileID: 7250588514170254948, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
@@ -556,7 +557,7 @@ MonoBehaviour:
   boundaryParticleMat: {fileID: 2100000, guid: 257742b1fedac2f4791369b571260722, type: 2}
   volumeMat: {fileID: 2100000, guid: 32d2cd031f252b04b88a55d7d051391d, type: 2}
   drawGrid: 0
-  drawBoundaryParticles: 1
+  drawBoundaryParticles: 0
   drawFluidParticles: 0
   drawFluidVolume: 1
   drawSimulationBounds: 1
@@ -865,7 +866,7 @@ GameObject:
   m_Layer: 0
   m_Name: Extra Box
   m_TagString: Untagged
-  m_Icon: {fileID: 0}
+  m_Icon: {fileID: 3936346786652291628, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1

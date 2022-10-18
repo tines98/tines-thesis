@@ -53,6 +53,7 @@ namespace PBDFluid
             Densities = new ComputeBuffer(NumParticles, sizeof(float));
             Pressures = new ComputeBuffer(NumParticles, sizeof(float));
 
+            Debug.Log($"Total number of fluid particles is {NumParticles}");
             CreateParticles(source, TRS);
         }
 

@@ -58,8 +58,8 @@ namespace PBDFluid
                 GetFluidBoundaryObjects();
                 GetFluidObjects();
                 GetDeathPlane();
-                Debug.Log($"found {fluidBoundaryObjects.Length} fluidBoundaryObjects!");
-                Debug.Log($"found {fluidObjects.Length} fluidObjects!");
+                LoggingUtility.LogWithColor($"Fluid Demo: Found {fluidBoundaryObjects.Length} fluidBoundaryObjects!",Color.green);
+                LoggingUtility.LogWithColor("Fluid Demo: Found {fluidObjects.Length} fluidObjects!",Color.green);
 
                 CreateFluid();
                 CreateBoundary();

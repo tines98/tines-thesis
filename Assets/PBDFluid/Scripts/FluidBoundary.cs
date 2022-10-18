@@ -111,7 +111,7 @@ namespace PBDFluid
 
             Bounds = new Bounds();
             Bounds.SetMinMax(min, max);
-            Debug.Log($"num particles is {NumParticles}");
+            Debug.Log($"Total number of boundary particles is {NumParticles}");
             Positions = new ComputeBuffer(NumParticles, 4 * sizeof(float));
             Positions.SetData(positions);
 

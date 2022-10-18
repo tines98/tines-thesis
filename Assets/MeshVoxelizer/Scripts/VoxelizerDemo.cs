@@ -70,7 +70,6 @@ namespace MeshVoxelizer.Scripts
             var scaledMin = mesh.bounds.min;
             var scaledMax = mesh.bounds.max;
             bounds = new Box3(scaledMin, scaledMax);
-            Debug.Log($"bounds is {bounds.Center} {bounds.Size}");
 
             var center = nonVoxelizedGameObject.transform.position;
             

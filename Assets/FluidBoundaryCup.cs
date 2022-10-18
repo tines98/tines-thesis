@@ -12,7 +12,7 @@ public class FluidBoundaryCup : FluidBoundaryObject
         FluidBodyMeshDemo = GetComponentInParent<FluidBodyMeshDemo>();
         Assert.IsNotNull(FluidBodyMeshDemo);
         ParticleSource = new ParticlesFromBounds(FluidBodyMeshDemo.Radius() * 2, OuterBounds(), InnerBounds());
-        Debug.Log($"particles for object {this.name} is {ParticleSource.NumParticles}");
+        LoggingUtility.LogInfo($"FluidBoundaryCup {name} har a total of {ParticleSource.NumParticles} boundary particles!");
     }
     
     
