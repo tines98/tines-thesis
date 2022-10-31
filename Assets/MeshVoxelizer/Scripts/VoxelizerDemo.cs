@@ -66,15 +66,11 @@ namespace MeshVoxelizer.Scripts
             Assert.IsNotNull(mesh);
             var mat = meshRenderer.material;
             nonVoxelizedGameObject = filter.gameObject;
-
-            var scaledMin = mesh.bounds.min;
-            var scaledMax = mesh.bounds.max;
-            bounds = new Box3(scaledMin, scaledMax);
+            
+            bounds = new Box3(mesh.bounds.min, mesh.bounds.max);
 
             var center = nonVoxelizedGameObject.transform.position;
             
-            var meshSize = Vector3.Scale(nonVoxelizedGameObject.transform.localScale, mesh.bounds.size) * 0.5f;
-            meshBox = new Box3(center - meshSize, center + meshSize);
             numVoxels = new Vector3Int(
                 (int) Math.Ceiling(meshBox.Size.x / (radius * 2)),
                 (int) Math.Ceiling(meshBox.Size.y / (radius * 2)),
@@ -124,6 +120,7 @@ namespace MeshVoxelizer.Scripts
             voxelizedGameObject.AddComponent<FluidContainerizer>();
             voxelizedGameObject.AddComponent<FluidBoundaryVoxels>();
             voxelizedGameObject.AddComponent<FluidVoxels>();
+            voxelizedGameObject.AddComponent<DeathPlaneCulling>();
         } // ReSharper disable Unity.PerformanceAnalysis
         public void HideVoxelizedMesh() => voxelizedGameObject.GetComponent<Renderer>().enabled = false;
 

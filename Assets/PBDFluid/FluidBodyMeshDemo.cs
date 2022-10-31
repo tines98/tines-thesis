@@ -32,9 +32,9 @@ namespace PBDFluid
         [SerializeField] private bool run = true;
         [SerializeField] private Mesh sphereMesh;
 
+        public DeathPlane deathPlane;
         private FluidBoundaryObject[] fluidBoundaryObjects;
         private FluidObject[] fluidObjects;
-        private DeathPlane deathPlane;
         
         [NonSerialized] private const float Density = 1000.0f;
 
