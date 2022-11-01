@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Cup 2
+  m_Name: Glass Death Plane Culled
   m_Shader: {fileID: 4800000, guid: 0b5332a18a9e9ffd196e940c8d85d570, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4
