@@ -21,16 +21,15 @@ namespace MeshVoxelizer.Scripts
         [Header("Gizmos")] 
         [SerializeField] private bool drawBounds;
         [SerializeField] private bool drawAABBTree;
-        [SerializeField] private bool drawMeshBox;
 
         private Box3 bounds;
         private FluidBodyMeshDemo fluidBodyMeshDemo;
-        private Box3 meshBox;
+        private Vector3 meshGlobalSize;
 
         private GameObject nonVoxelizedGameObject;
         private Vector3Int numVoxels;
         private GameObject voxelizedGameObject;
-
+        private Matrix4x4 trsMatrix;
 
         public MeshVoxelizer Voxelizer;
 
@@ -52,46 +51,66 @@ namespace MeshVoxelizer.Scripts
         /// </summary>
         private void StartVoxelization()
         {
+            //Find Components on this gameObject
             var filter = GetComponent<MeshFilter>();
             var meshRenderer = GetComponent<MeshRenderer>();
+            // If no filter and renderer is found, check children
             if (filter == null || meshRenderer == null) {
                 filter = GetComponentInChildren<MeshFilter>();
                 meshRenderer = GetComponentInChildren<MeshRenderer>();
             }
+            Assert.IsNotNull(filter, "VoxelizerDemo did not find any MeshFilter component!");
+            Assert.IsNotNull(meshRenderer, "VoxelizerDemo did not find any MeshRenderer component!");
             
-            if (filter == null || meshRenderer == null) return;
-            meshRenderer.enabled = false;
-
-            var mesh = filter.mesh;
-            Assert.IsNotNull(mesh);
-            var mat = meshRenderer.material;
             nonVoxelizedGameObject = filter.gameObject;
             
-            bounds = new Box3(mesh.bounds.min, mesh.bounds.max);
-
-            var center = nonVoxelizedGameObject.transform.position;
+            //Hide non-voxelized mesh
+            meshRenderer.enabled = false;
             
+            //Get mesh to voxelize
+            var mesh = filter.mesh;
+            Assert.IsNotNull(mesh, "VoxelizerDemo did not find a mesh!");
+            
+            //Get material
+            var mat = meshRenderer.material;
+            
+            //Bounds in local space
+            bounds = new Box3(mesh.bounds.min, 
+                              mesh.bounds.max);
+            
+            //Bounds in global space
+            meshGlobalSize = Vector3.Scale(nonVoxelizedGameObject.transform.localScale, 
+                                           mesh.bounds.size);
+            
+            trsMatrix = nonVoxelizedGameObject.transform.localToWorldMatrix;
+            
+            //Num voxels is global size divided by particle diameter
             numVoxels = new Vector3Int(
-                (int) Math.Ceiling(meshBox.Size.x / (radius * 2)),
-                (int) Math.Ceiling(meshBox.Size.y / (radius * 2)),
-                (int) Math.Ceiling(meshBox.Size.z / (radius * 2))
+                (int) Math.Ceiling(meshGlobalSize.x / (radius * 2)),
+                (int) Math.Ceiling(meshGlobalSize.y / (radius * 2)),
+                (int) Math.Ceiling(meshGlobalSize.z / (radius * 2))
             );
             
-            Voxelizer = new MeshVoxelizer(numVoxels.x, numVoxels.y, numVoxels.z);
-            Voxelizer.Voxelize(mesh.vertices, mesh.triangles, bounds);
+            Voxelizer = new MeshVoxelizer(numVoxels.x, 
+                                          numVoxels.y, 
+                                          numVoxels.z);
             
-            
-            var localMin = meshBox.Min - center;
-            mesh = CreateMesh(Voxelizer.Voxels, Scale(), localMin);
+            //voxelizing is in local space
+            Voxelizer.Voxelize(mesh.vertices, 
+                               mesh.triangles, 
+                               bounds);
+            mesh = CreateMesh(Voxelizer.Voxels, Scale(), bounds.Min);
 
-            CreateVoxelizedGameObject(mesh, mat, nonVoxelizedGameObject.transform);
+            CreateVoxelizedGameObject(mesh, 
+                                      mat, 
+                                      nonVoxelizedGameObject.transform);
         }
 
         /// <returns>The scale of a voxel box</returns>
         Vector3 Scale() => new Vector3(
-            meshBox.Size.x / numVoxels.x,
-            meshBox.Size.y / numVoxels.y,
-            meshBox.Size.z / numVoxels.z);
+            meshGlobalSize.x / numVoxels.x,
+            meshGlobalSize.y / numVoxels.y,
+            meshGlobalSize.z / numVoxels.z);
 
         /// <summary>
         /// Creates the voxelized GameObject
@@ -99,11 +118,10 @@ namespace MeshVoxelizer.Scripts
         /// <param name="mesh">Mesh for the created gameObject</param>
         /// <param name="mat">Material for the created gameObject</param>
         /// <param name="copyTransform">Transform to copy from</param>
-        private void CreateVoxelizedGameObject(Mesh mesh, Material mat, Transform copyTransform)
-        {
+        private void CreateVoxelizedGameObject(Mesh mesh, Material mat, Transform copyTransform){
             voxelizedGameObject = new GameObject("Voxelized") {
                 transform = {
-                    parent = transform,
+                    parent = copyTransform.parent,
                     position = copyTransform.position,
                     rotation = copyTransform.rotation,
                 }
@@ -138,12 +156,29 @@ namespace MeshVoxelizer.Scripts
         {
             var point = new Vector3(x, y, z);
             var scale = Scale();
-            Assert.IsTrue(numVoxels.x > 0 || numVoxels.y > 0 || numVoxels.z > 0, "Size is 0");
-            Assert.IsTrue(scale.x > 0 || scale.y > 0 || scale.z > 0, "Scale is 0");
-            var min = meshBox.Min + Vector3.Scale(point, scale);
-            var max = min + scale;
-            var box = new Box3(min, max);
-            return box;
+            Assert.IsTrue(numVoxels.x > 0 
+                       || numVoxels.y > 0 
+                       || numVoxels.z > 0,
+                          "Size is 0");
+            Assert.IsTrue(scale.x > 0 
+                       || scale.y > 0 
+                       || scale.z > 0,
+                          "Scale is 0");
+            var point1 = new Vector3(x + 1, y + 1, z + 1);
+            // Point to local(+scale) coord
+            var min = bounds.Min + Vector3.Scale(point, scale);
+            var max = bounds.Min + Vector3.Scale(point1, scale);
+            // Transform to global space
+            min = trsMatrix.MultiplyPoint(min);
+            max = trsMatrix.MultiplyPoint(max);
+            // Fix to avoid negative sized box3
+            var trueMin = new Vector3(Mathf.Min(min.x, max.x), 
+                                      Mathf.Min(min.y, max.y), 
+                                      Mathf.Min(min.z, max.z));
+            var trueMax = new Vector3(Mathf.Max(min.x, max.x),
+                                      Mathf.Max(min.y, max.y),
+                                      Mathf.Max(min.z, max.z));
+            return new Box3(trueMin, trueMax);
         }
 
         /// <summary>
@@ -166,7 +201,6 @@ namespace MeshVoxelizer.Scripts
                     for (var x = 0; x < numVoxels.x; x++)
                     {
                         if (voxels[x, y, z] != 1) continue;
-                        
                         var pos = min + new Vector3(x * scale.x, y * scale.y, z * scale.z);
                         
                         Voxels.Add(GetVoxel(x,y,z));
@@ -328,17 +362,16 @@ namespace MeshVoxelizer.Scripts
             indices.Add(count + 5);
         }
 
+        
         //GIZMOS
+        private void DrawBoundsGizmo(Matrix4x4 trs) => 
+            Gizmos.DrawWireCube(trs.MultiplyPoint(bounds.Center), 
+                                trs.MultiplyVector(bounds.Size));
 
-        private void DrawMeshBoxGizmo() => Gizmos.DrawWireCube(meshBox.Center, 
-                                                               meshBox.Size);
-
-        private void DrawBoundsGizmo(Matrix4x4 trs) => Gizmos.DrawWireCube(trs.MultiplyPoint(bounds.Center), 
-                                                                        trs.MultiplyVector(bounds.Size));
-
-        private void DrawAabbTreeGizmo(Matrix4x4 trs) => Voxelizer?.Bounds.ForEach(box => Gizmos.DrawWireCube(trs.MultiplyPoint(box.Center), trs.MultiplyVector(box.Size)));
-
-
+        private void DrawAabbTreeGizmo(Matrix4x4 trs) => 
+            Voxelizer?.Bounds.ForEach(box => Gizmos.DrawWireCube(trs.MultiplyPoint(box.Center), 
+                                                                 trs.MultiplyVector(box.Size)));
+        
         private void OnDrawGizmos()
         {
             if (voxelizedGameObject == null) return;
@@ -349,9 +382,6 @@ namespace MeshVoxelizer.Scripts
 
             Gizmos.color = Color.blue;
             if (drawBounds) DrawBoundsGizmo(trs);
-            
-            Gizmos.color = Color.magenta;
-            if (drawMeshBox) DrawMeshBoxGizmo();
         }
     }
 }
