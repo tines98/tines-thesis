@@ -9,7 +9,9 @@ namespace PBDFluid
     {
         //Constants
         private const float TimeStep = 1.0f / 60.0f;
+        [NonSerialized] private const float Density = 500.0f;
         
+        // Serializables
         [SerializeField] private Camera mainCamera;
         [SerializeField] private Bounds simulationBounds;
         
@@ -17,7 +19,7 @@ namespace PBDFluid
         [SerializeField] private Material fluidParticleMat;
         [SerializeField] private Material boundaryParticleMat;
         [SerializeField] private Material volumeMat;
-        
+   
         [Header("Render Booleans")]
         [SerializeField] private bool drawGrid;
         [SerializeField] private bool drawBoundaryParticles;
@@ -30,17 +32,21 @@ namespace PBDFluid
         [SerializeField] private bool run = true;
         [SerializeField] private Mesh sphereMesh;
 
-        public DeathPlane deathPlane;
+        // Fluid & Boundary Objects
+        private FluidContainerizer fluidContainerizer;
+        private BarChart barChart;
         private FluidBoundaryObject[] fluidBoundaryObjects;
         private FluidObject[] fluidObjects;
         
-        [NonSerialized] private const float Density = 1000.0f;
-
-        private bool hasStarted;
+        // Fluid Demo Objects
+        public DeathPlane deathPlane;
         private FluidBody fluid;
         private FluidBoundary boundary;
         private FluidSolver solver;
         private RenderVolume volume;
+        
+        // Booleans
+        private bool hasStarted;
         private bool wasError;
 
         // ReSharper disable Unity.PerformanceAnalysis
@@ -58,7 +64,17 @@ namespace PBDFluid
                 GetDeathPlane();
                 LoggingUtility.LogWithColor($"Fluid Demo: Found {fluidBoundaryObjects.Length} fluidBoundaryObjects!",Color.green);
                 LoggingUtility.LogWithColor("Fluid Demo: Found {fluidObjects.Length} fluidObjects!",Color.green);
-
+                
+                barChart = GetComponentInChildren<BarChart>();
+                fluidContainerizer = GetComponentInChildren<FluidContainerizer>();
+                
+                //Place and resize DeathPlane
+                var bar = barChart.barBoundsList[0];
+                var barTRS = barChart.transform.localToWorldMatrix;
+                PlaceDeathPlane(barTRS,bar.center,
+                                bar.center.y + bar.size.y);
+                ResizeDeathPlane(fluidContainerizer.meshSize);
+                
                 CreateFluid();
                 CreateBoundary();
                 
@@ -98,6 +114,29 @@ namespace PBDFluid
         };
 
         
+        /// <summary>
+        /// Places the DeathPlane at the given position and height 
+        /// </summary>
+        /// <param name="barChartPos">Center of a Bar in the barchart</param>
+        /// <param name="y">height in which to place the DeathPlane</param>
+        /// <param name="trs">TRS Matrix to transform the point</param>
+        private void PlaceDeathPlane(Matrix4x4 trs, Vector3 barChartPos, float y) => 
+            deathPlane.transform.position = trs.MultiplyPoint(
+                new Vector3(barChartPos.x,
+                            barChartPos.y + y - (Radius() * 2), //Subtract diameter to make up for mesh dilation
+                            barChartPos.z));
+
+        
+        /// <summary>
+        /// Resizes the DeathPlane based on the given bounds
+        /// </summary>
+        /// <param name="meshSize">Bounds of the voxelized mesh</param>
+        private void ResizeDeathPlane(Vector3 meshSize) => 
+            deathPlane.size = new Vector3(meshSize.x*2,
+                                          deathPlane.size.y,
+                                          meshSize.z*2);
+        
+        
         // ReSharper disable Unity.PerformanceAnalysis
         /// <summary>
         /// Searches child gameObjects for FluidBoundaryObjects
@@ -119,24 +158,56 @@ namespace PBDFluid
         private void GetDeathPlane() => deathPlane = GetComponentInChildren<DeathPlane>();
 
         private void Update() {
-            if(wasError) return;
+            if (wasError) return;
             if (!hasStarted){
                 if (run) StartDemo();
                 return;
             }
-            if (run) {
-                // ReSharper disable once Unity.PerformanceCriticalCodeInvocation
-                solver.StepPhysics(TimeStep, deathPlane.transform.position, deathPlane.size);
-                volume.FillVolume(fluid, solver.Hash, solver.Kernel);
-            }
+            // ReSharper disable once Unity.PerformanceCriticalCodeInvocation
+            if (run) DemoStep();
 
             volume.Hide = !drawFluidVolume;
-
-            if (drawBoundaryParticles)
-                boundary.Draw(mainCamera, sphereMesh, boundaryParticleMat, 0, Color.red, deathPlane.transform.position, deathPlane.size);
-            if (drawFluidParticles)
-                fluid.Draw(mainCamera, sphereMesh, fluidParticleMat, 0);
+            
+            if (drawBoundaryParticles) 
+                DrawBoundaryParticles();
+            if (drawFluidParticles) 
+                DrawFluidParticles();
+                
         }
+
+        /// <summary>
+        /// Updates the solver and volume
+        /// </summary>
+        private void DemoStep(){
+            // ReSharper disable once Unity.PerformanceCriticalCodeInvocation
+            solver.StepPhysics(TimeStep, 
+                               deathPlane.transform.position, 
+                               deathPlane.size);
+            volume.FillVolume(fluid, 
+                              solver.Hash, 
+                              solver.Kernel);
+        }
+        
+        /// <summary>
+        /// Draws the fluid particles
+        /// </summary>
+        private void DrawFluidParticles() => 
+            fluid.Draw(mainCamera, 
+                       sphereMesh, 
+                       fluidParticleMat, 
+                       0);
+        
+        /// <summary>
+        /// Draws the boundary particles
+        /// </summary>
+        private void DrawBoundaryParticles() => 
+            boundary.Draw(mainCamera, 
+                          sphereMesh, 
+                          boundaryParticleMat, 
+                          0, 
+                          Color.red, 
+                          deathPlane.transform.position, 
+                          deathPlane.size);
 
         private void OnDestroy() {
             boundary?.Dispose();

@@ -10,6 +10,7 @@ public class FluidContainerizer : MonoBehaviour
     [SerializeField] private bool drawGrid;
     private VoxelizerDemo voxelizerDemo;
     private MeshHollower meshHollower;
+    [NonSerialized] public Vector3 meshSize;
     
     public List<Box3> ExteriorVoxels;
     public List<Box3> InteriorVoxels;
@@ -23,18 +24,43 @@ public class FluidContainerizer : MonoBehaviour
         meshHollower = new MeshHollower(voxelizerDemo.Voxelizer.Voxels);
         ExteriorVoxels = new List<Box3>(meshHollower.HullVoxels.Count);
         InteriorVoxels = new List<Box3>(voxelizerDemo.Voxels.Count);
-        
+
         CalculateExterior();
         CalculateInterior();
+        
+        CalcMeshSize();
+        Debug.Log("meshSize = " + meshSize);
 
         Assert.IsTrue(ExteriorVoxels.Count > 0, "Exterior is empty");
         Assert.IsTrue(InteriorVoxels.Count > 0, "Interior is empty");
         Assert.IsTrue(IsReady(),"IsReady is implemented wrong");
     }
 
-    public Bounds MeshBounds() => GetComponent<MeshRenderer>().bounds;
-
+    private void CalcMeshSize(){
+        for (var i = 0; i < 3; i++)
+            CalcMeshSizeAxis(i);
+        transform.localToWorldMatrix
+                 .MultiplyPoint(meshSize);
+    }
     
+    
+    private void CalcMeshSizeAxis(int axis) => ExteriorVoxels.ForEach(voxel => 
+        meshSize[axis] = Mathf.Max(meshSize[axis],
+                                   MostExtreme(voxel.Min,
+                                               voxel.Max,
+                                               axis)));
+
+    /// <summary>
+    /// Returns the most extreme value (absolute value) of two vectors on a given axis
+    /// </summary>
+    /// <param name="axis">axis to compare</param>
+    /// <returns></returns>
+    private float MostExtreme(Vector3 a, 
+                              Vector3 b, 
+                              int axis) => Mathf.Max(Mathf.Abs(a[axis]), 
+                                                     Mathf.Abs(b[axis]));
+
+
     /// <returns>True if the fluid container is done being containerized</returns>
     public bool IsReady() => ExteriorVoxels.Count > 0 && InteriorVoxels.Count > 0;
     
@@ -43,7 +69,10 @@ public class FluidContainerizer : MonoBehaviour
     /// Calculates the voxels for each point in the hull voxels from meshHollower
     /// <see cref="MeshHollower"/>
     /// </summary>
-    private void CalculateExterior() => meshHollower.HullVoxels.ForEach(point => ExteriorVoxels.Add(voxelizerDemo.GetVoxel(point.X,point.Y,point.Z)));
+    private void CalculateExterior() => meshHollower.HullVoxels.ForEach(point => 
+        ExteriorVoxels.Add(voxelizerDemo.GetVoxel(point.X,
+                                                  point.Y,
+                                                  point.Z)));
 
     
     /// <summary>

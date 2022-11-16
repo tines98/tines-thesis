@@ -6,7 +6,7 @@ using UnityEngine.Assertions;
 
 public class BarChart : FluidBoundaryObject{
     public float height;
-    public List<Bounds> barBoundsList;
+    public  List<Bounds> barBoundsList;
 
 
     // Start is called before the first frame update
