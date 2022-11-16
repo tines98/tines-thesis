@@ -1,7 +1,5 @@
 using System;
 using UnityEngine;
-using System.Collections.Generic;
-using MeshVoxelizer.Scripts;
 using PBDFluid.Scripts;
 using UnityEngine.Assertions;
 
@@ -102,21 +100,21 @@ namespace PBDFluid
         
         // ReSharper disable Unity.PerformanceAnalysis
         /// <summary>
-        /// Searches child gameobjects for FluidBoundaryObjects
+        /// Searches child gameObjects for FluidBoundaryObjects
         /// </summary>
         private void GetFluidBoundaryObjects() => fluidBoundaryObjects = GetComponentsInChildren<FluidBoundaryObject>();
         
         
         // ReSharper disable Unity.PerformanceAnalysis
         /// <summary>
-        /// Searches child gameobjects for FluidObject components
+        /// Searches child gameObjects for FluidObject components
         /// </summary>
         private void GetFluidObjects() => fluidObjects = GetComponentsInChildren<FluidObject>();
 
         
         // ReSharper disable Unity.PerformanceAnalysis
         /// <summary>
-        /// Searches child gameobjects for a DeathPlane component
+        /// Searches child gameObjects for a DeathPlane component
         /// </summary>
         private void GetDeathPlane() => deathPlane = GetComponentInChildren<DeathPlane>();
 

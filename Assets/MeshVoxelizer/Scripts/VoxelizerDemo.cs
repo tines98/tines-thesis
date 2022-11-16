@@ -1,8 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 using PBDFluid;
 using UnityEngine;
 using UnityEngine.Assertions;
+using Matrix4x4 = UnityEngine.Matrix4x4;
+using Vector3 = UnityEngine.Vector3;
 
 namespace MeshVoxelizer.Scripts
 {
@@ -30,6 +33,8 @@ namespace MeshVoxelizer.Scripts
         private Vector3Int numVoxels;
         private GameObject voxelizedGameObject;
         private Matrix4x4 trsMatrix;
+        private Matrix4x4 trMatrix;
+        public Vector3 getVoxelOffset;
 
         public MeshVoxelizer Voxelizer;
 
@@ -65,7 +70,7 @@ namespace MeshVoxelizer.Scripts
             nonVoxelizedGameObject = filter.gameObject;
             
             //Hide non-voxelized mesh
-            meshRenderer.enabled = false;
+            // meshRenderer.enabled = false;
             
             //Get mesh to voxelize
             var mesh = filter.mesh;
@@ -83,6 +88,8 @@ namespace MeshVoxelizer.Scripts
                                            mesh.bounds.size);
             
             trsMatrix = nonVoxelizedGameObject.transform.localToWorldMatrix;
+            trMatrix = Matrix4x4.TRS(transform.position, transform.rotation, Vector3.one);
+            
             
             //Num voxels is global size divided by particle diameter
             numVoxels = new Vector3Int(
@@ -99,7 +106,9 @@ namespace MeshVoxelizer.Scripts
             Voxelizer.Voxelize(mesh.vertices, 
                                mesh.triangles, 
                                bounds);
-            mesh = CreateMesh(Voxelizer.Voxels, Scale(), bounds.Min);
+            var meshPosOffset = trsMatrix.MultiplyPoint(bounds.Min)-nonVoxelizedGameObject.transform.position;
+            Debug.Log(meshPosOffset);
+            mesh = CreateMesh(Voxelizer.Voxels, Scale(), meshPosOffset);
 
             CreateVoxelizedGameObject(mesh, 
                                       mat, 
@@ -132,6 +141,7 @@ namespace MeshVoxelizer.Scripts
 
             filter.mesh = mesh;
             meshRenderer.material = mat;
+            meshRenderer.enabled = false;
             
             if (!partOfFluidSim) return;
             // Add components needed for fluid simulation
@@ -140,7 +150,7 @@ namespace MeshVoxelizer.Scripts
             voxelizedGameObject.AddComponent<FluidVoxels>();
             voxelizedGameObject.AddComponent<DeathPlaneCulling>();
         } // ReSharper disable Unity.PerformanceAnalysis
-        public void HideVoxelizedMesh() => voxelizedGameObject.GetComponent<Renderer>().enabled = false;
+        public void SetVoxelizedMeshVisibility(bool shouldBeVisible) => voxelizedGameObject.GetComponent<Renderer>().enabled = shouldBeVisible;
 
         /// <returns>True if voxelized gameObject creation is complete</returns>
         public bool IsFinished() => voxelizedGameObject != null;
@@ -166,11 +176,12 @@ namespace MeshVoxelizer.Scripts
                           "Scale is 0");
             var point1 = new Vector3(x + 1, y + 1, z + 1);
             // Point to local(+scale) coord
-            var min = bounds.Min + Vector3.Scale(point, scale);
-            var max = bounds.Min + Vector3.Scale(point1, scale);
+            var offset = trsMatrix.MultiplyPoint(bounds.Min);
+            var min = offset + Vector3.Scale(point, scale);
+            var max = offset + Vector3.Scale(point1, scale);
             // Transform to global space
-            min = trsMatrix.MultiplyPoint(min);
-            max = trsMatrix.MultiplyPoint(max);
+            min = trMatrix.MultiplyVector(min);
+            max = trMatrix.MultiplyVector(max);
             // Fix to avoid negative sized box3
             var trueMin = new Vector3(Mathf.Min(min.x, max.x), 
                                       Mathf.Min(min.y, max.y), 
@@ -382,6 +393,15 @@ namespace MeshVoxelizer.Scripts
 
             Gizmos.color = Color.blue;
             if (drawBounds) DrawBoundsGizmo(trs);
+            // var voxels = Voxelizer.Voxels;
+            // for (int x = 0; x < voxels.GetLength(0); x++){
+            //     for (int y = 0; y < voxels.GetLength(1); y++){
+            //         for (int z = 0; z < voxels.GetLength(2); z++){
+            //             var vox = GetVoxel(x, y, z);
+            //             Gizmos.DrawWireCube(vox.Center,vox.Size);
+            //         }
+            //     }
+            // }
         }
     }
 }

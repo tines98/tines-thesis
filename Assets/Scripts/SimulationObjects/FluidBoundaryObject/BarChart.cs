@@ -5,13 +5,15 @@ using UnityEngine;
 using UnityEngine.Assertions;
 
 public class BarChart : FluidBoundaryObject{
-    private List<Bounds> barBoundsList;
+    public float height;
+    public List<Bounds> barBoundsList;
 
 
     // Start is called before the first frame update
     private void Start(){
         FluidBodyMeshDemo = GetComponentInParent<FluidBodyMeshDemo>();
         Assert.IsNotNull(FluidBodyMeshDemo);
+        if (height <= 0f) height = barBoundsList[0].size.y;
         CreateParticleSource(FluidBodyMeshDemo.Radius()*2);
     }
 

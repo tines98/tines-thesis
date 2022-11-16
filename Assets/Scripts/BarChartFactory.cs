@@ -10,6 +10,7 @@ public static class BarChartFactory{
             }
         };
         var barChart = barChartGameObject.AddComponent<BarChart>();
+        barChart.height = chartSize.y;
 
         barChart.SetBars(CreateBars(bars, chartSize));
     }

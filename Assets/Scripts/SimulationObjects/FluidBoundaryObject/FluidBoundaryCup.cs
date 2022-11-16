@@ -11,35 +11,63 @@ public class FluidBoundaryCup : FluidBoundaryObject
     {
         FluidBodyMeshDemo = GetComponentInParent<FluidBodyMeshDemo>();
         Assert.IsNotNull(FluidBodyMeshDemo);
-        ParticleSource = new ParticlesFromBounds(FluidBodyMeshDemo.Radius() * 2, OuterBounds(), InnerBounds());
+        // ParticleSource = new ParticlesFromBounds(FluidBodyMeshDemo.Radius() * 2, OuterBounds(), InnerBounds());
+        var spacing = FluidBodyMeshDemo.Radius() * 2;
+        ParticleSource = new ParticlesFromList(spacing, CreateCup(spacing));
         LoggingUtility.LogInfo($"FluidBoundaryCup {name} har a total of {ParticleSource.NumParticles} boundary particles!");
     }
-    
-    
-    /// <returns>The bounds of the cup</returns>
-    private Bounds OuterBounds() => new Bounds(transform.position, size);
-    
-    
-    /// <summary>
-    /// Calculates the inner bounding box, so the walls of the cup is 1 particle thick
-    /// Also 
-    /// </summary>
-    /// <returns>The calculated inner bounds</returns>
-    private Bounds InnerBounds()
-    {
-        var innerBounds = new Bounds(transform.position, size - (Vector3.one * FluidBodyMeshDemo.Radius() * 2f * 1.2f));
-        innerBounds.max = new Vector3(innerBounds.max.x,innerBounds.center.y+size.y/2f,innerBounds.max.z);
-        return innerBounds;
+
+    private List<Vector3> CreateCup(float spacing){
+        var posList = new List<Vector3>();
+        var halfSize = size * 0.5f;
+        var floorMin = -halfSize;
+        var floorMax = new Vector3(halfSize.x, -halfSize.y,halfSize.z);
+        CreateFloor(spacing, 
+                    posList, 
+                    floorMin, 
+                    floorMax, 
+                    -halfSize.y);
+        CreateWalls(spacing, 
+                    posList, 
+                    floorMin, 
+                    floorMax,
+                    -halfSize.y,
+                    halfSize.y);
+        return posList;
+    }
+
+    private void CreateWalls(float spacing, List<Vector3> posList, Vector3 min, Vector3 max, float yMin, float yMax){
+        for (var y = yMin; y < yMax; y+=spacing)
+            CreateRectanglePerimeter(spacing,posList,min,max,y);
+    }
+
+    private void CreateRectanglePerimeter(float spacing, List<Vector3> posList, Vector3 min, Vector3 max, float y){
+        var globalPos = transform.position;
+        for (var z = min.z; z < max.z; z+=spacing){
+            var posMin = new Vector3(min.x, y, z);
+            posList.Add(globalPos+posMin);
+            var posMax = new Vector3(max.x, y, z);
+            posList.Add(globalPos+posMax);
+        }
+        for (var x = min.x; x < max.x; x+=spacing){
+            var posMin = new Vector3(x, y, min.z);
+            posList.Add(globalPos+posMin);
+            var posMax = new Vector3(x, y, max.z);
+            posList.Add(globalPos+posMax);
+        }
+    }
+
+    private void CreateFloor(float spacing, List<Vector3> posList, Vector3 min, Vector3 max, float y){
+        for (var z = min.z; z < max.z; z+=spacing){
+            for (var x = min.x; x < max.x; x+=spacing){
+                var pos = new Vector3(x, y, z);
+                posList.Add(transform.position+pos);
+            }
+        }
     }
 
     private void OnDrawGizmos() {
         Gizmos.color = Color.red;
-        var outerBounds = OuterBounds();
-        Gizmos.DrawWireCube(outerBounds.center,outerBounds.size);
-
-        if (FluidBodyMeshDemo != null) {
-            var innerBounds = InnerBounds();
-            Gizmos.DrawWireCube(innerBounds.center,innerBounds.size);
-        }
+        Gizmos.DrawWireCube(transform.position,size);
     }
 }
