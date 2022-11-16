@@ -71,9 +71,9 @@ namespace PBDFluid
                 //Place and resize DeathPlane
                 var bar = barChart.barBoundsList[0];
                 var barTRS = barChart.transform.localToWorldMatrix;
-                PlaceDeathPlane(barTRS,bar.center,
-                                bar.center.y + bar.size.y);
-                ResizeDeathPlane(fluidContainerizer.meshSize);
+                PlaceDeathPlane(barTRS.MultiplyPoint(bar.center),
+                                fluidContainerizer.meshBounds);
+                ResizeDeathPlane(fluidContainerizer.meshBounds.size);
                 
                 CreateFluid();
                 CreateBoundary();
@@ -120,11 +120,10 @@ namespace PBDFluid
         /// <param name="barChartPos">Center of a Bar in the barchart</param>
         /// <param name="y">height in which to place the DeathPlane</param>
         /// <param name="trs">TRS Matrix to transform the point</param>
-        private void PlaceDeathPlane(Matrix4x4 trs, Vector3 barChartPos, float y) => 
-            deathPlane.transform.position = trs.MultiplyPoint(
-                new Vector3(barChartPos.x,
-                            barChartPos.y + y - (Radius() * 2), //Subtract diameter to make up for mesh dilation
-                            barChartPos.z));
+        private void PlaceDeathPlane(Vector3 barChartPos, Bounds meshBounds) => 
+            deathPlane.transform.position = new Vector3(barChartPos.x,
+                                                        meshBounds.min.y-Radius()*2,
+                                                        barChartPos.z);
 
         
         /// <summary>
@@ -132,9 +131,9 @@ namespace PBDFluid
         /// </summary>
         /// <param name="meshSize">Bounds of the voxelized mesh</param>
         private void ResizeDeathPlane(Vector3 meshSize) => 
-            deathPlane.size = new Vector3(meshSize.x*2,
+            deathPlane.size = new Vector3(meshSize.x,
                                           deathPlane.size.y,
-                                          meshSize.z*2);
+                                          meshSize.z);
         
         
         // ReSharper disable Unity.PerformanceAnalysis

@@ -7,18 +7,15 @@ using PBDFluid.Scripts;
 using UnityEngine;
 using UnityEngine.Assertions;
 
-public class FluidVoxels : FluidObject
-{
+public class FluidVoxels : FluidObject{
     [SerializeField] private bool drawGizmo;
-    
     private FluidContainerizer fluidContainerizer;
     private VoxelizerDemo voxelizerDemo;
     private List<Box3> voxels;
-    private bool start = false;
+    private bool start;
     
     // Start is called before the first frame update
-    void Start()
-    {
+    void Start(){
         fluidContainerizer = GetComponent<FluidContainerizer>();
         Assert.IsNotNull(fluidContainerizer);
         
@@ -31,33 +28,27 @@ public class FluidVoxels : FluidObject
 
     
     /// <summary> Creates fluid particles </summary>
-    private void CreateParticles()
-    {
+    private void CreateParticles(){
         start = true;
         voxels = fluidContainerizer.InteriorVoxels;
-        ParticleSource = new ParticlesFromVoxels(FluidBodyMeshDemo.Radius() * 2, voxels, transform.localToWorldMatrix);
+        ParticleSource = new ParticlesFromVoxels(FluidBodyMeshDemo.Radius() * 2, 
+                                                 voxels, 
+                                                 transform.localToWorldMatrix);
         ParticleSource.CreateParticles();
         
         LoggingUtility.LogInfo($"FluidVoxels {name} har a total of {ParticleSource.NumParticles} fluid particles!");
-        // voxelizerDemo.HideVoxelizedMesh();
     }
     
-    private void Update()
-    {
+    private void Update(){
         if (start) return;
         if (fluidContainerizer.IsReady()) CreateParticles();
     }
 
-    private void OnDrawGizmos()
-    {
+    private void OnDrawGizmos(){
         Gizmos.color = Color.blue;
-        if (drawGizmo)
-        {
-            var localToWorldMatrix = transform.localToWorldMatrix;
-            voxels.ForEach(voxel => Gizmos.DrawWireCube(
-                localToWorldMatrix.MultiplyPoint(voxel.Center), 
-                  localToWorldMatrix.MultiplyVector(voxel.Size)
-            ));
-        }
+        if (drawGizmo) DrawFluidVoxelsGizmo();
     }
+    
+    private void DrawFluidVoxelsGizmo() => voxels.ForEach(voxel => Gizmos.DrawWireCube(voxel.Center, 
+                                                                                       voxel.Size));
 }
