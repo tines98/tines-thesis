@@ -171,7 +171,9 @@ MonoBehaviour:
   radius: 0
   drawBounds: 0
   drawAABBTree: 0
-  getVoxelOffset: {x: -0.5, y: -0.5, z: -0.5}
+  meshGlobalBounds:
+    m_Center: {x: 0, y: 0, z: 0}
+    m_Extent: {x: 0, y: 0, z: 0}
 --- !u!1 &934190881
 GameObject:
   m_ObjectHideFlags: 0
