@@ -131,9 +131,9 @@ namespace PBDFluid
         /// </summary>
         /// <param name="meshSize">Bounds of the voxelized mesh</param>
         private void ResizeDeathPlane(Vector3 meshSize) => 
-            deathPlane.size = new Vector3(meshSize.x,
+            deathPlane.size = new Vector3(meshSize.x + Radius()*2.1f,
                                           deathPlane.size.y,
-                                          meshSize.z);
+                                          meshSize.z + Radius()*2.1f);
         
         
         // ReSharper disable Unity.PerformanceAnalysis
