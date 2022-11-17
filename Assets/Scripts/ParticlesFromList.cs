@@ -8,7 +8,7 @@ public class ParticlesFromList : ParticleSource{
     
     public ParticlesFromList(float spacing, List<Vector3> positionList) : base(spacing){
         this.positionList = positionList;
-        Positions = new List<Vector3>(positionList.Count);
+        Positions = positionList;
     }
 
     public override void CreateParticles() => positionList.ForEach(pos => Positions.Add(pos));
