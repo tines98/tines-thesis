@@ -10,7 +10,7 @@ public class BarChart : FluidBoundaryObject{
     private List<Vector3> posList;
     
     // Start is called before the first frame update
-    private void Start(){
+    public void CreateParticles(){
         FluidBodyMeshDemo = GetComponentInParent<FluidBodyMeshDemo>();
         Assert.IsNotNull(FluidBodyMeshDemo);
         if (height <= 0f) height = barBoundsList[0].size.y;
@@ -54,18 +54,17 @@ public class BarChart : FluidBoundaryObject{
     /// <param name="bounds"></param>
     /// <param name="y"></param>
     private void CreateRectanglePerimeter(Bounds bounds, float y){
-        var globalPos = transform.position;
         for (var z = bounds.min.z; z < bounds.max.z; z+=spacing){
             var posMin = new Vector3(bounds.min.x, y, z);
             var posMax = new Vector3(bounds.max.x, y, z);
-            posList.Add(globalPos+posMin);
-            posList.Add(globalPos+posMax);
+            posList.Add(posMin);
+            posList.Add(posMax);
         }
         for (var x = bounds.min.x; x < bounds.max.x; x+=spacing){
             var posMin = new Vector3(x, y, bounds.min.z);
             var posMax = new Vector3(x, y, bounds.max.z);
-            posList.Add(globalPos+posMin);
-            posList.Add(globalPos+posMax);
+            posList.Add(posMin);
+            posList.Add(posMax);
         }
     }
 
@@ -79,7 +78,7 @@ public class BarChart : FluidBoundaryObject{
         for (var z = bounds.min.z; z < bounds.max.z; z+=spacing){
             for (var x = bounds.min.x; x < bounds.max.x; x+=spacing){
                 var pos = new Vector3(x, y, z);
-                posList.Add(transform.position+pos);
+                posList.Add(pos);
             }
         }
     }

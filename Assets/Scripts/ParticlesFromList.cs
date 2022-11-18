@@ -11,5 +11,8 @@ public class ParticlesFromList : ParticleSource{
         Positions = positionList;
     }
 
-    public override void CreateParticles() => positionList.ForEach(pos => Positions.Add(pos));
+    public override void CreateParticles(){
+        Positions = new List<Vector3>(positionList.Count);
+        positionList.ForEach(pos => Positions.Add(pos));
+    }
 }

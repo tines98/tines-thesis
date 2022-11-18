@@ -9,21 +9,27 @@ public class Funnel : FluidBoundaryObject{
     [SerializeField] private float height;
     [SerializeField] private bool drawFunnel;
 
-    private void Start(){
+    public void CreateParticles(){
         FluidBodyMeshDemo = GetComponentInParent<FluidBodyMeshDemo>();
         var spacing = FluidBodyMeshDemo.Radius() * 2;
-        ParticleSource = new ParticlesFromList(spacing, ParticleFunnel(spacing));
+        Debug.Log("height = " + height);
+        Debug.Log("lowerRadius = " + lowerRadius);
+        Debug.Log("upperRadius = " + upperRadius);
+        Debug.Log($"angle is {CalcFunnelAngle()}");
+        var particles = ParticleFunnel(spacing);
+        Debug.Log($"funnel has {particles.Count}");
+        ParticleSource = new ParticlesFromList(spacing, particles);
     }
 
     public void SetLowerRadius(float radius) => lowerRadius = radius;
     
     public void SetUpperRadius(float radius) => upperRadius = radius;
 
-    public void SetHeight(float height) => this.height = height;
+    public void SetHeight(float funnelHeight) => height = funnelHeight;
 
     float CalcFunnelAngle() => Vector3.Angle(Vector3.up,
                                              new Vector3(0, height, upperRadius)
-                                           - new Vector3(0, 0, 1));
+                                           - new Vector3(0, 0, lowerRadius));
     List<Vector3> ParticleFunnel(float spacing){
         var particleFunnel = new List<Vector3>();
         var angle = CalcFunnelAngle();

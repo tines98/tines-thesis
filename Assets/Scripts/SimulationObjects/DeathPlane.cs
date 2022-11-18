@@ -7,7 +7,6 @@ using UnityEngine.UI;
 public class DeathPlane : MonoBehaviour
 {
     public Vector3 size;
-    public Slider slider;
 
     private void OnDrawGizmos()
     {
@@ -20,5 +19,5 @@ public class DeathPlane : MonoBehaviour
     /// <summary>
     /// Flag method, to be called from the UI slider, updates the height of the deathbox
     /// </summary>
-    public void SliderHasChanged() => size.y = slider.value;
+    public void SliderHasChanged(float value) => size.y = value;
 }

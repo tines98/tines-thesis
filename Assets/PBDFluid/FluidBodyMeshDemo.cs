@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using PBDFluid.Scripts;
 using UnityEngine.Assertions;
+using UnityEngine.UI;
 
 namespace PBDFluid
 {
@@ -26,16 +28,18 @@ namespace PBDFluid
         [SerializeField] private bool drawFluidParticles;
         [SerializeField] private bool drawFluidVolume;
         [SerializeField] private bool drawSimulationBounds;
+        [SerializeField] private bool drawBarChart;
         
         [Header("Simulation Settings")]
         [SerializeField] private SIMULATION_SIZE simulationSize = SIMULATION_SIZE.MEDIUM;
         [SerializeField] private bool run = true;
         [SerializeField] private Mesh sphereMesh;
+        [SerializeField] private Bounds barChartBounds;
 
         // Fluid & Boundary Objects
         private FluidContainerizer fluidContainerizer;
         private BarChart barChart;
-        private FluidBoundaryObject[] fluidBoundaryObjects;
+        private List<FluidBoundaryObject> fluidBoundaryObjects;
         private FluidObject[] fluidObjects;
         
         // Fluid Demo Objects
@@ -59,22 +63,19 @@ namespace PBDFluid
             try
             {
                 run = true;
+                fluidBoundaryObjects = new List<FluidBoundaryObject>();
                 GetFluidBoundaryObjects();
                 GetFluidObjects();
                 GetDeathPlane();
-                LoggingUtility.LogWithColor($"Fluid Demo: Found {fluidBoundaryObjects.Length} fluidBoundaryObjects!",Color.green);
+                LoggingUtility.LogWithColor($"Fluid Demo: Found {fluidBoundaryObjects.Count} fluidBoundaryObjects!",Color.green);
                 LoggingUtility.LogWithColor("Fluid Demo: Found {fluidObjects.Length} fluidObjects!",Color.green);
                 
-                barChart = GetComponentInChildren<BarChart>();
                 fluidContainerizer = GetComponentInChildren<FluidContainerizer>();
                 
-                //Place and resize DeathPlane
-                var bar = barChart.barBoundsList[0];
-                var barTRS = barChart.transform.localToWorldMatrix;
-                PlaceDeathPlane(barTRS.MultiplyPoint(bar.center),
-                                fluidContainerizer.meshBounds);
-                ResizeDeathPlane(fluidContainerizer.meshBounds.size);
-                
+                CreateBarChart();
+                CreateFunnel();
+                CreateDeathPlane();
+
                 CreateFluid();
                 CreateBoundary();
                 
@@ -91,9 +92,29 @@ namespace PBDFluid
             }
             hasStarted = true;
         }
-        
-        
-        /// <summary>
+
+        private void CreateDeathPlane() => 
+            deathPlane = DeathPlaneFactory.CreateDeathPlane(transform, 
+                                               fluidContainerizer.meshBounds, 
+                                               barChart.barBoundsList[0], 
+                                               Radius() * 2);
+
+        private void CreateBarChart() =>
+            fluidBoundaryObjects.Add(
+                barChart = BarChartFactory.CreateBarChart(1, 
+                                                          transform, 
+                                                          barChartBounds.center, 
+                                                          barChartBounds.size));
+
+        private void CreateFunnel() => 
+            fluidBoundaryObjects.Add(
+                FunnelFactory.CreateFunnel(transform,
+                                           barChart.barBoundsList[0],
+                                           fluidContainerizer.meshBounds,
+                                           45.0f));
+
+
+            /// <summary>
         /// Adjusts the Radius based on the SIMULATION_SIZE enum.
         /// A smaller radius means more particles.
         /// If the number of particles is to low or high
@@ -113,34 +134,15 @@ namespace PBDFluid
             _ => 0.08f
         };
 
-        
-        /// <summary>
-        /// Places the DeathPlane at the given position and height 
-        /// </summary>
-        /// <param name="barChartPos">Center of a Bar in the barchart</param>
-        /// <param name="y">height in which to place the DeathPlane</param>
-        /// <param name="trs">TRS Matrix to transform the point</param>
-        private void PlaceDeathPlane(Vector3 barChartPos, Bounds meshBounds) => 
-            deathPlane.transform.position = new Vector3(barChartPos.x,
-                                                        meshBounds.min.y-Radius()*2,
-                                                        barChartPos.z);
 
-        
-        /// <summary>
-        /// Resizes the DeathPlane based on the given bounds
-        /// </summary>
-        /// <param name="meshSize">Bounds of the voxelized mesh</param>
-        private void ResizeDeathPlane(Vector3 meshSize) => 
-            deathPlane.size = new Vector3(meshSize.x + Radius()*2.1f,
-                                          deathPlane.size.y,
-                                          meshSize.z + Radius()*2.1f);
-        
-        
+        public void DeathPlaneSliderHasChanged(Slider slider) => deathPlane.SliderHasChanged(slider.value);
+            
+       
         // ReSharper disable Unity.PerformanceAnalysis
         /// <summary>
         /// Searches child gameObjects for FluidBoundaryObjects
         /// </summary>
-        private void GetFluidBoundaryObjects() => fluidBoundaryObjects = GetComponentsInChildren<FluidBoundaryObject>();
+        private void GetFluidBoundaryObjects() => fluidBoundaryObjects.AddRange(GetComponentsInChildren<FluidBoundaryObject>());
         
         
         // ReSharper disable Unity.PerformanceAnalysis
@@ -227,12 +229,13 @@ namespace PBDFluid
         /// Puts every fluid boundary object into a particle source and creates a new FluidBody
         /// </summary>
         private void CreateBoundary() {
-            var particleSources = new ParticleSource[fluidBoundaryObjects.Length];
-            for (var index = 0; index < fluidBoundaryObjects.Length; index++)
-                particleSources[index] = fluidBoundaryObjects[index].ParticleSource;
-            var particleSource = new ParticlesFromSeveralBounds(Radius() * 2, particleSources);
+            var particleSources = new List<ParticleSource>(fluidBoundaryObjects.Count);
+            fluidBoundaryObjects.ForEach(obj => particleSources.Add(obj.ParticleSource));
+            var particleSource = new ParticlesFromSeveralBounds(Radius() * 2, particleSources.ToArray());
             particleSource.CreateParticles();
-            boundary = new FluidBoundary(particleSource,Radius(),Density);
+            boundary = new FluidBoundary(particleSource,
+                                         Radius(),
+                                         Density);
         }
 
         /// <summary>
@@ -253,7 +256,10 @@ namespace PBDFluid
             //Simulation Bounds
             Gizmos.color = Color.yellow;
             if (drawSimulationBounds) DrawSimulationBounds();
+            if (drawBarChart) DrawBarChartGizmo();
         }
+
+        private void DrawBarChartGizmo() => Gizmos.DrawWireCube(barChartBounds.center, barChartBounds.size);
 
         /// <summary>
         /// Draws a gizmo showing the simulation bounds
