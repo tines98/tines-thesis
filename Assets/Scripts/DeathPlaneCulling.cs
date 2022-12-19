@@ -22,12 +22,12 @@ public class DeathPlaneCulling : MonoBehaviour
     }
 
     private void Foo() {
-        material.SetVector("deathPlanePosition", demo.deathPlane.transform.position);
-        material.SetVector("deathPlaneSize",demo.deathPlane.size);
+        material.SetVector("deathPlanePosition", demo.DeathPlane.transform.position);
+        material.SetVector("deathPlaneSize",demo.DeathPlane.size);
     }
     
     // Update is called once per frame
     void Update() {
-        if (demo.deathPlane!=null) Foo();
+        if (demo.DeathPlane!=null) Foo();
     }
 }

@@ -1,11 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Numerics;
 using PBDFluid;
 using UnityEngine;
 using UnityEngine.Assertions;
-using Matrix4x4 = UnityEngine.Matrix4x4;
-using Vector3 = UnityEngine.Vector3;
 
 namespace MeshVoxelizer.Scripts
 {
@@ -27,14 +24,13 @@ namespace MeshVoxelizer.Scripts
 
         private Box3 bounds;
         private FluidBodyMeshDemo fluidBodyMeshDemo;
-        private Vector3 meshGlobalSize;
+        public Bounds meshGlobalBounds;
 
         private GameObject nonVoxelizedGameObject;
-        private Vector3Int numVoxels;
+        [NonSerialized] public Vector3Int numVoxels;
         private GameObject voxelizedGameObject;
         private Matrix4x4 trsMatrix;
         private Matrix4x4 trMatrix;
-        public Vector3 getVoxelOffset;
 
         public MeshVoxelizer Voxelizer;
 
@@ -69,9 +65,6 @@ namespace MeshVoxelizer.Scripts
             
             nonVoxelizedGameObject = filter.gameObject;
             
-            //Hide non-voxelized mesh
-            // meshRenderer.enabled = false;
-            
             //Get mesh to voxelize
             var mesh = filter.mesh;
             Assert.IsNotNull(mesh, "VoxelizerDemo did not find a mesh!");
@@ -83,21 +76,24 @@ namespace MeshVoxelizer.Scripts
             bounds = new Box3(mesh.bounds.min, 
                               mesh.bounds.max);
             
-            //Bounds in global space
-            meshGlobalSize = Vector3.Scale(nonVoxelizedGameObject.transform.localScale, 
-                                           mesh.bounds.size);
-            
             trsMatrix = nonVoxelizedGameObject.transform.localToWorldMatrix;
-            trMatrix = Matrix4x4.TRS(transform.position, transform.rotation, Vector3.one);
+            trMatrix = Matrix4x4.TRS(transform.position, 
+                                     transform.rotation, 
+                                     Vector3.one);
+            
+            //Bounds in global space
+            meshGlobalBounds = new Bounds(trsMatrix.MultiplyPoint(mesh.bounds.center), 
+                                          trsMatrix.MultiplyVector(mesh.bounds.size));
             
             
             //Num voxels is global size divided by particle diameter
             numVoxels = new Vector3Int(
-                (int) Math.Ceiling(meshGlobalSize.x / (radius * 2)),
-                (int) Math.Ceiling(meshGlobalSize.y / (radius * 2)),
-                (int) Math.Ceiling(meshGlobalSize.z / (radius * 2))
+                (int) Math.Abs(Math.Ceiling(meshGlobalBounds.size.x / (radius * 2))),
+                (int) Math.Abs(Math.Ceiling(meshGlobalBounds.size.y / (radius * 2))),
+                (int) Math.Abs(Math.Ceiling(meshGlobalBounds.size.z / (radius * 2)))
             );
             
+            Debug.Log("numVoxels = " + numVoxels);
             Voxelizer = new MeshVoxelizer(numVoxels.x, 
                                           numVoxels.y, 
                                           numVoxels.z);
@@ -117,9 +113,9 @@ namespace MeshVoxelizer.Scripts
 
         /// <returns>The scale of a voxel box</returns>
         Vector3 Scale() => new Vector3(
-            meshGlobalSize.x / numVoxels.x,
-            meshGlobalSize.y / numVoxels.y,
-            meshGlobalSize.z / numVoxels.z);
+            meshGlobalBounds.size.x / numVoxels.x,
+            meshGlobalBounds.size.y / numVoxels.y,
+            meshGlobalBounds.size.z / numVoxels.z);
 
         /// <summary>
         /// Creates the voxelized GameObject
@@ -179,16 +175,12 @@ namespace MeshVoxelizer.Scripts
             var offset = trsMatrix.MultiplyPoint(bounds.Min);
             var min = offset + Vector3.Scale(point, scale);
             var max = offset + Vector3.Scale(point1, scale);
-            // Transform to global space
+            // Transform to global space (No scale, as it is already scaled)
             min = trMatrix.MultiplyVector(min);
             max = trMatrix.MultiplyVector(max);
             // Fix to avoid negative sized box3
-            var trueMin = new Vector3(Mathf.Min(min.x, max.x), 
-                                      Mathf.Min(min.y, max.y), 
-                                      Mathf.Min(min.z, max.z));
-            var trueMax = new Vector3(Mathf.Max(min.x, max.x),
-                                      Mathf.Max(min.y, max.y),
-                                      Mathf.Max(min.z, max.z));
+            var trueMin = Vector3.Min(min, max);
+            var trueMax = Vector3.Max(min, max);
             return new Box3(trueMin, trueMax);
         }
 
@@ -379,6 +371,10 @@ namespace MeshVoxelizer.Scripts
             Gizmos.DrawWireCube(trs.MultiplyPoint(bounds.Center), 
                                 trs.MultiplyVector(bounds.Size));
 
+        private void DrawGlobalBoundsGizmo() => 
+            Gizmos.DrawWireCube(meshGlobalBounds.center, 
+                                meshGlobalBounds.size);
+        
         private void DrawAabbTreeGizmo(Matrix4x4 trs) => 
             Voxelizer?.Bounds.ForEach(box => Gizmos.DrawWireCube(trs.MultiplyPoint(box.Center), 
                                                                  trs.MultiplyVector(box.Size)));
@@ -393,15 +389,7 @@ namespace MeshVoxelizer.Scripts
 
             Gizmos.color = Color.blue;
             if (drawBounds) DrawBoundsGizmo(trs);
-            // var voxels = Voxelizer.Voxels;
-            // for (int x = 0; x < voxels.GetLength(0); x++){
-            //     for (int y = 0; y < voxels.GetLength(1); y++){
-            //         for (int z = 0; z < voxels.GetLength(2); z++){
-            //             var vox = GetVoxel(x, y, z);
-            //             Gizmos.DrawWireCube(vox.Center,vox.Size);
-            //         }
-            //     }
-            // }
+            if (drawBounds) DrawGlobalBoundsGizmo();
         }
     }
 }

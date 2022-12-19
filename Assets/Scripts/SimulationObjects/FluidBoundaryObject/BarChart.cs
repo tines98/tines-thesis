@@ -1,63 +1,95 @@
 using System.Collections.Generic;
 using PBDFluid;
-using PBDFluid.Scripts;
 using UnityEngine;
 using UnityEngine.Assertions;
 
 public class BarChart : FluidBoundaryObject{
     public float height;
-    public List<Bounds> barBoundsList;
-
-
+    public  List<Bounds> barBoundsList;
+    private float spacing;
+    private List<Vector3> posList;
+    
     // Start is called before the first frame update
-    private void Start(){
+    public void CreateParticles(){
         FluidBodyMeshDemo = GetComponentInParent<FluidBodyMeshDemo>();
         Assert.IsNotNull(FluidBodyMeshDemo);
         if (height <= 0f) height = barBoundsList[0].size.y;
-        CreateParticleSource(FluidBodyMeshDemo.Radius()*2);
+        spacing = FluidBodyMeshDemo.Radius() * 2;
+        posList = new List<Vector3>();
+        CreateBars();
+        ParticleSource = new ParticlesFromList(spacing, posList);
     }
 
-    private void CreateParticleSource(float diameter){
-        ParticleSource = new ParticlesFromSeveralBounds(diameter, CreateParticleSources(diameter).ToArray());
-        ParticleSource.CreateParticles();
-        LoggingUtility.LogInfo(
-            $"BarChart {name} har a total of {ParticleSource.NumParticles} boundary particles!"
-        );
-    }
-
-    private List<ParticleSource> CreateParticleSources(float diameter){
-        var particleSources = new List<ParticleSource>(barBoundsList.Count);
-        barBoundsList.ForEach(barBound => 
-            particleSources.Add(new ParticlesFromBounds(diameter,
-                                                        OuterBounds(barBound), 
-                                                        InnerBounds(barBound, diameter))));
-        return particleSources;
-    }
-    
-    
-    public void SetBars(List<Bounds> bars) => barBoundsList = bars;
-    
+    /// <summary>Creates the boundary particles for the entire barchart</summary>
+    private void CreateBars() => barBoundsList.ForEach(CreateBar);
 
     /// <summary>
-    ///     Calculates the inner bounding box of a bar, so the walls of the cup is 1 particle thick
+    /// Creates boundary particles for a bar
     /// </summary>
-    /// <returns>The calculated inner bounds of a bar</returns>
-    private Bounds InnerBounds(Bounds bounds, float diameter){
-        var innerBoundsSize = bounds.size 
-                            - Vector3.one * diameter * 1.5f;
-        var innerBounds = new Bounds(transform.position + bounds.center,
-                                     innerBoundsSize);
-        //Move the top of the exclusion box up, so it turns into a cup
-        var innerBoundsHeight = innerBounds.center.y 
-                              + bounds.size.y / 2f;
-        innerBounds.max = new Vector3(innerBounds.max.x,
-                                      innerBoundsHeight,
-                                      innerBounds.max.z);
-        return innerBounds;
+    /// <param name="barBound">bounds of the bar</param>
+    private void CreateBar(Bounds barBound){
+        CreateFloor(barBound,
+                    barBound.min.y);
+        CreateWalls(barBound,
+                    barBound.min.y,
+                    barBound.max.y);
+    }
+    
+    
+    /// <summary>
+    /// Creates four walls of particles for a bar
+    /// </summary>
+    /// <param name="bounds"></param>
+    /// <param name="yMin"></param>
+    /// <param name="yMax"></param>
+    private void CreateWalls(Bounds bounds, float yMin, float yMax){
+        for (var y = yMin; y < yMax; y+=spacing)
+            CreateRectanglePerimeter(bounds,y);
     }
 
-    private Bounds OuterBounds(Bounds bounds) => new Bounds(transform.position + bounds.center, 
-                                                            bounds.size);
+    
+    /// <summary>
+    /// Creates a rectangle of particles
+    /// </summary>
+    /// <param name="bounds"></param>
+    /// <param name="y"></param>
+    private void CreateRectanglePerimeter(Bounds bounds, float y){
+        for (var z = bounds.min.z; z < bounds.max.z; z+=spacing){
+            var posMin = new Vector3(bounds.min.x, y, z);
+            var posMax = new Vector3(bounds.max.x, y, z);
+            posList.Add(posMin);
+            posList.Add(posMax);
+        }
+        for (var x = bounds.min.x; x < bounds.max.x; x+=spacing){
+            var posMin = new Vector3(x, y, bounds.min.z);
+            var posMax = new Vector3(x, y, bounds.max.z);
+            posList.Add(posMin);
+            posList.Add(posMax);
+        }
+    }
+
+    
+    /// <summary>
+    /// Creates the floor of particles for a bar
+    /// </summary>
+    /// <param name="bounds">bounds of the bar</param>
+    /// <param name="y">y coordinate for the floor</param>
+    private void CreateFloor(Bounds bounds, float y){
+        for (var z = bounds.min.z; z < bounds.max.z; z+=spacing){
+            for (var x = bounds.min.x; x < bounds.max.x; x+=spacing){
+                var pos = new Vector3(x, y, z);
+                posList.Add(pos);
+            }
+        }
+    }
+    
+    
+    /// <summary>
+    /// Sets the list of bounds representing the bars
+    /// </summary>
+    /// <param name="bars">List of bar Bounds</param>
+    public void SetBars(List<Bounds> bars) => barBoundsList = bars;
+    
     
     private void OnDrawGizmos(){
         if (barBoundsList == null) return;
@@ -66,12 +98,6 @@ public class BarChart : FluidBoundaryObject{
     }
 
     //GIZMO
-    private void DrawBarGizmo(Bounds bar){
-        if (FluidBodyMeshDemo == null) return;
-        var outerBounds = OuterBounds(bar);
-        Gizmos.DrawWireCube(outerBounds.center, bar.size);
-        var diameter = FluidBodyMeshDemo.Radius() * 2;
-        var innerBounds = InnerBounds(bar,diameter);
-        Gizmos.DrawWireCube(innerBounds.center, innerBounds.size);
+    private void DrawBarGizmo(Bounds bar) => 
+        Gizmos.DrawWireCube(bar.center, bar.size);
     }
-}

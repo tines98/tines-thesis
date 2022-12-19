@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 13966, guid: 0000000000000000e000000000000000, type: 0}
+  m_Name: funnelAndDeathPlanePlacement
+  m_EditorClassIdentifier: 
+  templateScene: {fileID: 102900000, guid: f12698076ac6b79e68c2202eb93acac9, type: 3}
+  templateName: 
+  description: 
+  preview: {fileID: 0}
+  dependencies:
+  - dependency: {fileID: 2100000, guid: 12d189c057effd74eb9f43721b3ed217, type: 2}
+    instantiationMode: 0
+  - dependency: {fileID: 4777218552790470801, guid: 794a45bca4ca594ce9d094bd1ed0887b, type: 3}
+    instantiationMode: 0
+  - dependency: {fileID: 9028637445809610259, guid: b9d225dc27802c5d5bfd536811089512, type: 3}
+    instantiationMode: 0
+  - dependency: {fileID: 2100000, guid: 8f6dacba505380da5aeda78cb82d20bf, type: 2}
+    instantiationMode: 0
+  - dependency: {fileID: 2800000, guid: 336a70282d5645f4f907cbfbab33b866, type: 3}
+    instantiationMode: 0
+  - dependency: {fileID: 2100000, guid: 2cfaf2c5e9686ceefbe1548394b84f08, type: 2}
+    instantiationMode: 0
+  - dependency: {fileID: 1744005979247509082, guid: 01bef9e747eda2dce950f83315289a04, type: 3}
+    instantiationMode: 0
+  - dependency: {fileID: 6898744042306203305, guid: eead86ebea52c6644962d31f0feeacca, type: 3}
+    instantiationMode: 0
+  - dependency: {fileID: 2100000, guid: 230571cae5cee7b1ca62fad5c51f88bc, type: 2}
+    instantiationMode: 0
+  - dependency: {fileID: 2100000, guid: 32d2cd031f252b04b88a55d7d051391d, type: 2}
+    instantiationMode: 0
+  - dependency: {fileID: 2100000, guid: 257742b1fedac2f4791369b571260722, type: 2}
+    instantiationMode: 0
+  - dependency: {fileID: 2100000, guid: 12a80e65907bd74c094dc7d2dc714e6f, type: 2}
+    instantiationMode: 0
+  templatePipeline: {fileID: 0}
+  addToDefaults: 0
