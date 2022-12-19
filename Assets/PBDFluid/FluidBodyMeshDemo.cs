@@ -32,18 +32,21 @@ namespace PBDFluid
         
         [Header("Simulation Settings")]
         [SerializeField] private SIMULATION_SIZE simulationSize = SIMULATION_SIZE.MEDIUM;
-        [SerializeField] private bool run = true;
         [SerializeField] private Mesh sphereMesh;
+        [SerializeField] private Mesh cylinderMesh;
         [SerializeField] private Bounds barChartBounds;
+        [SerializeField] [Range(0f,5f)] private float deathPlaneHeight;
+        [SerializeField] private bool run = true;
+        [SerializeField] private bool stopDemo;
 
         // Fluid & Boundary Objects
         private FluidContainerizer fluidContainerizer;
-        private BarChart barChart;
+        private FluidBoundaryCylinderCup barChart;
         private List<FluidBoundaryObject> fluidBoundaryObjects;
         private FluidObject[] fluidObjects;
         
         // Fluid Demo Objects
-        public DeathPlane deathPlane;
+        [NonSerialized] public DeathPlane DeathPlane;
         private FluidBody fluid;
         private FluidBoundary boundary;
         private FluidSolver solver;
@@ -79,7 +82,7 @@ namespace PBDFluid
                 CreateFluid();
                 CreateBoundary();
                 
-                var bounds = simulationBounds;
+                var bounds = new Bounds(transform.position,simulationBounds.size);
                 fluid.Bounds = bounds;
                 solver = new FluidSolver(fluid, bounds, boundary);
 
@@ -94,24 +97,23 @@ namespace PBDFluid
         }
 
         private void CreateDeathPlane() => 
-            deathPlane = DeathPlaneFactory.CreateDeathPlane(transform, 
+            DeathPlane = DeathPlaneFactory.CreateDeathPlane(transform, 
                                                fluidContainerizer.meshBounds, 
-                                               barChart.barBoundsList[0], 
+                                               barChart.bounds, 
                                                Radius() * 2);
 
         private void CreateBarChart() =>
             fluidBoundaryObjects.Add(
-                barChart = BarChartFactory.CreateBarChart(1, 
-                                                          transform, 
-                                                          barChartBounds.center, 
-                                                          barChartBounds.size));
+                barChart = CylinderBarFactory.CreateBarChart(transform, 
+                                                             barChartBounds.center, 
+                                                             barChartBounds.size));
 
         private void CreateFunnel() => 
             fluidBoundaryObjects.Add(
                 FunnelFactory.CreateFunnel(transform,
-                                           barChart.barBoundsList[0],
+                                           barChart.bounds, 
                                            fluidContainerizer.meshBounds,
-                                           45.0f));
+                                           60.0f));
 
 
             /// <summary>
@@ -135,7 +137,7 @@ namespace PBDFluid
         };
 
 
-        public void DeathPlaneSliderHasChanged(Slider slider) => deathPlane.SliderHasChanged(slider.value);
+        public void DeathPlaneSliderHasChanged(Slider slider) => DeathPlane.SliderHasChanged(slider.value);
             
        
         // ReSharper disable Unity.PerformanceAnalysis
@@ -156,7 +158,7 @@ namespace PBDFluid
         /// <summary>
         /// Searches child gameObjects for a DeathPlane component
         /// </summary>
-        private void GetDeathPlane() => deathPlane = GetComponentInChildren<DeathPlane>();
+        private void GetDeathPlane() => DeathPlane = GetComponentInChildren<DeathPlane>();
 
         private void Update() {
             if (wasError) return;
@@ -165,25 +167,34 @@ namespace PBDFluid
                 return;
             }
             // ReSharper disable once Unity.PerformanceCriticalCodeInvocation
+            
             if (run) DemoStep();
-
+            
             volume.Hide = !drawFluidVolume;
             
             if (drawBoundaryParticles) 
                 DrawBoundaryParticles();
             if (drawFluidParticles) 
                 DrawFluidParticles();
-                
+            if (stopDemo) StopDemo();
+        }
+
+        private void StopDemo(){
+            run = false;
+            boundary?.Dispose();
+            drawBoundaryParticles = false;
+            stopDemo = false;
         }
 
         /// <summary>
         /// Updates the solver and volume
         /// </summary>
         private void DemoStep(){
+            DeathPlane.SliderHasChanged(deathPlaneHeight);
             // ReSharper disable once Unity.PerformanceCriticalCodeInvocation
             solver.StepPhysics(TimeStep, 
-                               deathPlane.transform.position, 
-                               deathPlane.size);
+                               DeathPlane.transform.position, 
+                               DeathPlane.size);
             volume.FillVolume(fluid, 
                               solver.Hash, 
                               solver.Kernel);
@@ -207,8 +218,8 @@ namespace PBDFluid
                           boundaryParticleMat, 
                           0, 
                           Color.red, 
-                          deathPlane.transform.position, 
-                          deathPlane.size);
+                          DeathPlane.transform.position, 
+                          DeathPlane.size);
 
         private void OnDestroy() {
             boundary?.Dispose();
@@ -256,10 +267,19 @@ namespace PBDFluid
             //Simulation Bounds
             Gizmos.color = Color.yellow;
             if (drawSimulationBounds) DrawSimulationBounds();
-            if (drawBarChart) DrawBarChartGizmo();
+            // if (drawBarChart) DrawBarChartGizmo();
+            // if (drawBarChart && barChart!=null) DrawBarChartGizmo2();
+            Gizmos.color = Color.red;
+            if (drawBarChart && cylinderMesh!=null) DrawBarCylinderGizmo();
         }
 
-        private void DrawBarChartGizmo() => Gizmos.DrawWireCube(barChartBounds.center, barChartBounds.size);
+        private void DrawBarCylinderGizmo() => Gizmos.DrawWireMesh(cylinderMesh,
+                                                                   transform.position 
+                                                                 + barChartBounds.center,
+                                                                   Quaternion.identity,
+                                                                   new Vector3(barChartBounds.size.x, 
+                                                                               barChartBounds.size.y/2f,
+                                                                               barChartBounds.size.z));
 
         /// <summary>
         /// Draws a gizmo showing the simulation bounds

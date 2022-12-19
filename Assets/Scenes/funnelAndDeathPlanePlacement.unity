@@ -151,7 +151,7 @@ Transform:
   m_GameObject: {fileID: 6605914}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 3, z: 0}
-  m_LocalScale: {x: 4, y: 4, z: 4}
+  m_LocalScale: {x: 5, y: 4, z: 5}
   m_Children: []
   m_Father: {fileID: 1242052753}
   m_RootOrder: 0
@@ -433,20 +433,21 @@ MonoBehaviour:
     m_Extent: {x: 5, y: 5, z: 5}
   fluidParticleMat: {fileID: 2100000, guid: 2cfaf2c5e9686ceefbe1548394b84f08, type: 2}
   boundaryParticleMat: {fileID: 2100000, guid: 12a80e65907bd74c094dc7d2dc714e6f, type: 2}
-  volumeMat: {fileID: 2100000, guid: 230571cae5cee7b1ca62fad5c51f88bc, type: 2}
+  volumeMat: {fileID: 2100000, guid: 32d2cd031f252b04b88a55d7d051391d, type: 2}
   drawGrid: 0
   drawBoundaryParticles: 1
   drawFluidParticles: 0
   drawFluidVolume: 1
   drawSimulationBounds: 1
   drawBarChart: 1
-  simulationSize: 2
+  simulationSize: 0
   run: 0
   sphereMesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
   barChartBounds:
     m_Center: {x: 0, y: -2.98, z: 0}
     m_Extent: {x: 1.5, y: 1.5, z: 1.5}
-  deathPlane: {fileID: 0}
+  deathPlaneHeight: 0
+  stopDemo: 0
 --- !u!4 &532089156
 Transform:
   m_ObjectHideFlags: 0

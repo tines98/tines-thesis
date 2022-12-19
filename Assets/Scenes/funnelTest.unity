@@ -268,7 +268,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   size: {x: 5, y: 0, z: 5}
-  slider: {fileID: 619106017}
 --- !u!1001 &254386681
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -474,16 +473,21 @@ MonoBehaviour:
     m_Extent: {x: 5, y: 5, z: 5}
   fluidParticleMat: {fileID: 2100000, guid: 8ebe20bf986d491e1bd15bca85a49418, type: 2}
   boundaryParticleMat: {fileID: 2100000, guid: 1cb1772bd9295a1b2afba2dd09fa8496, type: 2}
-  volumeMat: {fileID: 2100000, guid: 13acabf11cd57c0bd980396ccf554569, type: 2}
+  volumeMat: {fileID: 2100000, guid: 32d2cd031f252b04b88a55d7d051391d, type: 2}
   drawGrid: 0
   drawBoundaryParticles: 1
   drawFluidParticles: 1
   drawFluidVolume: 1
   drawSimulationBounds: 1
+  drawBarChart: 0
   simulationSize: 2
   run: 0
   sphereMesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
-  deathPlane: {fileID: 139035883}
+  barChartBounds:
+    m_Center: {x: 0, y: 0, z: 0}
+    m_Extent: {x: 0, y: 0, z: 0}
+  deathPlaneHeight: 0
+  stopDemo: 0
 --- !u!4 &532089156
 Transform:
   m_ObjectHideFlags: 0
@@ -502,17 +506,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &619106017 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 742435103930903735, guid: 4694299596715ec61ac2782aef409418, type: 3}
-  m_PrefabInstance: {fileID: 1814939181}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 67db9e8f0e2ae9c40bc1e2b64352a6b4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &834229130
 GameObject:
   m_ObjectHideFlags: 0

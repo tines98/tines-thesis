@@ -103,16 +103,17 @@ namespace PBDFluid
         {
 
             m_mesh = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            m_mesh.GetComponent<MeshRenderer>().sharedMaterial = material;
+            var renderer = m_mesh.GetComponent<MeshRenderer>();
+            renderer.material = material;
 
             Bounds bounds = WorldBounds;
             m_mesh.transform.position = bounds.center;
             m_mesh.transform.localScale = bounds.size;
             
-            material.SetVector("Translate", m_mesh.transform.position);
-            material.SetVector("Scale", m_mesh.transform.localScale);
-            material.SetTexture("Volume", Volume);
-            material.SetVector("Size", Bounds.size);
+            renderer.material.SetVector("Translate", m_mesh.transform.position);
+            renderer.material.SetVector("Scale", m_mesh.transform.localScale);
+            renderer.material.SetTexture("Volume", Volume);
+            renderer.material.SetVector("Size", Bounds.size);
 
         }
 

@@ -49,12 +49,11 @@ public class Funnel : FluidBoundaryObject{
         var theta = 2 * Mathf.PI / totalPoints;
         
         for (var particleIndex = 0; particleIndex < totalPoints; particleIndex++)
-            particleCircle.Add(
-                transform.position 
-              + PlaceParticle(radius,
-                              theta,
-                              particleHeight, 
-                              particleIndex));
+            particleCircle.Add(transform.position 
+                             + PlaceParticle(radius,
+                                             theta, 
+                                             particleHeight, 
+                                             particleIndex));
         return particleCircle;
     }
 

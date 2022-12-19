@@ -88,11 +88,12 @@ namespace MeshVoxelizer.Scripts
             
             //Num voxels is global size divided by particle diameter
             numVoxels = new Vector3Int(
-                (int) Math.Ceiling(meshGlobalBounds.size.x / (radius * 2)),
-                (int) Math.Ceiling(meshGlobalBounds.size.y / (radius * 2)),
-                (int) Math.Ceiling(meshGlobalBounds.size.z / (radius * 2))
+                (int) Math.Abs(Math.Ceiling(meshGlobalBounds.size.x / (radius * 2))),
+                (int) Math.Abs(Math.Ceiling(meshGlobalBounds.size.y / (radius * 2))),
+                (int) Math.Abs(Math.Ceiling(meshGlobalBounds.size.z / (radius * 2)))
             );
             
+            Debug.Log("numVoxels = " + numVoxels);
             Voxelizer = new MeshVoxelizer(numVoxels.x, 
                                           numVoxels.y, 
                                           numVoxels.z);
