@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace PBDFluid
+namespace PBDFluid.Scripts
 {
 
     public class RenderVolume : IDisposable

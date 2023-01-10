@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace PBDFluid
+namespace PBDFluid.Scripts
 {
 
     public class SmoothingKernel

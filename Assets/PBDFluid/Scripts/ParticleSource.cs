@@ -1,8 +1,7 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace PBDFluid
+namespace PBDFluid.Scripts
 {
 
     public abstract class ParticleSource

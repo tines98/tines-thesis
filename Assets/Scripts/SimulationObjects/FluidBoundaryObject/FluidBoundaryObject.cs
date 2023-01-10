@@ -1,8 +1,11 @@
-using PBDFluid;
+using Demo;
+using PBDFluid.Scripts;
 using UnityEngine;
 
-public class FluidBoundaryObject : MonoBehaviour
-{
-    public ParticleSource ParticleSource;
-    protected FluidDemo FluidDemo;
+namespace SimulationObjects.FluidBoundaryObject{
+    public class FluidBoundaryObject : MonoBehaviour
+    {
+        public ParticleSource ParticleSource;
+        protected FluidDemo FluidDemo;
+    }
 }

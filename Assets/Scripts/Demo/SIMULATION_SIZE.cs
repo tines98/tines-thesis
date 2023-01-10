@@ -1,4 +1,4 @@
-namespace PBDFluid
+namespace Demo
 {
     public enum SIMULATION_SIZE
     {

@@ -1,8 +1,13 @@
 using System;
 using System.Collections.Generic;
+using Demo;
 using PBDFluid;
+using SimulationObjects;
+using SimulationObjects.FluidBoundaryObject;
+using SimulationObjects.FluidObject;
 using UnityEngine;
 using UnityEngine.Assertions;
+using Utility;
 
 namespace MeshVoxelizer.Scripts
 {
