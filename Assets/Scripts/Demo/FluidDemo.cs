@@ -3,45 +3,41 @@ using System.Collections.Generic;
 using UnityEngine;
 using PBDFluid.Scripts;
 using UnityEngine.Assertions;
-using UnityEngine.UI;
 
-namespace PBDFluid
-{
-    public class FluidDemo : MonoBehaviour
-    {
+namespace PBDFluid{
+    public class FluidDemo : MonoBehaviour{
         //Constants
         private const float TimeStep = 1.0f / 60.0f;
         [NonSerialized] private const float Density = 500.0f;
-        
+
         // Serializables
-        private Camera mainCamera;
-        public Bounds simulationBounds = new Bounds(Vector3.zero, new Vector3(6,10,6));
-        
+        public Bounds simulationBounds = new Bounds(Vector3.zero, new Vector3(6, 10, 6));
+
         public FluidDemoRenderSettings renderSettings = new FluidDemoRenderSettings();
 
-        [Header("Simulation Settings")]
         [SerializeField] private SIMULATION_SIZE simulationSize = SIMULATION_SIZE.MEDIUM;
 
         public Bounds barChartBounds;
-        [SerializeField] [Range(0f,5f)] public float deathPlaneHeight;
-        
-        [Header("Run")]
-        [SerializeField] private bool run;
+        [SerializeField] [Range(0f, 5f)] public float deathPlaneHeight;
+
+        [Header("Run")] [SerializeField] private bool run;
         [SerializeField] private bool stopDemo;
+
+        private Camera mainCamera;
 
         // Fluid & Boundary Objects
         private FluidContainerizer fluidContainerizer;
         private FluidBoundaryCylinderCup barChart;
         private List<FluidBoundaryObject> fluidBoundaryObjects;
         private FluidObject[] fluidObjects;
-        
+
         // Fluid Demo Objects
         [NonSerialized] public DeathPlane DeathPlane;
         private FluidBody fluid;
         private FluidBoundary boundary;
         private FluidSolver solver;
         private RenderVolume volume;
-        
+
         // Booleans
         private bool hasStarted;
         private bool wasError;
@@ -51,29 +47,30 @@ namespace PBDFluid
         /// Starts the fluid simulation
         /// </summary>
         /// <remarks>Can be called from the outside, such as from UI</remarks>
-        public void StartDemo() {
-            mainCamera = Camera.main;
+        public void StartDemo(){
             if (hasStarted) return;
-            try
-            {
-                run = true;
-                fluidBoundaryObjects = new List<FluidBoundaryObject>();
+
+            mainCamera = Camera.main;
+            run = true;
+            fluidBoundaryObjects = new List<FluidBoundaryObject>();
+            try{
                 GetFluidBoundaryObjects();
                 GetFluidObjects();
                 GetDeathPlane();
-                LoggingUtility.LogWithColor($"Fluid Demo: Found {fluidBoundaryObjects.Count} fluidBoundaryObjects!",Color.green);
-                LoggingUtility.LogWithColor("Fluid Demo: Found {fluidObjects.Length} fluidObjects!",Color.green);
-                
+                LoggingUtility.LogWithColor($"Fluid Demo: Found {fluidBoundaryObjects.Count} fluidBoundaryObjects!",
+                                            Color.green);
+                LoggingUtility.LogWithColor("Fluid Demo: Found {fluidObjects.Length} fluidObjects!", Color.green);
+
                 fluidContainerizer = GetComponentInChildren<FluidContainerizer>();
-                
+
                 CreateBarChart();
                 CreateFunnel();
                 CreateDeathPlane();
 
                 CreateFluid();
                 CreateBoundary();
-                
-                var bounds = new Bounds(transform.position,simulationBounds.size);
+
+                var bounds = new Bounds(transform.position, simulationBounds.size);
                 fluid.Bounds = bounds;
                 solver = new FluidSolver(fluid, bounds, boundary);
 
@@ -84,40 +81,38 @@ namespace PBDFluid
                 wasError = true;
                 throw;
             }
+
             hasStarted = true;
         }
 
-        
+
         /// <summary>
         /// Creates a <see cref="DeathPlane"/> using the <see cref="DeathPlaneFactory"/>
         /// </summary>
-        private void CreateDeathPlane() => 
-            DeathPlane = DeathPlaneFactory.CreateDeathPlane(transform, 
-                                                            fluidContainerizer.meshBounds, 
-                                                            barChart.bounds, 
+        private void CreateDeathPlane() =>
+            DeathPlane = DeathPlaneFactory.CreateDeathPlane(transform,
+                                                            fluidContainerizer.meshBounds,
+                                                            barChart.bounds,
                                                             Radius() * 2);
 
-        
+
         /// <summary>
         /// Creates a <see cref="FluidBoundaryCylinderCup"/> using the <see cref="CylinderBarFactory"/>
         /// </summary>
         private void CreateBarChart() =>
-            fluidBoundaryObjects.Add(
-                barChart = CylinderBarFactory.CreateBarChart(transform, 
-                                                             barChartBounds.center, 
-                                                             barChartBounds.size));
+            fluidBoundaryObjects.Add(barChart = CylinderBarFactory.CreateBarChart(transform, 
+                                                                                  barChartBounds.center, 
+                                                                                  barChartBounds.size));
 
-        
-        
+
         /// <summary>
         /// Creates a <see cref="Funnel"/> using the <see cref="FunnelFactory"/>
         /// </summary>
-        private void CreateFunnel() => 
-            fluidBoundaryObjects.Add(
-                FunnelFactory.CreateFunnel(transform,
-                                           barChart.bounds, 
-                                           fluidContainerizer.meshBounds,
-                                           60.0f));
+        private void CreateFunnel() =>
+            fluidBoundaryObjects.Add(FunnelFactory.CreateFunnel(transform,
+                                                                barChart.bounds,
+                                                                fluidContainerizer.meshBounds,
+                                                                60.0f));
 
 
         /// <summary>
@@ -133,7 +128,7 @@ namespace PBDFluid
         /// through and leak out.
         /// </remarks>
         /// <returns>The radius for particles</returns>
-        public float Radius() =>  simulationSize switch {
+        public float Radius() => simulationSize switch{
             SIMULATION_SIZE.LOW => 0.1f,
             SIMULATION_SIZE.MEDIUM => 0.08f,
             SIMULATION_SIZE.HIGH => 0.06f,
@@ -142,50 +137,44 @@ namespace PBDFluid
 
 
         /// <summary>
-        /// Updates the deathplane based on a UI slider
-        /// </summary>
-        /// <param name="slider">UI slider that controls DeathPlane height</param>
-        public void DeathPlaneSliderHasChanged(Slider slider) => DeathPlane.SliderHasChanged(slider.value);
-            
-       
-        /// <summary>
         /// Searches child gameObjects for FluidBoundaryObjects
         /// </summary>
-        private void GetFluidBoundaryObjects() => fluidBoundaryObjects.AddRange(GetComponentsInChildren<FluidBoundaryObject>());
-        
-        
+        private void GetFluidBoundaryObjects() =>
+            fluidBoundaryObjects.AddRange(GetComponentsInChildren<FluidBoundaryObject>());
+
+
         /// <summary>
         /// Searches child gameObjects for FluidObject components
         /// </summary>
         private void GetFluidObjects() => fluidObjects = GetComponentsInChildren<FluidObject>();
 
-        
+
         /// <summary>
         /// Searches child gameObjects for a DeathPlane component
         /// </summary>
         private void GetDeathPlane() => DeathPlane = GetComponentInChildren<DeathPlane>();
 
-        
-        private void Update() {
+
+        private void Update(){
             if (wasError) return;
             if (!hasStarted){
                 if (run) StartDemo();
                 return;
             }
-            
+
             // ReSharper disable once Unity.PerformanceCriticalCodeInvocation
             if (run) DemoStep();
-            
+
             volume.Hide = !renderSettings.drawFluidVolume;
-            
-            if (renderSettings.drawBoundaryParticles) 
+
+            if (renderSettings.drawBoundaryParticles)
                 DrawBoundaryParticles();
-            if (renderSettings.drawFluidParticles) 
+            if (renderSettings.drawFluidParticles)
                 DrawFluidParticles();
             if (stopDemo) StopDemo();
         }
 
-        
+
         /// <summary>
         /// Stops the demo, pausing the fluid in motion, and discarding all compute shaders
         /// </summary>
@@ -196,64 +185,64 @@ namespace PBDFluid
             stopDemo = false;
         }
 
-        
+
         /// <summary>
         /// Updates the solver and volume
         /// </summary>
         private void DemoStep(){
             DeathPlane.SliderHasChanged(deathPlaneHeight);
             // ReSharper disable once Unity.PerformanceCriticalCodeInvocation
-            solver.StepPhysics(TimeStep, 
-                               DeathPlane.transform.position, 
+            solver.StepPhysics(TimeStep,
+                               DeathPlane.transform.position,
                                DeathPlane.size);
-            volume.FillVolume(fluid, 
-                              solver.Hash, 
+            volume.FillVolume(fluid,
+                              solver.Hash,
                               solver.Kernel);
         }
-        
-        
+
+
         /// <summary>
         /// Draws the fluid particles
         /// </summary>
-        private void DrawFluidParticles() => 
-            fluid.Draw(mainCamera, 
-                       renderSettings.sphereMesh, 
-                       renderSettings.fluidParticleMaterial, 
+        private void DrawFluidParticles() =>
+            fluid.Draw(mainCamera,
+                       renderSettings.sphereMesh,
+                       renderSettings.fluidParticleMaterial,
                        0);
-        
-        
+
+
         /// <summary>
         /// Draws the boundary particles
         /// </summary>
-        private void DrawBoundaryParticles() => 
-            boundary.Draw(mainCamera, 
-                          renderSettings.sphereMesh, 
-                          renderSettings.boundaryParticleMaterial, 
-                          0, 
-                          Color.red, 
-                          DeathPlane.transform.position, 
+        private void DrawBoundaryParticles() =>
+            boundary.Draw(mainCamera,
+                          renderSettings.sphereMesh,
+                          renderSettings.boundaryParticleMaterial,
+                          0,
+                          Color.red,
+                          DeathPlane.transform.position,
                           DeathPlane.size);
 
-        private void OnDestroy() {
+        private void OnDestroy(){
             boundary?.Dispose();
             fluid?.Dispose();
             solver?.Dispose();
             volume?.Dispose();
         }
 
-        private void OnRenderObject() {
+        private void OnRenderObject(){
             var cam = Camera.current;
             if (cam != Camera.main) return;
-            
-            if(hasStarted && renderSettings.drawGrid)
+
+            if (hasStarted && renderSettings.drawGrid)
                 solver.Hash.DrawGrid(cam, Color.yellow);
         }
 
-        
+
         /// <summary>
         /// Puts every fluid boundary object into a particle source and creates a new FluidBody
         /// </summary>
-        private void CreateBoundary() {
+        private void CreateBoundary(){
             var particleSources = new List<ParticleSource>(fluidBoundaryObjects.Count);
             fluidBoundaryObjects.ForEach(obj => particleSources.Add(obj.ParticleSource));
             var particleSource = new ParticlesFromSeveralBounds(Radius() * 2, particleSources.ToArray());
@@ -263,12 +252,11 @@ namespace PBDFluid
                                          Density);
         }
 
-        
+
         /// <summary>
         /// Puts every fluid object into a particle source and creates a new FluidBody
         /// </summary>
-        private void CreateFluid()
-        {
+        private void CreateFluid(){
             var particleSources = new ParticleSource[fluidObjects.Length];
             for (var index = 0; index < fluidObjects.Length; index++)
                 particleSources[index] = fluidObjects[index].ParticleSource;
@@ -277,34 +265,33 @@ namespace PBDFluid
             particleSource.CreateParticles();
             fluid = new FluidBody(particleSource, Radius(), Density, transform.localToWorldMatrix);
         }
-        
-        
-        private void OnDrawGizmos() {
+
+
+        private void OnDrawGizmos(){
             //Simulation Bounds
             Gizmos.color = Color.yellow;
             if (renderSettings.drawSimulationBounds) DrawSimulationBounds();
             Gizmos.color = Color.red;
-            if (renderSettings.drawBarChart && renderSettings.cylinderMesh!=null) DrawBarCylinderGizmo();
+            if (renderSettings.drawBarChart && renderSettings.cylinderMesh != null) DrawBarCylinderGizmo();
         }
 
-        
+
         /// <summary>
         /// Draws a gizmo showing the barchart cylinder
         /// </summary>
-        private void DrawBarCylinderGizmo() => 
-            Gizmos.DrawWireMesh(renderSettings.cylinderMesh, 
+        private void DrawBarCylinderGizmo() =>
+            Gizmos.DrawWireMesh(renderSettings.cylinderMesh,
                                 transform.position + barChartBounds.center,
                                 Quaternion.identity,
-                                new Vector3(barChartBounds.size.x, 
-                                            barChartBounds.size.y/2f, 
+                                new Vector3(barChartBounds.size.x,
+                                            barChartBounds.size.y / 2f,
                                             barChartBounds.size.z));
-        
-        
+
+
         /// <summary>
         /// Draws a gizmo showing the simulation bounds
         /// </summary>
-        private void DrawSimulationBounds() => 
-            Gizmos.DrawWireCube(transform.position+simulationBounds.center,simulationBounds.size);
-
+        private void DrawSimulationBounds() =>
+            Gizmos.DrawWireCube(transform.position + simulationBounds.center, simulationBounds.size);
     }
 }
