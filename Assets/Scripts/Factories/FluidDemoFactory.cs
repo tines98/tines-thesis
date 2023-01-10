@@ -4,7 +4,7 @@ using MeshVoxelizer.Scripts;
 using PBDFluid;
 using UnityEngine;
 
-public class DemoFactory{
+public class FluidDemoFactory{
     /// <summary>
     /// Factory method for <see cref="FluidDemo"/> 
     /// </summary>
@@ -12,7 +12,7 @@ public class DemoFactory{
     /// <param name="prefab">3D model to use for the demo</param>
     /// <param name="simulationSize">size of the simulation</param>
     /// <param name="barSize">size of the bar</param>
-    public static void CreateDemo(DemoRenderSettings renderSettings, GameObject prefab, Vector3 simulationSize, Vector3 barSize){
+    public static void CreateDemo(FluidDemoRenderSettings renderSettings, GameObject prefab, Vector3 simulationSize, Vector3 barSize){
         var demoGameObject = new GameObject("Created Demo");
         demoGameObject.tag = "Demo";
         var demo = demoGameObject.AddComponent<FluidDemo>();

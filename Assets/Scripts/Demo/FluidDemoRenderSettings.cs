@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [Serializable]
-public class DemoRenderSettings
+public class FluidDemoRenderSettings
 {
     [Header("Material Settings")]
     public Material fluidParticleMaterial;

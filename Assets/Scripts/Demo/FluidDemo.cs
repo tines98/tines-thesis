@@ -17,7 +17,7 @@ namespace PBDFluid
         private Camera mainCamera;
         public Bounds simulationBounds = new Bounds(Vector3.zero, new Vector3(6,10,6));
         
-        public DemoRenderSettings renderSettings = new DemoRenderSettings();
+        public FluidDemoRenderSettings renderSettings = new FluidDemoRenderSettings();
 
         [Header("Simulation Settings")]
         [SerializeField] private SIMULATION_SIZE simulationSize = SIMULATION_SIZE.MEDIUM;

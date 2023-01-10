@@ -5,9 +5,9 @@ using MeshVoxelizer.Scripts;
 using PBDFluid;
 using UnityEngine;
 
-public class DemoManager : MonoBehaviour{
+public class FluidDemoManager : MonoBehaviour{
     [SerializeField] private GameObject prefab;
-    [SerializeField] private DemoRenderSettings renderSettings;
+    [SerializeField] private FluidDemoRenderSettings renderSettings;
     [SerializeField] private Vector3 simulationSize;
     [SerializeField] private Vector3 barSize;
     
@@ -17,9 +17,9 @@ public class DemoManager : MonoBehaviour{
 
     
     /// <summary>
-    /// Creates a <see cref="FluidDemo"/> using the <see cref="DemoFactory"/>
+    /// Creates a <see cref="FluidDemo"/> using the <see cref="FluidDemoFactory"/>
     /// </summary>
-    void CreateDemo() => DemoFactory.CreateDemo(renderSettings, prefab, simulationSize, barSize);
+    void CreateDemo() => FluidDemoFactory.CreateDemo(renderSettings, prefab, simulationSize, barSize);
 
     
     // GIZMOS
