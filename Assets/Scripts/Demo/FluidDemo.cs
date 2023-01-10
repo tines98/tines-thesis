@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Factories;
-using PBDFluid;
 using PBDFluid.Scripts;
 using SimulationObjects;
 using SimulationObjects.FluidBoundaryObject;
@@ -97,6 +96,7 @@ namespace Demo{
         /// </summary>
         private void CreateDeathPlane() =>
             DeathPlane = DeathPlaneFactory.CreateDeathPlane(transform,
+                                                            simulationBounds,
                                                             fluidContainerizer.meshBounds,
                                                             barChart.bounds,
                                                             Radius() * 2);
@@ -196,7 +196,7 @@ namespace Demo{
         /// Updates the solver and volume
         /// </summary>
         private void DemoStep(){
-            DeathPlane.SliderHasChanged(deathPlaneHeight);
+            UpdateDeathPlane();
             // ReSharper disable once Unity.PerformanceCriticalCodeInvocation
             solver.StepPhysics(TimeStep,
                                DeathPlane.transform.position,
@@ -205,6 +205,8 @@ namespace Demo{
                               solver.Hash,
                               solver.Kernel);
         }
+
+        private void UpdateDeathPlane() => DeathPlane.SliderHasChanged(deathPlaneHeight);
 
 
         /// <summary>

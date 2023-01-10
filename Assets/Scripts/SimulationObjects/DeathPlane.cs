@@ -1,9 +1,11 @@
+using System;
 using UnityEngine;
 
 namespace SimulationObjects{
     public class DeathPlane : MonoBehaviour
     {
         public Vector3 size;
+        [NonSerialized] public float MaxSize = 1f;
 
         private void OnDrawGizmos()
         {
@@ -16,6 +18,6 @@ namespace SimulationObjects{
         /// <summary>
         /// Flag method, to be called from the UI slider, updates the height of the deathbox
         /// </summary>
-        public void SliderHasChanged(float value) => size.y = value;
+        public void SliderHasChanged(float value) => size.y = value * MaxSize;
     }
 }

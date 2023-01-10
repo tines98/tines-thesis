@@ -4,7 +4,7 @@ using UnityEngine;
 namespace Factories{
     public class DeathPlaneFactory
     {
-        public static DeathPlane CreateDeathPlane(Transform parent, Bounds meshBounds, Bounds barChartBounds, float particleDiameter){
+        public static DeathPlane CreateDeathPlane(Transform parent, Bounds simulationBounds, Bounds meshBounds, Bounds barChartBounds, float particleDiameter){
             var deathPlaneGameObject = new GameObject("DeathPlane"){
                 transform ={
                     parent = parent,
@@ -15,8 +15,12 @@ namespace Factories{
             };
             var deathPlane = deathPlaneGameObject.AddComponent<DeathPlane>();
             deathPlane.size = ResizeDeathPlane(meshBounds.size, particleDiameter);
+            deathPlane.MaxSize = CalculateMaxSize(deathPlane.transform.position, simulationBounds);
             return deathPlane;
         }
+
+        private static float CalculateMaxSize(Vector3 position, Bounds simulationBounds) =>
+            (simulationBounds.max.y - position.y) * 1.1f;  
 
         /// <summary>
         /// Places the DeathPlane based on the barchart and the mesh
