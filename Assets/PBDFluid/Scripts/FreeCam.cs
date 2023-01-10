@@ -1,7 +1,6 @@
 using UnityEngine;
-using System.Collections.Generic;
 
-namespace PBDFluid
+namespace PBDFluid.Scripts
 {
 
 	public class FreeCam : MonoBehaviour 

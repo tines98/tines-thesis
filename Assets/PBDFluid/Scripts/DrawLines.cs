@@ -1,8 +1,7 @@
-using UnityEngine;
-using System;
 using System.Collections.Generic;
+using UnityEngine;
 
-namespace PBDFluid
+namespace PBDFluid.Scripts
 {
 
     public enum LINE_MODE { LINES, TRIANGLES, TETRAHEDRON  };

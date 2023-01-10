@@ -1,10 +1,16 @@
 using System;
 using System.Collections.Generic;
-using UnityEngine;
+using Factories;
+using PBDFluid;
 using PBDFluid.Scripts;
+using SimulationObjects;
+using SimulationObjects.FluidBoundaryObject;
+using SimulationObjects.FluidObject;
+using UnityEngine;
 using UnityEngine.Assertions;
+using Utility;
 
-namespace PBDFluid{
+namespace Demo{
     public class FluidDemo : MonoBehaviour{
         //Constants
         private const float TimeStep = 1.0f / 60.0f;
