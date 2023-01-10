@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: bea9fe41b964484d80690bbdb83b737e
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - mainCamera: {instanceID: 0}
+  - fluidParticleMat: {fileID: 2100000, guid: 12d189c057effd74eb9f43721b3ed217, type: 2}
+  - boundaryParticleMat: {fileID: 2100000, guid: 257742b1fedac2f4791369b571260722, type: 2}
+  - volumeMat: {fileID: 2100000, guid: 32d2cd031f252b04b88a55d7d051391d, type: 2}
+  - sphereMesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
+  - deathPlane: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
