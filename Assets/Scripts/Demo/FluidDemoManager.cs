@@ -66,7 +66,8 @@ namespace Demo{
                 if (meshFilter == null) meshFilter = prefabs[i].GetComponentInChildren<MeshFilter>();
                 
                 DrawModelGizmo(meshFilter.sharedMesh, 
-                               FluidDemoFactory.PlaceModel(prefabs[i],
+                               demoPos 
+                             + FluidDemoFactory.PlaceModel(prefabs[i],
                                                            new Bounds(Vector3.zero,
                                                                       simulationSize)));
             }
