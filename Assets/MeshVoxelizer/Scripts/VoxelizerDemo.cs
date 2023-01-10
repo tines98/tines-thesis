@@ -23,7 +23,7 @@ namespace MeshVoxelizer.Scripts
         [SerializeField] private bool drawAABBTree;
 
         private Box3 bounds;
-        private FluidBodyMeshDemo fluidBodyMeshDemo;
+        private FluidDemo fluidDemo;
         public Bounds meshGlobalBounds;
 
         private GameObject nonVoxelizedGameObject;
@@ -40,9 +40,9 @@ namespace MeshVoxelizer.Scripts
         void Start()
         {
             if (partOfFluidSim) {
-                fluidBodyMeshDemo = GetComponentInParent<FluidBodyMeshDemo>();
-                Assert.IsNotNull(fluidBodyMeshDemo);
-                radius = fluidBodyMeshDemo.Radius();
+                fluidDemo = GetComponentInParent<FluidDemo>();
+                Assert.IsNotNull(fluidDemo);
+                radius = fluidDemo.Radius();
             }
             StartVoxelization();
         }

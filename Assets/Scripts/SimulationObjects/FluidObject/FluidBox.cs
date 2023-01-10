@@ -9,9 +9,9 @@ public class FluidBox : FluidObject
     [SerializeField] private Vector3 size;
     private void Start()
     {
-        FluidBodyMeshDemo = GetComponentInParent<FluidBodyMeshDemo>();
-        Assert.IsNotNull(FluidBodyMeshDemo);
-        ParticleSource = new ParticlesFromBounds(FluidBodyMeshDemo.Radius() * 2, OuterBounds());
+        FluidDemo = GetComponentInParent<FluidDemo>();
+        Assert.IsNotNull(FluidDemo);
+        ParticleSource = new ParticlesFromBounds(FluidDemo.Radius() * 2, OuterBounds());
     }
     
     /// <summary>

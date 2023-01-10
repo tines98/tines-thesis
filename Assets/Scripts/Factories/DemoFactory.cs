@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class DemoFactory{
     /// <summary>
-    /// Factory method for <see cref="FluidBodyMeshDemo"/> 
+    /// Factory method for <see cref="FluidDemo"/> 
     /// </summary>
     /// <param name="renderSettings">Render settings to give created demo</param>
     /// <param name="prefab">3D model to use for the demo</param>
@@ -15,7 +15,7 @@ public class DemoFactory{
     public static void CreateDemo(DemoRenderSettings renderSettings, GameObject prefab, Vector3 simulationSize, Vector3 barSize){
         var demoGameObject = new GameObject("Created Demo");
         demoGameObject.tag = "Demo";
-        var demo = demoGameObject.AddComponent<FluidBodyMeshDemo>();
+        var demo = demoGameObject.AddComponent<FluidDemo>();
         
         // Set simulation bounds
         demo.simulationBounds = new Bounds(Vector3.zero, simulationSize);

@@ -5,13 +5,13 @@ using UnityEngine.UI;
 
 public class DemoControllerUI : MonoBehaviour{
     private int currentDemo;
-    private List<FluidBodyMeshDemo> demos;
+    private List<FluidDemo> demos;
     private Slider deathPlaneSlider;
     [SerializeField] private Text demoNumberUI;
     
     // Start is called before the first frame update
     void Start(){
-        demos = new List<FluidBodyMeshDemo>();
+        demos = new List<FluidDemo>();
         deathPlaneSlider = GetComponentInChildren<Slider>();
         LoggingUtility.LogInfo($"Found {demos.Count} Demos");
     }
@@ -25,9 +25,9 @@ public class DemoControllerUI : MonoBehaviour{
 
     
     /// <summary>
-    /// Iterates through <see cref="GetDemoGameObjects"/> and populates <see cref="demos"/> with <see cref="FluidBodyMeshDemo"/> components within
+    /// Iterates through <see cref="GetDemoGameObjects"/> and populates <see cref="demos"/> with <see cref="FluidDemo"/> components within
     /// </summary>
-    private void GetDemos() => GetDemoGameObjects().ForEach(obj => demos.Add(obj.GetComponent<FluidBodyMeshDemo>()));
+    private void GetDemos() => GetDemoGameObjects().ForEach(obj => demos.Add(obj.GetComponent<FluidDemo>()));
     
 
     // Update is called once per frame

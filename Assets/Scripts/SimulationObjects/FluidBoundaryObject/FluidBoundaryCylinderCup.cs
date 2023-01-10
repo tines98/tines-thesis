@@ -12,10 +12,10 @@ public class FluidBoundaryCylinderCup : FluidBoundaryObject{
     
     public void CreateParticles()
     {
-        FluidBodyMeshDemo = GetComponentInParent<FluidBodyMeshDemo>();
-        Assert.IsNotNull(FluidBodyMeshDemo);
+        FluidDemo = GetComponentInParent<FluidDemo>();
+        Assert.IsNotNull(FluidDemo);
         // ParticleSource = new ParticlesFromBounds(FluidBodyMeshDemo.Radius() * 2, OuterBounds(), InnerBounds());
-        var spacing = FluidBodyMeshDemo.Radius() * 2f;
+        var spacing = FluidDemo.Radius() * 2f;
         ParticleSource = new ParticlesFromList(spacing, CreateCylinderCup(spacing));
         LoggingUtility.LogInfo($"FluidBoundaryCylinderCup {name} har a total of {ParticleSource.NumParticles} boundary particles!");
         bounds = new Bounds(transform.position, 

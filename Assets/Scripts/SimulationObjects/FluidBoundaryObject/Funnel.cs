@@ -10,8 +10,8 @@ public class Funnel : FluidBoundaryObject{
     [SerializeField] private bool drawFunnel;
 
     public void CreateParticles(){
-        FluidBodyMeshDemo = GetComponentInParent<FluidBodyMeshDemo>();
-        var spacing = FluidBodyMeshDemo.Radius() * 2;
+        FluidDemo = GetComponentInParent<FluidDemo>();
+        var spacing = FluidDemo.Radius() * 2;
         var particles = ParticleFunnel(spacing);
         Debug.Log($"funnel has {particles.Count}");
         ParticleSource = new ParticlesFromList(spacing, particles);
@@ -63,7 +63,7 @@ public class Funnel : FluidBoundaryObject{
     private void OnDrawGizmos(){
         if (!drawFunnel) return;
         float radius = .08f;
-        if (FluidBodyMeshDemo != null) radius = FluidBodyMeshDemo.Radius();
+        if (FluidDemo != null) radius = FluidDemo.Radius();
         var particleFunnel = ParticleFunnel(radius*2);
         var camPos = Camera.current.transform.position;
         particleFunnel.Sort((a, b) => (b - camPos).sqrMagnitude

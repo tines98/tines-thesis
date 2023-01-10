@@ -6,5 +6,5 @@ using UnityEngine;
 public class FluidObject : MonoBehaviour
 {
     public ParticleSource ParticleSource;
-    protected FluidBodyMeshDemo FluidBodyMeshDemo;
+    protected FluidDemo FluidDemo;
 }

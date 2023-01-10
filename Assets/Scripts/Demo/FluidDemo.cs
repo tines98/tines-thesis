@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 namespace PBDFluid
 {
-    public class FluidBodyMeshDemo : MonoBehaviour
+    public class FluidDemo : MonoBehaviour
     {
         //Constants
         private const float TimeStep = 1.0f / 60.0f;

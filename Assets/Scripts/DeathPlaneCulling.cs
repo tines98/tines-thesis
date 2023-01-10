@@ -8,7 +8,7 @@ using UnityEngine.Assertions;
 [RequireComponent(typeof(MeshFilter))]
 public class DeathPlaneCulling : MonoBehaviour
 {
-    private FluidBodyMeshDemo demo;
+    private FluidDemo demo;
     private MeshRenderer meshRenderer;
     private Material material;
     
@@ -17,7 +17,7 @@ public class DeathPlaneCulling : MonoBehaviour
     {
         meshRenderer = GetComponent<MeshRenderer>();
         material = meshRenderer.material;
-        demo = GetComponentInParent<FluidBodyMeshDemo>();
+        demo = GetComponentInParent<FluidDemo>();
         Assert.IsNotNull(demo);
     }
 

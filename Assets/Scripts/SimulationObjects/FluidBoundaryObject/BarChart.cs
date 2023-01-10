@@ -11,10 +11,10 @@ public class BarChart : FluidBoundaryObject{
     
     // Start is called before the first frame update
     public void CreateParticles(){
-        FluidBodyMeshDemo = GetComponentInParent<FluidBodyMeshDemo>();
-        Assert.IsNotNull(FluidBodyMeshDemo);
+        FluidDemo = GetComponentInParent<FluidDemo>();
+        Assert.IsNotNull(FluidDemo);
         if (height <= 0f) height = barBoundsList[0].size.y;
-        spacing = FluidBodyMeshDemo.Radius() * 2;
+        spacing = FluidDemo.Radius() * 2;
         posList = new List<Vector3>();
         CreateBars();
         ParticleSource = new ParticlesFromList(spacing, posList);

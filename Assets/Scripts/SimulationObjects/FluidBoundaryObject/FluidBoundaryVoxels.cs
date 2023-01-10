@@ -17,8 +17,8 @@ public class FluidBoundaryVoxels : FluidBoundaryObject{
         fluidContainerizer = GetComponent<FluidContainerizer>();
         Assert.IsNotNull(fluidContainerizer);
         
-        FluidBodyMeshDemo = GetComponentInParent<FluidBodyMeshDemo>();
-        Assert.IsNotNull(FluidBodyMeshDemo);
+        FluidDemo = GetComponentInParent<FluidDemo>();
+        Assert.IsNotNull(FluidDemo);
         
         voxelizerDemo = GetComponentInParent<VoxelizerDemo>();
         if (voxelizerDemo == null) voxelizerDemo = GetComponent<VoxelizerDemo>();
@@ -30,7 +30,7 @@ public class FluidBoundaryVoxels : FluidBoundaryObject{
     private void CreateParticles(){
         start = true;
         voxels = fluidContainerizer.ExteriorVoxels;
-        ParticleSource = new ParticlesFromVoxels(FluidBodyMeshDemo.Radius() * 2, 
+        ParticleSource = new ParticlesFromVoxels(FluidDemo.Radius() * 2, 
                                                  voxels, 
                                                  transform.localToWorldMatrix);
         ParticleSource.CreateParticles();

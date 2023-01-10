@@ -17,7 +17,7 @@ public class DemoManager : MonoBehaviour{
 
     
     /// <summary>
-    /// Creates a <see cref="FluidBodyMeshDemo"/> using the <see cref="DemoFactory"/>
+    /// Creates a <see cref="FluidDemo"/> using the <see cref="DemoFactory"/>
     /// </summary>
     void CreateDemo() => DemoFactory.CreateDemo(renderSettings, prefab, simulationSize, barSize);
 
