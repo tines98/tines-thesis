@@ -20,6 +20,7 @@ public class FluidContainerizer : MonoBehaviour
     private void Start()
     {
         voxelizerDemo = GetComponentInParent<VoxelizerDemo>();
+        if (voxelizerDemo == null) voxelizerDemo = GetComponent<VoxelizerDemo>();
         voxelizerDemo.SetVoxelizedMeshVisibility(false);
             
         meshHollower = new MeshHollower(voxelizerDemo.Voxelizer.Voxels);
@@ -38,7 +39,10 @@ public class FluidContainerizer : MonoBehaviour
 
     
     /// <returns>True if the fluid container is done being containerized</returns>
-    public bool IsReady() => ExteriorVoxels.Count > 0 && InteriorVoxels.Count > 0;
+    public bool IsReady() => ExteriorVoxels!=null 
+                          && InteriorVoxels!=null 
+                          && ExteriorVoxels.Count > 0 
+                          && InteriorVoxels.Count > 0;
     
     
     /// <summary>

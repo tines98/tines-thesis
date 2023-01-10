@@ -93,7 +93,7 @@ namespace MeshVoxelizer.Scripts
                 (int) Math.Abs(Math.Ceiling(meshGlobalBounds.size.z / (radius * 2)))
             );
             
-            Debug.Log("numVoxels = " + numVoxels);
+            LoggingUtility.LogInfo($"Voxelized mesh is {numVoxels.x}x{numVoxels.y}x{numVoxels.z}");
             Voxelizer = new MeshVoxelizer(numVoxels.x, 
                                           numVoxels.y, 
                                           numVoxels.z);
@@ -103,7 +103,6 @@ namespace MeshVoxelizer.Scripts
                                mesh.triangles, 
                                bounds);
             var meshPosOffset = trsMatrix.MultiplyPoint(bounds.Min)-nonVoxelizedGameObject.transform.position;
-            Debug.Log(meshPosOffset);
             mesh = CreateMesh(Voxelizer.Voxels, Scale(), meshPosOffset);
 
             CreateVoxelizedGameObject(mesh, 
@@ -126,7 +125,7 @@ namespace MeshVoxelizer.Scripts
         private void CreateVoxelizedGameObject(Mesh mesh, Material mat, Transform copyTransform){
             voxelizedGameObject = new GameObject("Voxelized") {
                 transform = {
-                    parent = copyTransform.parent,
+                    parent = copyTransform,
                     position = copyTransform.position,
                     rotation = copyTransform.rotation,
                 }

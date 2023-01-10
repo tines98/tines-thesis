@@ -12,10 +12,6 @@ public class Funnel : FluidBoundaryObject{
     public void CreateParticles(){
         FluidBodyMeshDemo = GetComponentInParent<FluidBodyMeshDemo>();
         var spacing = FluidBodyMeshDemo.Radius() * 2;
-        Debug.Log("height = " + height);
-        Debug.Log("lowerRadius = " + lowerRadius);
-        Debug.Log("upperRadius = " + upperRadius);
-        Debug.Log($"angle is {CalcFunnelAngle()}");
         var particles = ParticleFunnel(spacing);
         Debug.Log($"funnel has {particles.Count}");
         ParticleSource = new ParticlesFromList(spacing, particles);

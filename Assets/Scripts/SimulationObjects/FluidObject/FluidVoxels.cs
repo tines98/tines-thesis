@@ -23,6 +23,7 @@ public class FluidVoxels : FluidObject{
         Assert.IsNotNull(FluidBodyMeshDemo);
         
         voxelizerDemo = GetComponentInParent<VoxelizerDemo>();
+        if (voxelizerDemo == null) voxelizerDemo = GetComponent<VoxelizerDemo>();
         Assert.IsNotNull(voxelizerDemo);
     }
 
