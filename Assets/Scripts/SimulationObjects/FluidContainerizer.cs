@@ -12,7 +12,7 @@ namespace SimulationObjects{
         [SerializeField] private bool drawMeshBounds;
         private VoxelizerDemo voxelizerDemo;
         private MeshHollower meshHollower;
-        [NonSerialized] public Bounds meshBounds;
+        [NonSerialized] public Bounds MeshBounds;
 
         public List<Box3> ExteriorVoxels;
         public List<Box3> InteriorVoxels;
@@ -22,7 +22,7 @@ namespace SimulationObjects{
         {
             voxelizerDemo = GetComponentInParent<VoxelizerDemo>();
             if (voxelizerDemo == null) voxelizerDemo = GetComponent<VoxelizerDemo>();
-            voxelizerDemo.SetVoxelizedMeshVisibility(false);
+            // voxelizerDemo.SetVoxelizedMeshVisibility(false);
             
             meshHollower = new MeshHollower(voxelizerDemo.Voxelizer.Voxels);
             ExteriorVoxels = new List<Box3>(meshHollower.HullVoxels.Count);
@@ -31,7 +31,7 @@ namespace SimulationObjects{
             CalculateExterior();
             CalculateInterior();
         
-            meshBounds = voxelizerDemo.meshGlobalBounds;
+            MeshBounds = voxelizerDemo.meshBounds;
 
             Assert.IsTrue(ExteriorVoxels.Count > 0, "Exterior is empty");
             Assert.IsTrue(InteriorVoxels.Count > 0, "Interior is empty");
@@ -50,10 +50,11 @@ namespace SimulationObjects{
         /// Calculates the voxels for each point in the hull voxels from meshHollower
         /// <see cref="MeshHollower"/>
         /// </summary>
-        private void CalculateExterior() => meshHollower.HullVoxels.ForEach(point => 
-                                                                                ExteriorVoxels.Add(voxelizerDemo.GetVoxel(point.X,
-                                                                                    point.Y,
-                                                                                    point.Z)));
+        private void CalculateExterior() => 
+            meshHollower.HullVoxels.ForEach(point => 
+                ExteriorVoxels.Add(voxelizerDemo.GetVoxel(point.X, 
+                                                          point.Y, 
+                                                          point.Z)));
 
     
         /// <summary>Puts the voxels from the voxelized mesh into InteriorVoxels</summary>
@@ -68,17 +69,17 @@ namespace SimulationObjects{
         
             Gizmos.color = Color.grey;
             if (drawGrid) 
-                DrawGridGizmo(meshHollower.voxels);
+                DrawGridGizmo(meshHollower.Voxels, transform.localToWorldMatrix);
         }
     
     
         /// <summary>Draws the mesh bounds</summary>
-        private void DrawMeshBounds() => Gizmos.DrawWireCube(meshBounds.center,
-                                                             meshBounds.size);
+        private void DrawMeshBounds() => Gizmos.DrawWireCube(MeshBounds.center,
+                                                             MeshBounds.size);
 
     
         /// <summary>Draws the grid</summary>
-        private void DrawGridGizmo(int[,,] voxels){
+        private void DrawGridGizmo(int[,,] voxels, Matrix4x4 trs){
             for (var z = 0; z < voxels.GetLength(2); z++) {
                 for (var y = 0; y < voxels.GetLength(1); y++) {
                     for (var x = 0; x < voxels.GetLength(0); x++) {
@@ -86,8 +87,8 @@ namespace SimulationObjects{
                         var box = voxelizerDemo.GetVoxel(x-1, 
                                                          y-1, 
                                                          z-1);
-                        Gizmos.DrawWireCube(box.Center,
-                                            box.Size);
+                        Gizmos.DrawWireCube(trs.MultiplyPoint(box.Center),
+                                            trs.MultiplyVector(box.Size));
                     }
                 }
             }

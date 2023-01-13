@@ -64,6 +64,11 @@ namespace MeshVoxelizer.Scripts
             Max = box.Max;
         }
 
+        public Box3(Bounds bounds){
+            Min = bounds.min;
+            Max = bounds.max;
+        }
+
         public void GetCorners(IList<Vector3> corners)
         {
             corners[0] = new Vector3(Min.x, Min.y, Min.z);

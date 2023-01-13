@@ -47,10 +47,11 @@ namespace SimulationObjects.FluidObject{
 
         private void OnDrawGizmos(){
             Gizmos.color = Color.blue;
-            if (drawGizmo) DrawFluidVoxelsGizmo();
+            if (drawGizmo) DrawFluidVoxelsGizmo(transform.localToWorldMatrix);
         }
     
-        private void DrawFluidVoxelsGizmo() => voxels.ForEach(voxel => Gizmos.DrawWireCube(voxel.Center, 
-                                                                  voxel.Size));
+        private void DrawFluidVoxelsGizmo(Matrix4x4 trs) => voxels.ForEach(voxel => 
+            Gizmos.DrawWireCube(trs.MultiplyPoint(voxel.Center), 
+                                trs.MultiplyVector(voxel.Size)));
     }
 }

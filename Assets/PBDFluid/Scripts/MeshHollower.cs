@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 using Utility;
 
 namespace PBDFluid.Scripts
@@ -13,14 +12,14 @@ namespace PBDFluid.Scripts
         private readonly int height;
         private readonly int depth;
         private readonly bool[,,] visited;
-        public readonly int[,,] voxels;
+        public readonly int[,,] Voxels;
 
         public MeshHollower(int[,,] voxels)
         {
-            this.voxels = PadGrid(voxels);
-            width = this.voxels.GetLength(0);
-            height = this.voxels.GetLength(1);
-            depth = this.voxels.GetLength(2);
+            Voxels = PadGrid(voxels);
+            width = Voxels.GetLength(0);
+            height = Voxels.GetLength(1);
+            depth = Voxels.GetLength(2);
             
             //+2 due to padding
             visited = new bool[width, height, depth];
@@ -104,6 +103,7 @@ namespace PBDFluid.Scripts
         /// <returns>Returns true if Point is both within bounds, and not visited</returns>
         private bool CanGo(Point point) => CanGo(point.X, point.Y, point.Z);
         
+        
         /// <inheritdoc cref="CanGo(Point)"/>
         private bool CanGo(int x, int y, int z) => IsWithinBounds(x,y,z) &&
                                                    !IsVisited(x,y,z);
@@ -122,6 +122,7 @@ namespace PBDFluid.Scripts
         ///<returns> Returns true if point is visited </returns>
         private bool IsVisited(Point point) => IsVisited(point.X,point.Y,point.Z);
         
+        
         /// <inheritdoc cref="IsVisited(Point)"/>
         private bool IsVisited(int x, int y, int z) => visited[x, y, z];
         
@@ -129,9 +130,10 @@ namespace PBDFluid.Scripts
         /// <returns>Returns true if Point is within the voxelized mesh</returns>
         private bool IsInMesh(Point point) => IsInMesh(point.X, point.Y, point.Z);
         
+        
         /// <inheritdoc cref="IsInMesh(Point)"/>
         private bool IsInMesh(int x, int y, int z) => IsWithinBounds(x,y,z) &&
-                                                      voxels[x, y, z] > 0;
+                                                      Voxels[x, y, z] > 0;
         
     }
 }

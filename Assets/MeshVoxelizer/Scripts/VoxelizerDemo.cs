@@ -1,13 +1,11 @@
 using System;
 using System.Collections.Generic;
 using Demo;
-using PBDFluid;
 using SimulationObjects;
 using SimulationObjects.FluidBoundaryObject;
 using SimulationObjects.FluidObject;
 using UnityEngine;
 using UnityEngine.Assertions;
-using Utility;
 
 namespace MeshVoxelizer.Scripts
 {
@@ -27,17 +25,15 @@ namespace MeshVoxelizer.Scripts
         [SerializeField] private bool drawBounds;
         [SerializeField] private bool drawAABBTree;
 
-        private Box3 bounds;
+        public Bounds meshBounds;
         private FluidDemo fluidDemo;
-        public Bounds meshGlobalBounds;
 
         private GameObject nonVoxelizedGameObject;
-        [NonSerialized] public Vector3Int numVoxels;
+        [NonSerialized] public Vector3Int NumVoxels;
         private GameObject voxelizedGameObject;
-        private Matrix4x4 trsMatrix;
-        private Matrix4x4 trMatrix;
 
         public MeshVoxelizer Voxelizer;
+        
 
         // Voxels included in the mesh
         public List<Box3> Voxels;
@@ -50,77 +46,92 @@ namespace MeshVoxelizer.Scripts
                 radius = fluidDemo.Radius();
             }
             StartVoxelization();
+            FillVoxels(Voxelizer.Voxels);
         }
 
-        /// <summary>
-        /// Starts the voxelization process.
-        /// </summary>
-        private void StartVoxelization()
-        {
-            //Find Components on this gameObject
-            var filter = GetComponent<MeshFilter>();
-            var meshRenderer = GetComponent<MeshRenderer>();
-            // If no filter and renderer is found, check children
-            if (filter == null || meshRenderer == null) {
-                filter = GetComponentInChildren<MeshFilter>();
-                meshRenderer = GetComponentInChildren<MeshRenderer>();
-            }
-            Assert.IsNotNull(filter, "VoxelizerDemo did not find any MeshFilter component!");
-            Assert.IsNotNull(meshRenderer, "VoxelizerDemo did not find any MeshRenderer component!");
+        private void StartVoxelization(){
+            //Get filter and renderer
+            var filter = GetMeshFilter();
+            var meshRenderer = GetMeshRenderer();
             
+            //Get non voxelized object
             nonVoxelizedGameObject = filter.gameObject;
             
-            //Get mesh to voxelize
-            var mesh = filter.mesh;
-            Assert.IsNotNull(mesh, "VoxelizerDemo did not find a mesh!");
-            
-            //Get material
-            var mat = meshRenderer.material;
-            
-            //Bounds in local space
-            bounds = new Box3(mesh.bounds.min, 
-                              mesh.bounds.max);
-            
-            trsMatrix = nonVoxelizedGameObject.transform.localToWorldMatrix;
-            trMatrix = Matrix4x4.TRS(transform.position, 
-                                     transform.rotation, 
-                                     Vector3.one);
-            
-            //Bounds in global space
-            meshGlobalBounds = new Bounds(trsMatrix.MultiplyPoint(mesh.bounds.center), 
-                                          trsMatrix.MultiplyVector(mesh.bounds.size));
-            
-            
-            //Num voxels is global size divided by particle diameter
-            numVoxels = new Vector3Int(
-                (int) Math.Abs(Math.Ceiling(meshGlobalBounds.size.x / (radius * 2))),
-                (int) Math.Abs(Math.Ceiling(meshGlobalBounds.size.y / (radius * 2))),
-                (int) Math.Abs(Math.Ceiling(meshGlobalBounds.size.z / (radius * 2)))
-            );
-            
-            LoggingUtility.LogInfo($"Voxelized mesh is {numVoxels.x}x{numVoxels.y}x{numVoxels.z}");
-            Voxelizer = new MeshVoxelizer(numVoxels.x, 
-                                          numVoxels.y, 
-                                          numVoxels.z);
-            
-            //voxelizing is in local space
-            Voxelizer.Voxelize(mesh.vertices, 
-                               mesh.triangles, 
-                               bounds);
-            var meshPosOffset = trsMatrix.MultiplyPoint(bounds.Min)-nonVoxelizedGameObject.transform.position;
-            mesh = CreateMesh(Voxelizer.Voxels, Scale(), meshPosOffset);
+            // Get mesh from model
+            var mesh = filter.sharedMesh;
+            meshBounds = mesh.bounds;
 
+            // Get scaled mesh size
+            var lossyScale = nonVoxelizedGameObject.transform.lossyScale;
+            var meshSize = Vector3.Scale(meshBounds.size, 
+                                         lossyScale);
+            
+            // Calculate num voxels along each axis
+            NumVoxels = CalcNumVoxels(meshSize);
+            
+            // Do Voxelization
+            Voxelizer = new MeshVoxelizer(NumVoxels.x, 
+                                          NumVoxels.y, 
+                                          NumVoxels.z);
+            Voxelizer.Voxelize(mesh.vertices,
+                               mesh.triangles,
+                               new Box3(meshBounds));
+            
+            // Create mesh
+            mesh = MeshCreator.CreateMesh(Voxelizer.Voxels, 
+                                          NumVoxels, 
+                                          Scale(), 
+                                          meshBounds.min);
+            
+            // Create the finished voxelized gameObject
             CreateVoxelizedGameObject(mesh, 
-                                      mat, 
+                                      meshRenderer.material, 
                                       nonVoxelizedGameObject.transform);
         }
 
+        
+        private void FillVoxels(int[,,] voxels){
+            Voxels = new List<Box3>();
+            for (var z = 0; z < NumVoxels.z; z++){
+                for (var y = 0; y < NumVoxels.y; y++){
+                    for (var x = 0; x < NumVoxels.x; x++){
+                        if (voxels[x, y, z] != 1) continue;
+                        Voxels.Add(GetVoxel(x,y,z));
+                    }
+                }
+            }
+        }
+        
+
+        private MeshFilter GetMeshFilter(){
+            var meshFilter = GetComponent<MeshFilter>();
+            if (meshFilter == null) 
+                meshFilter = GetComponentInChildren<MeshFilter>();
+            return meshFilter;
+        }
+        
+        
+        private MeshRenderer GetMeshRenderer(){
+            var meshRenderer = GetComponent<MeshRenderer>();
+            if (meshRenderer == null) 
+                meshRenderer = GetComponentInChildren<MeshRenderer>();
+            return meshRenderer;
+        }
+
+        
+        private Vector3Int CalcNumVoxels(Vector3 size) =>
+            new Vector3Int((int) Math.Abs(Math.Ceiling(size.x / (radius * 2))),
+                           (int) Math.Abs(Math.Ceiling(size.y / (radius * 2))),
+                           (int) Math.Abs(Math.Ceiling(size.z / (radius * 2))));
+
+        
         /// <returns>The scale of a voxel box</returns>
         Vector3 Scale() => new Vector3(
-            meshGlobalBounds.size.x / numVoxels.x,
-            meshGlobalBounds.size.y / numVoxels.y,
-            meshGlobalBounds.size.z / numVoxels.z);
+            meshBounds.size.x / NumVoxels.x,
+            meshBounds.size.y / NumVoxels.y,
+            meshBounds.size.z / NumVoxels.z);
 
+        
         /// <summary>
         /// Creates the voxelized GameObject
         /// </summary>
@@ -130,18 +141,18 @@ namespace MeshVoxelizer.Scripts
         private void CreateVoxelizedGameObject(Mesh mesh, Material mat, Transform copyTransform){
             voxelizedGameObject = new GameObject("Voxelized") {
                 transform = {
-                    parent = copyTransform,
-                    position = copyTransform.position,
-                    rotation = copyTransform.rotation,
+                    parent = copyTransform.parent,
+                    localPosition = copyTransform.localPosition,
+                    localRotation = copyTransform.localRotation,
+                    localScale = copyTransform.lossyScale
                 }
             };
 
             var filter = voxelizedGameObject.AddComponent<MeshFilter>();
             var meshRenderer = voxelizedGameObject.AddComponent<MeshRenderer>();
-
             filter.mesh = mesh;
             meshRenderer.material = mat;
-            meshRenderer.enabled = false;
+            // meshRenderer.enabled = false;
             
             if (!partOfFluidSim) return;
             // Add components needed for fluid simulation
@@ -149,9 +160,13 @@ namespace MeshVoxelizer.Scripts
             voxelizedGameObject.AddComponent<FluidBoundaryVoxels>();
             voxelizedGameObject.AddComponent<FluidVoxels>();
             voxelizedGameObject.AddComponent<DeathPlaneCulling>();
-        } // ReSharper disable Unity.PerformanceAnalysis
+        } 
+        
+        
+        // ReSharper disable Unity.PerformanceAnalysis
         public void SetVoxelizedMeshVisibility(bool shouldBeVisible) => voxelizedGameObject.GetComponent<Renderer>().enabled = shouldBeVisible;
 
+        
         /// <returns>True if voxelized gameObject creation is complete</returns>
         public bool IsFinished() => voxelizedGameObject != null;
 
@@ -161,228 +176,23 @@ namespace MeshVoxelizer.Scripts
         /// <param name="x">X coordinate in the voxel grid</param>
         /// <param name="y">Y coordinate in the voxel grid</param>
         /// <param name="z">Z coordinate in the voxel grid</param>
-        /// <returns>A properly scaled and positioned Box3 representing the voxel at the given point</returns>
-        public Box3 GetVoxel(int x, int y, int z)
-        {
-            var point = new Vector3(x, y, z);
+        /// <returns>
+        /// A properly scaled and positioned Box3 representing the voxel at the given point
+        /// </returns>
+        public Box3 GetVoxel(int x, int y, int z) => GetVoxel(new Vector3(x, y, z));
+        
+        
+        /// <inheritdoc cref="GetVoxel(int,int,int)"/>
+        public Box3 GetVoxel(Vector3 point){
+            // Scale it to mesh bounds
             var scale = Scale();
-            Assert.IsTrue(numVoxels.x > 0 
-                       || numVoxels.y > 0 
-                       || numVoxels.z > 0,
-                          "Size is 0");
-            Assert.IsTrue(scale.x > 0 
-                       || scale.y > 0 
-                       || scale.z > 0,
-                          "Scale is 0");
-            var point1 = new Vector3(x + 1, y + 1, z + 1);
-            // Point to local(+scale) coord
-            var offset = trsMatrix.MultiplyPoint(bounds.Min);
-            var min = offset + Vector3.Scale(point, scale);
-            var max = offset + Vector3.Scale(point1, scale);
-            // Transform to global space (No scale, as it is already scaled)
-            min = trMatrix.MultiplyVector(min);
-            max = trMatrix.MultiplyVector(max);
-            // Fix to avoid negative sized box3
-            var trueMin = Vector3.Min(min, max);
-            var trueMax = Vector3.Max(min, max);
-            return new Box3(trueMin, trueMax);
+            var min = meshBounds.min + Vector3.Scale(point, scale);
+            var max = meshBounds.min + Vector3.Scale(point + Vector3.one, scale);
+            return new Box3(min, max);
         }
-
-        /// <summary>
-        /// Creates a mesh from the result of the voxelization
-        /// </summary>
-        /// <param name="voxels">Int grid representing which cells are within the original mesh</param>
-        /// <param name="scale">Scaling vector</param>
-        /// <param name="min">Min vector to place the mesh at</param>
-        /// <returns>Voxelized mesh created</returns>
-        private Mesh CreateMesh(int[,,] voxels, Vector3 scale, Vector3 min)
-        {
-            var verts = new List<Vector3>();
-            var indices = new List<int>();
-            Voxels = new List<Box3>();
-
-            for (var z = 0; z < numVoxels.z; z++)
-            {
-                for (var y = 0; y < numVoxels.y; y++)
-                {
-                    for (var x = 0; x < numVoxels.x; x++)
-                    {
-                        if (voxels[x, y, z] != 1) continue;
-                        var pos = min + new Vector3(x * scale.x, y * scale.y, z * scale.z);
-                        
-                        Voxels.Add(GetVoxel(x,y,z));
-
-                        if (x == numVoxels.x - 1 || voxels[x + 1, y, z] == 0)
-                            AddRightQuad(verts, indices, scale, pos);
-
-                        if (x == 0 || voxels[x - 1, y, z] == 0)
-                            AddLeftQuad(verts, indices, scale, pos);
-
-                        if (y == numVoxels.y - 1 || voxels[x, y + 1, z] == 0)
-                            AddTopQuad(verts, indices, scale, pos);
-
-                        if (y == 0 || voxels[x, y - 1, z] == 0)
-                            AddBottomQuad(verts, indices, scale, pos);
-
-                        if (z == numVoxels.z - 1 || voxels[x, y, z + 1] == 0)
-                            AddFrontQuad(verts, indices, scale, pos);
-
-                        if (z == 0 || voxels[x, y, z - 1] == 0)
-                            AddBackQuad(verts, indices, scale, pos);
-                    }
-                }
-            }
-
-            if (verts.Count > 65000)
-            {
-                Debug.Log("Mesh has too many verts. You will have to add code to split it up.");
-                return new Mesh();
-            }
-
-            Mesh mesh = new Mesh();
-            mesh.SetVertices(verts);
-            mesh.SetTriangles(indices, 0);
-
-            mesh.RecalculateBounds();
-            mesh.RecalculateNormals();
-
-            return mesh;
-        }
-
-        private void AddRightQuad(List<Vector3> verts, List<int> indices, Vector3 scale, Vector3 pos)
-        {
-            int count = verts.Count;
-
-            verts.Add(pos + new Vector3(1 * scale.x, 0 * scale.y, 1 * scale.z));
-            verts.Add(pos + new Vector3(1 * scale.x, 1 * scale.y, 0 * scale.z));
-            verts.Add(pos + new Vector3(1 * scale.x, 0 * scale.y, 0 * scale.z));
-
-            verts.Add(pos + new Vector3(1 * scale.x, 0 * scale.y, 1 * scale.z));
-            verts.Add(pos + new Vector3(1 * scale.x, 1 * scale.y, 1 * scale.z));
-            verts.Add(pos + new Vector3(1 * scale.x, 1 * scale.y, 0 * scale.z));
-
-            indices.Add(count + 2);
-            indices.Add(count + 1);
-            indices.Add(count + 0);
-            indices.Add(count + 5);
-            indices.Add(count + 4);
-            indices.Add(count + 3);
-        }
-
-        private void AddLeftQuad(List<Vector3> verts, List<int> indices, Vector3 scale, Vector3 pos)
-        {
-            int count = verts.Count;
-
-            verts.Add(pos + new Vector3(0 * scale.x, 0 * scale.y, 1 * scale.z));
-            verts.Add(pos + new Vector3(0 * scale.x, 1 * scale.y, 0 * scale.z));
-            verts.Add(pos + new Vector3(0 * scale.x, 0 * scale.y, 0 * scale.z));
-
-            verts.Add(pos + new Vector3(0 * scale.x, 0 * scale.y, 1 * scale.z));
-            verts.Add(pos + new Vector3(0 * scale.x, 1 * scale.y, 1 * scale.z));
-            verts.Add(pos + new Vector3(0 * scale.x, 1 * scale.y, 0 * scale.z));
-
-            indices.Add(count + 0);
-            indices.Add(count + 1);
-            indices.Add(count + 2);
-            indices.Add(count + 3);
-            indices.Add(count + 4);
-            indices.Add(count + 5);
-        }
-
-        private void AddTopQuad(List<Vector3> verts, List<int> indices, Vector3 scale, Vector3 pos)
-        {
-            int count = verts.Count;
-
-            verts.Add(pos + new Vector3(0 * scale.x, 1 * scale.y, 1 * scale.z));
-            verts.Add(pos + new Vector3(1 * scale.x, 1 * scale.y, 0 * scale.z));
-            verts.Add(pos + new Vector3(0 * scale.x, 1 * scale.y, 0 * scale.z));
-
-            verts.Add(pos + new Vector3(0 * scale.x, 1 * scale.y, 1 * scale.z));
-            verts.Add(pos + new Vector3(1 * scale.x, 1 * scale.y, 1 * scale.z));
-            verts.Add(pos + new Vector3(1 * scale.x, 1 * scale.y, 0 * scale.z));
-
-            indices.Add(count + 0);
-            indices.Add(count + 1);
-            indices.Add(count + 2);
-            indices.Add(count + 3);
-            indices.Add(count + 4);
-            indices.Add(count + 5);
-        }
-
-        private void AddBottomQuad(List<Vector3> verts, List<int> indices, Vector3 scale, Vector3 pos)
-        {
-            int count = verts.Count;
-
-            verts.Add(pos + new Vector3(0 * scale.x, 0 * scale.y, 1 * scale.z));
-            verts.Add(pos + new Vector3(1 * scale.x, 0 * scale.y, 0 * scale.z));
-            verts.Add(pos + new Vector3(0 * scale.x, 0 * scale.y, 0 * scale.z));
-
-            verts.Add(pos + new Vector3(0 * scale.x, 0 * scale.y, 1 * scale.z));
-            verts.Add(pos + new Vector3(1 * scale.x, 0 * scale.y, 1 * scale.z));
-            verts.Add(pos + new Vector3(1 * scale.x, 0 * scale.y, 0 * scale.z));
-
-            indices.Add(count + 2);
-            indices.Add(count + 1);
-            indices.Add(count + 0);
-            indices.Add(count + 5);
-            indices.Add(count + 4);
-            indices.Add(count + 3);
-        }
-
-        private void AddFrontQuad(List<Vector3> verts, List<int> indices, Vector3 scale, Vector3 pos)
-        {
-            int count = verts.Count;
-
-            verts.Add(pos + new Vector3(0 * scale.x, 1 * scale.y, 1 * scale.z));
-            verts.Add(pos + new Vector3(1 * scale.x, 0 * scale.y, 1 * scale.z));
-            verts.Add(pos + new Vector3(0 * scale.x, 0 * scale.y, 1 * scale.z));
-
-            verts.Add(pos + new Vector3(0 * scale.x, 1 * scale.y, 1 * scale.z));
-            verts.Add(pos + new Vector3(1 * scale.x, 1 * scale.y, 1 * scale.z));
-            verts.Add(pos + new Vector3(1 * scale.x, 0 * scale.y, 1 * scale.z));
-
-            indices.Add(count + 2);
-            indices.Add(count + 1);
-            indices.Add(count + 0);
-            indices.Add(count + 5);
-            indices.Add(count + 4);
-            indices.Add(count + 3);
-        }
-
-        private void AddBackQuad(List<Vector3> verts, List<int> indices, Vector3 scale, Vector3 pos)
-        {
-            int count = verts.Count;
-
-            verts.Add(pos + new Vector3(0 * scale.x, 1 * scale.y, 0 * scale.z));
-            verts.Add(pos + new Vector3(1 * scale.x, 0 * scale.y, 0 * scale.z));
-            verts.Add(pos + new Vector3(0 * scale.x, 0 * scale.y, 0 * scale.z));
-
-            verts.Add(pos + new Vector3(0 * scale.x, 1 * scale.y, 0 * scale.z));
-            verts.Add(pos + new Vector3(1 * scale.x, 1 * scale.y, 0 * scale.z));
-            verts.Add(pos + new Vector3(1 * scale.x, 0 * scale.y, 0 * scale.z));
-
-            indices.Add(count + 0);
-            indices.Add(count + 1);
-            indices.Add(count + 2);
-            indices.Add(count + 3);
-            indices.Add(count + 4);
-            indices.Add(count + 5);
-        }
-
+        
         
         //GIZMOS
-        private void DrawBoundsGizmo(Matrix4x4 trs) => 
-            Gizmos.DrawWireCube(trs.MultiplyPoint(bounds.Center), 
-                                trs.MultiplyVector(bounds.Size));
-
-        private void DrawGlobalBoundsGizmo() => 
-            Gizmos.DrawWireCube(meshGlobalBounds.center, 
-                                meshGlobalBounds.size);
-        
-        private void DrawAabbTreeGizmo(Matrix4x4 trs) => 
-            Voxelizer?.Bounds.ForEach(box => Gizmos.DrawWireCube(trs.MultiplyPoint(box.Center), 
-                                                                 trs.MultiplyVector(box.Size)));
-        
         private void OnDrawGizmos()
         {
             if (voxelizedGameObject == null) return;
@@ -390,10 +200,31 @@ namespace MeshVoxelizer.Scripts
             var trs = voxelizedGameObject.transform.localToWorldMatrix;
             Gizmos.color = Color.red;
             if (drawAABBTree) DrawAabbTreeGizmo(trs);
-
+            if (!drawBounds) return;
             Gizmos.color = Color.blue;
-            if (drawBounds) DrawBoundsGizmo(trs);
-            if (drawBounds) DrawGlobalBoundsGizmo();
+            DrawBoundsGizmo(trs);
+            var mesh = nonVoxelizedGameObject.GetComponentInChildren<MeshFilter>().sharedMesh;
+            DrawModelGizmo(mesh, nonVoxelizedGameObject.transform);
+            
+            if (nonVoxelizedGameObject == null) return;
+            var mesh2 = voxelizedGameObject.GetComponent<MeshFilter>().sharedMesh;
+            DrawModelGizmo(mesh2,voxelizedGameObject.transform);
         }
+        
+        private void DrawBoundsGizmo(Matrix4x4 trs) => 
+            Gizmos.DrawWireCube(trs.MultiplyPoint(meshBounds.center), 
+                                trs.MultiplyVector(meshBounds.size));
+
+
+        private void DrawAabbTreeGizmo(Matrix4x4 trs) => 
+            Voxelizer?.Bounds.ForEach(box => Gizmos.DrawWireCube(trs.MultiplyPoint(box.Center), 
+                                                                 trs.MultiplyVector(box.Size)));
+
+        
+        private void DrawModelGizmo(Mesh mesh, Transform modelTransform) =>
+            Gizmos.DrawWireMesh(mesh, 
+                                modelTransform.position,
+                                modelTransform.rotation,
+                                modelTransform.lossyScale);
     }
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Factories;
+using MeshVoxelizer.Scripts;
 using PBDFluid.Scripts;
 using SimulationObjects;
 using SimulationObjects.FluidBoundaryObject;
@@ -97,7 +98,7 @@ namespace Demo{
         private void CreateDeathPlane() =>
             DeathPlane = DeathPlaneFactory.CreateDeathPlane(transform,
                                                             simulationBounds,
-                                                            fluidContainerizer.meshBounds,
+                                                            fluidContainerizer.MeshBounds,
                                                             barChart.bounds,
                                                             Radius() * 2);
 
@@ -117,7 +118,7 @@ namespace Demo{
         private void CreateFunnel() =>
             fluidBoundaryObjects.Add(FunnelFactory.CreateFunnel(transform,
                                                                 barChart.bounds,
-                                                                fluidContainerizer.meshBounds,
+                                                                fluidContainerizer.MeshBounds,
                                                                 60.0f));
 
 
@@ -281,6 +282,12 @@ namespace Demo{
             if (renderSettings.drawSimulationBounds) DrawSimulationBounds();
             Gizmos.color = Color.red;
             if (renderSettings.drawBarChart && renderSettings.cylinderMesh != null) DrawBarCylinderGizmo();
+            var voxDemo = GetComponentInChildren<VoxelizerDemo>();
+            var voxOne = voxDemo.GetVoxel(0, 0, 0);
+            Gizmos.DrawWireCube(voxOne.Center,voxOne.Size);
+            var numVox = voxDemo.NumVoxels;
+            var voxLast = voxDemo.GetVoxel(numVox);
+            Gizmos.DrawWireCube(voxLast.Center,voxLast.Size);
         }
 
 

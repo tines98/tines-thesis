@@ -48,10 +48,11 @@ namespace SimulationObjects.FluidBoundaryObject{
 
         private void OnDrawGizmos(){
             Gizmos.color = Color.red;
-            if (drawGizmo) DrawBoundaryVoxels();
+            if (drawGizmo) DrawBoundaryVoxels(transform.localToWorldMatrix);
         }
     
-        private void DrawBoundaryVoxels() => voxels.ForEach(voxel => Gizmos.DrawWireCube(voxel.Center, 
-                                                                voxel.Size));
+        private void DrawBoundaryVoxels(Matrix4x4 trs) => voxels.ForEach(voxel => 
+            Gizmos.DrawWireCube(trs.MultiplyPoint(voxel.Center), 
+                                trs.MultiplyVector(voxel.Size)));
     }
 }
