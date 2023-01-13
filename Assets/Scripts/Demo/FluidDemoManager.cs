@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Factories;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Demo{
     public class FluidDemoManager : MonoBehaviour{
@@ -8,6 +9,7 @@ namespace Demo{
         [SerializeField] private FluidDemoRenderSettings renderSettings;
         [SerializeField] private Vector3 simulationSize;
         [SerializeField] private Vector3 barSize;
+        [SerializeField] private SIMULATION_SIZE particleSize;
 
         private bool hasCreated;
 
@@ -34,7 +36,8 @@ namespace Demo{
                                         prefabs[index].scale,
                                         DemoPosition(index), 
                                         simulationSize, 
-                                        barSize);
+                                        barSize,
+                                        particleSize);
 
 
         /// <summary>

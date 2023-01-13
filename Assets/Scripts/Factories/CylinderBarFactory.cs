@@ -13,7 +13,7 @@ namespace Factories{
             };
             var barChart = barChartGameObject.AddComponent<FluidBoundaryCylinderCup>();
             barChart.height = chartSize.y;
-            barChart.radius = Mathf.Max(chartSize.x, chartSize.y)/2f;
+            barChart.radius = Mathf.Max(chartSize.x, chartSize.z)/2f;
             barChart.CreateParticles();
             return barChart;
         }

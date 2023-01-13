@@ -12,7 +12,7 @@ namespace SimulationObjects{
         [SerializeField] private bool drawMeshBounds;
         private VoxelizerDemo voxelizerDemo;
         private MeshHollower meshHollower;
-        [NonSerialized] public Bounds MeshBounds;
+        [NonSerialized] public Bounds GlobalMeshBounds;
 
         public List<Box3> ExteriorVoxels;
         public List<Box3> InteriorVoxels;
@@ -30,9 +30,11 @@ namespace SimulationObjects{
 
             CalculateExterior();
             CalculateInterior();
-        
-            MeshBounds = voxelizerDemo.meshBounds;
 
+            var trs = transform.localToWorldMatrix;
+            GlobalMeshBounds = new Bounds(trs.MultiplyPoint(voxelizerDemo.meshBounds.center), trs.MultiplyVector(voxelizerDemo.meshBounds.size));
+            GlobalMeshBounds.SetMinMax(Vector3.Min(GlobalMeshBounds.min, GlobalMeshBounds.max),
+                                       Vector3.Max(GlobalMeshBounds.min, GlobalMeshBounds.max));
             Assert.IsTrue(ExteriorVoxels.Count > 0, "Exterior is empty");
             Assert.IsTrue(InteriorVoxels.Count > 0, "Interior is empty");
             Assert.IsTrue(IsReady(),"IsReady is implemented wrong");
@@ -74,8 +76,8 @@ namespace SimulationObjects{
     
     
         /// <summary>Draws the mesh bounds</summary>
-        private void DrawMeshBounds() => Gizmos.DrawWireCube(MeshBounds.center,
-                                                             MeshBounds.size);
+        private void DrawMeshBounds() => Gizmos.DrawWireCube(GlobalMeshBounds.center,
+                                                             GlobalMeshBounds.size);
 
     
         /// <summary>Draws the grid</summary>

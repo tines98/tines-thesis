@@ -20,8 +20,8 @@ namespace Demo{
         public Bounds simulationBounds = new Bounds(Vector3.zero, new Vector3(6, 10, 6));
 
         public FluidDemoRenderSettings renderSettings = new FluidDemoRenderSettings();
-
-        [SerializeField] private SIMULATION_SIZE simulationSize = SIMULATION_SIZE.MEDIUM;
+        
+        public SIMULATION_SIZE simulationSize = SIMULATION_SIZE.MEDIUM;
 
         public Bounds barChartBounds;
         [SerializeField] [Range(0f, 5f)] public float deathPlaneHeight;
@@ -98,7 +98,7 @@ namespace Demo{
         private void CreateDeathPlane() =>
             DeathPlane = DeathPlaneFactory.CreateDeathPlane(transform,
                                                             simulationBounds,
-                                                            fluidContainerizer.MeshBounds,
+                                                            fluidContainerizer.GlobalMeshBounds,
                                                             barChart.bounds,
                                                             Radius() * 2);
 
@@ -118,7 +118,7 @@ namespace Demo{
         private void CreateFunnel() =>
             fluidBoundaryObjects.Add(FunnelFactory.CreateFunnel(transform,
                                                                 barChart.bounds,
-                                                                fluidContainerizer.MeshBounds,
+                                                                fluidContainerizer.GlobalMeshBounds,
                                                                 60.0f));
 
 

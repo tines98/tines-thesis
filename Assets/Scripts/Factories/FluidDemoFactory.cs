@@ -13,12 +13,19 @@ namespace Factories{
         /// <param name="demoPosition">Position to place the demo object</param>
         /// <param name="simulationSize">size of the simulation</param>
         /// <param name="barSize">size of the bar</param>
-        public static void CreateDemo(FluidDemoRenderSettings renderSettings, GameObject prefab, Vector3 prefabScale, Vector3 demoPosition, Vector3 simulationSize, Vector3 barSize){
+        public static void CreateDemo(FluidDemoRenderSettings renderSettings, 
+                                      GameObject prefab, 
+                                      Vector3 prefabScale, 
+                                      Vector3 demoPosition, 
+                                      Vector3 simulationSize, 
+                                      Vector3 barSize,
+                                      SIMULATION_SIZE particleSize){
             var demoGameObject = new GameObject("Created Demo"){
                 transform = {position = demoPosition},
                 tag = "Demo"
             };
             var demo = demoGameObject.AddComponent<FluidDemo>();
+            demo.simulationSize = particleSize;
             // Set simulation bounds
             demo.simulationBounds = new Bounds(Vector3.zero, simulationSize);
             // Set bar size
