@@ -24,7 +24,7 @@ namespace Factories{
             // Set bar size
             demo.barChartBounds = new Bounds(new Vector3(0, (barSize.y-simulationSize.y)/2f, 0), barSize);
             // Set render settings
-            demo.renderSettings = renderSettings;
+            demo.renderSettings = (FluidDemoRenderSettings) renderSettings.Clone();
 
             var realPrefab = GetMeshFilterContainingGameObject(prefab);
             var meshBounds = GetMeshBoundsFromPrefab(realPrefab);

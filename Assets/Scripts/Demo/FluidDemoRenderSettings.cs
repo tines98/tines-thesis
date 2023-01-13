@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Demo{
     [Serializable]
-    public class FluidDemoRenderSettings
+    public class FluidDemoRenderSettings: ICloneable
     {
         [Header("Material Settings")]
         public Material fluidParticleMaterial;
@@ -21,5 +21,7 @@ namespace Demo{
         public bool drawFluidVolume;
         public bool drawSimulationBounds;
         public bool drawBarChart;
+
+        public object Clone() => MemberwiseClone();
     }
 }
