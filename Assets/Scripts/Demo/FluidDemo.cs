@@ -12,8 +12,6 @@ using Utility;
 
 namespace Demo{
     public class FluidDemo : MonoBehaviour{
-        //Constants
-        private const float TimeStep = 1.0f / 60.0f;
         [NonSerialized] private const float Density = 500.0f;
 
         // Serializables
@@ -199,7 +197,7 @@ namespace Demo{
         private void DemoStep(){
             UpdateDeathPlane();
             // ReSharper disable once Unity.PerformanceCriticalCodeInvocation
-            solver.StepPhysics(TimeStep,
+            solver.StepPhysics(Time.deltaTime,
                                DeathPlane.transform.position,
                                DeathPlane.size);
             volume.FillVolume(fluid,
