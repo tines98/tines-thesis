@@ -15,17 +15,16 @@ namespace Demo{
         [NonSerialized] private const float Density = 500.0f;
 
         // Serializables
-        public Bounds simulationBounds = new Bounds(Vector3.zero, new Vector3(6, 10, 6));
-
-        public FluidDemoRenderSettings renderSettings = new FluidDemoRenderSettings();
-        
-        public SIMULATION_SIZE simulationSize = SIMULATION_SIZE.MEDIUM;
-
-        public Bounds barChartBounds;
+        [NonSerialized] public Bounds SimulationBounds = new Bounds(Vector3.zero, new Vector3(6, 10, 6));
+        [NonSerialized] public ParticleSize ParticleSize = ParticleSize.Medium;
+        [NonSerialized] public Bounds BarChartBounds;
         [SerializeField] [Range(0f, 5f)] public float deathPlaneHeight;
 
-        [Header("Run")] [SerializeField] private bool run;
+        [Header("Run")] 
+        [SerializeField] private bool run;
         [SerializeField] private bool stopDemo;
+        
+        public FluidDemoRenderSettings renderSettings = new FluidDemoRenderSettings();
 
         private Camera mainCamera;
 
@@ -46,6 +45,10 @@ namespace Demo{
         private bool hasStarted;
         private bool wasError;
 
+        private void Awake(){
+            mainCamera = Camera.main;
+        }
+
         // ReSharper disable Unity.PerformanceAnalysis
         /// <summary>
         /// Starts the fluid simulation
@@ -53,8 +56,6 @@ namespace Demo{
         /// <remarks>Can be called from the outside, such as from UI</remarks>
         public void StartDemo(){
             if (hasStarted) return;
-
-            mainCamera = Camera.main;
             run = true;
             fluidBoundaryObjects = new List<FluidBoundaryObject>();
             try{
@@ -74,7 +75,7 @@ namespace Demo{
                 CreateFluid();
                 CreateBoundary();
 
-                var bounds = new Bounds(transform.position, simulationBounds.size);
+                var bounds = new Bounds(transform.position, SimulationBounds.size);
                 fluid.Bounds = bounds;
                 solver = new FluidSolver(fluid, bounds, boundary);
 
@@ -95,7 +96,7 @@ namespace Demo{
         /// </summary>
         private void CreateDeathPlane() =>
             DeathPlane = DeathPlaneFactory.CreateDeathPlane(transform,
-                                                            simulationBounds,
+                                                            SimulationBounds,
                                                             fluidContainerizer.GlobalMeshBounds,
                                                             barChart.bounds,
                                                             Radius() * 2);
@@ -106,8 +107,8 @@ namespace Demo{
         /// </summary>
         private void CreateBarChart() =>
             fluidBoundaryObjects.Add(barChart = CylinderBarFactory.CreateBarChart(transform, 
-                                                                                  barChartBounds.center, 
-                                                                                  barChartBounds.size));
+                                                                                  BarChartBounds.center, 
+                                                                                  BarChartBounds.size));
 
 
         /// <summary>
@@ -133,10 +134,10 @@ namespace Demo{
         /// through and leak out.
         /// </remarks>
         /// <returns>The radius for particles</returns>
-        public float Radius() => simulationSize switch{
-            SIMULATION_SIZE.LOW => 0.1f,
-            SIMULATION_SIZE.MEDIUM => 0.08f,
-            SIMULATION_SIZE.HIGH => 0.06f,
+        public float Radius() => ParticleSize switch{
+            ParticleSize.Low => 0.1f,
+            ParticleSize.Medium => 0.08f,
+            ParticleSize.High => 0.06f,
             _ => 0.08f
         };
 
@@ -158,16 +159,14 @@ namespace Demo{
         /// Searches child gameObjects for a DeathPlane component
         /// </summary>
         private void GetDeathPlane() => DeathPlane = GetComponentInChildren<DeathPlane>();
-
-
+        
         private void Update(){
             if (wasError) return;
             if (!hasStarted){
                 if (run) StartDemo();
                 return;
             }
-
-            // ReSharper disable once Unity.PerformanceCriticalCodeInvocation
+            
             if (run) DemoStep();
 
             volume.Hide = !renderSettings.drawFluidVolume;
@@ -178,7 +177,6 @@ namespace Demo{
                 DrawFluidParticles();
             if (stopDemo) StopDemo();
         }
-
 
         /// <summary>
         /// Stops the demo, pausing the fluid in motion, and discarding all compute shaders
@@ -196,14 +194,15 @@ namespace Demo{
         /// </summary>
         private void DemoStep(){
             UpdateDeathPlane();
-            // ReSharper disable once Unity.PerformanceCriticalCodeInvocation
-            solver.StepPhysics(Time.deltaTime,
+            var dt = Mathf.Clamp(Time.deltaTime, 1/65f, 1/50f);
+            solver.StepPhysics(dt,
                                DeathPlane.transform.position,
                                DeathPlane.size);
             volume.FillVolume(fluid,
                               solver.Hash,
                               solver.Kernel);
         }
+        
 
         private void UpdateDeathPlane() => DeathPlane.SliderHasChanged(deathPlaneHeight);
 
@@ -294,17 +293,17 @@ namespace Demo{
         /// </summary>
         private void DrawBarCylinderGizmo() =>
             Gizmos.DrawWireMesh(renderSettings.cylinderMesh,
-                                transform.position + barChartBounds.center,
+                                transform.position + BarChartBounds.center,
                                 Quaternion.identity,
-                                new Vector3(barChartBounds.size.x,
-                                            barChartBounds.size.y / 2f,
-                                            barChartBounds.size.z));
+                                new Vector3(BarChartBounds.size.x,
+                                            BarChartBounds.size.y / 2f,
+                                            BarChartBounds.size.z));
 
 
         /// <summary>
         /// Draws a gizmo showing the simulation bounds
         /// </summary>
         private void DrawSimulationBounds() =>
-            Gizmos.DrawWireCube(transform.position + simulationBounds.center, simulationBounds.size);
+            Gizmos.DrawWireCube(transform.position + SimulationBounds.center, SimulationBounds.size);
     }
 }

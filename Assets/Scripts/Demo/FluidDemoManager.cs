@@ -9,7 +9,7 @@ namespace Demo{
         [SerializeField] private FluidDemoRenderSettings renderSettings;
         [SerializeField] private Vector3 simulationSize;
         [SerializeField] private Vector3 barSize;
-        [SerializeField] private SIMULATION_SIZE particleSize;
+        [SerializeField] private ParticleSize particleSize;
 
         private bool hasCreated;
 

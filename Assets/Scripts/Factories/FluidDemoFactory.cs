@@ -19,17 +19,17 @@ namespace Factories{
                                       Vector3 demoPosition, 
                                       Vector3 simulationSize, 
                                       Vector3 barSize,
-                                      SIMULATION_SIZE particleSize){
+                                      ParticleSize particleSize){
             var demoGameObject = new GameObject("Created Demo"){
                 transform = {position = demoPosition},
                 tag = "Demo"
             };
             var demo = demoGameObject.AddComponent<FluidDemo>();
-            demo.simulationSize = particleSize;
+            demo.ParticleSize = particleSize;
             // Set simulation bounds
-            demo.simulationBounds = new Bounds(Vector3.zero, simulationSize);
+            demo.SimulationBounds = new Bounds(Vector3.zero, simulationSize);
             // Set bar size
-            demo.barChartBounds = new Bounds(new Vector3(0, (barSize.y-simulationSize.y)/2f, 0), barSize);
+            demo.BarChartBounds = new Bounds(new Vector3(0, (barSize.y-simulationSize.y)/2f, 0), barSize);
             // Set render settings
             demo.renderSettings = (FluidDemoRenderSettings) renderSettings.Clone();
 
@@ -39,7 +39,7 @@ namespace Factories{
             
             var rotation = RotateModel(realPrefab, prefabScale);
             var position = PlaceModel(realPrefab, prefabScale, 
-                                      demo.simulationBounds, 
+                                      demo.SimulationBounds, 
                                       rotation);
             
             var actualScale = AbsVector(rotation * prefabScale);

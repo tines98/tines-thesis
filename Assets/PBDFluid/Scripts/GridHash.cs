@@ -1,12 +1,8 @@
 ﻿using System;
 using UnityEngine;
 
-namespace PBDFluid.Scripts
-{
-
-    public class GridHash : IDisposable
-    {
-
+namespace PBDFluid.Scripts{
+    public class GridHash : IDisposable{
         private const int THREADS = 128;
         private const int READ = 0;
         private const int WRITE = 1;
@@ -71,9 +67,11 @@ namespace PBDFluid.Scripts
             m_sort = new BitonicSort(TotalParticles);
 
             m_shader = Resources.Load("GridHash") as ComputeShader;
-            m_hashKernel = m_shader.FindKernel("HashParticles");
-            m_clearKernel = m_shader.FindKernel("ClearTable");
-            m_mapKernel = m_shader.FindKernel("MapTable");
+            if (m_shader != null){
+                m_hashKernel = m_shader.FindKernel("HashParticles");
+                m_clearKernel = m_shader.FindKernel("ClearTable");
+                m_mapKernel = m_shader.FindKernel("MapTable");
+            }
         }
 
         public Bounds WorldBounds
@@ -136,10 +134,8 @@ namespace PBDFluid.Scripts
             int numParticles = particles.count;
             int numBoundary = boundary.count;
             int totalParticles = numBoundary + numParticles;
-            if (numParticles + numBoundary != totalParticles){
-                Debug.Log(numParticles + " + " + numBoundary + " = " + (numParticles+numBoundary) +  " Should be: " + TotalParticles);
-                throw new ArgumentException("numParticles + numBoundary != TotalParticles");
-            }
+            if (numParticles + numBoundary != totalParticles)
+                throw new ArgumentException($"numParticles({numParticles}) + numBoundary({numBoundary}) != {totalParticles}");
 
             m_shader.SetInt("NumParticles", numParticles);
             m_shader.SetInt("TotalParticles", totalParticles);

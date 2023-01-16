@@ -2,7 +2,7 @@ using SimulationObjects.FluidBoundaryObject;
 using UnityEngine;
 
 namespace Factories{
-    public class FunnelFactory 
+    public static class FunnelFactory 
     {
         public static Funnel CreateFunnel(Transform parent, Vector3 localPos, float lowerRadius, float upperRadius, float height){
             var funnelGameObject = new GameObject("funnel"){
@@ -28,6 +28,10 @@ namespace Factories{
             var height = CalcHeight(lowerRadius,
                                     upperRadius,
                                     degrees);
+            var maxHeight = MaxHeight(barBounds, meshBounds);
+            if (height > maxHeight){
+                height = maxHeight;
+            }
             return CreateFunnel(parent,             
                                 CalcPosition(barBounds,parent.position),
                                 lowerRadius,
@@ -41,12 +45,17 @@ namespace Factories{
                         barBounds.center.z) - parentPos;
 
         private static float CalcLowerRadius(Bounds barBounds) => 
-            Mathf.Min(barBounds.size.x/2f, 
-                      barBounds.size.z/2f);
-    
-        private static float CalcUpperRadius(Bounds meshBounds) => 
-            Mathf.Max(0.06f +meshBounds.size.x/2f,
-                      0.06f +meshBounds.size.z/2f);
+            Mathf.Min(barBounds.extents.x, 
+                      barBounds.extents.z);
+
+        private static float MaxHeight(Bounds barBounds, Bounds meshBounds) => 
+            meshBounds.min.y - barBounds.max.y - 0.06f; 
+
+        private static Vector3 FlatSizeVector(Bounds bounds) => new Vector3(bounds.extents.x,0,bounds.extents.z);
+
+        private static float CalcUpperRadius(Bounds meshBounds) => FlatSizeVector(meshBounds).magnitude; 
+            // Mathf.Max(0.06f +meshBounds.size.x/2f,
+            //           0.06f +meshBounds.size.z/2f);
 
         /// <summary>
         /// Calculates the funnel height based on the radius's and the desired funnel slope
@@ -56,6 +65,9 @@ namespace Factories{
         /// <param name="degrees">desired funnel slope</param>
         /// <returns>height of the funnel</returns>
         private static float CalcHeight(float lr, float ur, float degrees) => 
-            (ur - lr) / Mathf.Tan(degrees);
+            (ur - lr) / Mathf.Tan(degrees); 
+        
+        private static float CalcDegrees(float lr, float ur, float height) =>
+            Mathf.Atan((ur - lr) / height); 
     }
 }
