@@ -30,13 +30,13 @@ namespace PBDFluid.Scripts
         // the min/max range of particles for these sizes are shown above.
         // If you need to resize these you must also change the same values in the shader.
         // TODO - Have a shader for each range and automatically pick which one to use.
-        private const int BITONIC_BLOCK_SIZE = 512;
-        private const int TRANSPOSE_BLOCK_SIZE = 16;
+        private int BITONIC_BLOCK_SIZE; // = 512;
+        private int TRANSPOSE_BLOCK_SIZE; // = 16;
 
-        public const int MAX_ELEMENTS = BITONIC_BLOCK_SIZE * BITONIC_BLOCK_SIZE;
-        public const int MIN_ELEMENTS = BITONIC_BLOCK_SIZE * TRANSPOSE_BLOCK_SIZE;
+        public int MIN_ELEMENTS; // = BITONIC_BLOCK_SIZE * TRANSPOSE_BLOCK_SIZE;
+        public int MAX_ELEMENTS; // = BITONIC_BLOCK_SIZE * BITONIC_BLOCK_SIZE;
 
-        private const int MATRIX_WIDTH = BITONIC_BLOCK_SIZE;
+        private int MATRIX_WIDTH; // = BITONIC_BLOCK_SIZE;
         
         public int NumElements { get; private set; }
 
@@ -50,11 +50,20 @@ namespace PBDFluid.Scripts
 
         public BitonicSort(int count)
         {
+            BITONIC_BLOCK_SIZE = CalculateBitonicBlockSize(count);
+            TRANSPOSE_BLOCK_SIZE = CalculateTransposeBlockSize(count);
+            MATRIX_WIDTH = BITONIC_BLOCK_SIZE;
+            
+            MIN_ELEMENTS = BITONIC_BLOCK_SIZE * TRANSPOSE_BLOCK_SIZE;
+            MAX_ELEMENTS = BITONIC_BLOCK_SIZE * BITONIC_BLOCK_SIZE;
+            
+            Debug.Log($"Choosing shader => {ChooseShader(count)}");
+            
             NumElements = FindNumElements(count);
             m_buffer1 = new ComputeBuffer(NumElements, 2 * sizeof(int));
             m_buffer2 = new ComputeBuffer(NumElements, 2 * sizeof(int));
 
-            m_shader = Resources.Load("BitonicSort") as ComputeShader;
+            m_shader = Resources.Load(ChooseShader(count)) as ComputeShader;
             m_bitonicKernel = m_shader.FindKernel("BitonicSort");
             m_transposeKernel = m_shader.FindKernel("MatrixTranspose");
             m_fillKernel = m_shader.FindKernel("Fill");
@@ -135,14 +144,54 @@ namespace PBDFluid.Scripts
             m_shader.Dispatch(m_copyKernel, NumElements / THREADS, 1, 1);
         }
 
+        private int CalculateBlockSize(int count){
+            if (count > 128 * 4
+             && count < 128 * 128) 
+                return 0;
+            if (count > 256 * 8
+             && count < 256 * 256) 
+                return 1;
+            if (count > 512 * 16
+             && count < 512 * 512) 
+                return 2;
+            if (count > 1024 * 16
+             && count < 1024 * 1024) 
+                return 3;
+            throw new ArgumentException($"Data count({count}) does not match any block sizes");
+        }
+
+        private int CalculateBitonicBlockSize(int count) => 
+            new[]{
+                128, 
+                256, 
+                512,
+                1024
+            }[CalculateBlockSize(count)];
+        
+        private int CalculateTransposeBlockSize(int count) => 
+            new[]{
+                4, 
+                8, 
+                16,
+                32
+            }[CalculateBlockSize(count)];
+
+        private String ChooseShader(int count) =>
+            new[]{
+                "BitonicSort128", 
+                "BitonicSort256", 
+                "BitonicSort512",
+                "BitonicSort1024"
+            }[CalculateBlockSize(count)];
+
         private int FindNumElements(int count)
         {
             if (count < MIN_ELEMENTS)
                 throw new ArgumentException($"Data({count}) < MIN_ELEMENTS({MIN_ELEMENTS}). Need to decrease Bitonic size({BITONIC_BLOCK_SIZE}).");
-
+            
             if (count > MAX_ELEMENTS)
                 throw new ArgumentException($"Data({count}) > MAX_ELEMENTS({MAX_ELEMENTS}). Need to increase Bitonic size({BITONIC_BLOCK_SIZE}).");
-
+            
             int NumElements;
 
             int level = TRANSPOSE_BLOCK_SIZE;

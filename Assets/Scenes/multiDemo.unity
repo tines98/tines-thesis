@@ -123,63 +123,6 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1001 &38348981
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 1744005979247509082, guid: cf048f5be3bfa8ba5876c3d05f242fc8, type: 3}
-      propertyPath: m_Name
-      value: Background
-      objectReference: {fileID: 0}
-    - target: {fileID: 1744005979247509157, guid: cf048f5be3bfa8ba5876c3d05f242fc8, type: 3}
-      propertyPath: m_RootOrder
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 1744005979247509157, guid: cf048f5be3bfa8ba5876c3d05f242fc8, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: -18.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 1744005979247509157, guid: cf048f5be3bfa8ba5876c3d05f242fc8, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: -2
-      objectReference: {fileID: 0}
-    - target: {fileID: 1744005979247509157, guid: cf048f5be3bfa8ba5876c3d05f242fc8, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1744005979247509157, guid: cf048f5be3bfa8ba5876c3d05f242fc8, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 1744005979247509157, guid: cf048f5be3bfa8ba5876c3d05f242fc8, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1744005979247509157, guid: cf048f5be3bfa8ba5876c3d05f242fc8, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1744005979247509157, guid: cf048f5be3bfa8ba5876c3d05f242fc8, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1744005979247509157, guid: cf048f5be3bfa8ba5876c3d05f242fc8, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1744005979247509157, guid: cf048f5be3bfa8ba5876c3d05f242fc8, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1744005979247509157, guid: cf048f5be3bfa8ba5876c3d05f242fc8, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: cf048f5be3bfa8ba5876c3d05f242fc8, type: 3}
 --- !u!1001 &254386681
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -312,7 +255,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 6898744042306203302, guid: 5970aa31eb4fe2a91a8e832aca68506c, type: 3}
       propertyPath: m_RootOrder
-      value: 4
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 6898744042306203302, guid: 5970aa31eb4fe2a91a8e832aca68506c, type: 3}
       propertyPath: m_LocalPosition.x
@@ -451,7 +394,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 3
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
 --- !u!1001 &1814939181
 PrefabInstance:
@@ -546,7 +489,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9028637445809610263, guid: aac4a033795015e4dba45ff6bc84f485, type: 3}
       propertyPath: m_RootOrder
-      value: 5
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 9028637445809610263, guid: aac4a033795015e4dba45ff6bc84f485, type: 3}
       propertyPath: m_AnchorMax.x
@@ -652,8 +595,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   prefabs:
-  - prefab: {fileID: 919132149155446097, guid: 54473184f8eabfdf396a9c03a2476c04, type: 3}
-    scale: {x: 1, y: 1, z: 1}
+  - prefab: {fileID: 8456457253428296860, guid: 7fd77bc11067cd1919abd6b4f8a1ec69, type: 3}
+    scale: {x: 2, y: 2, z: 2}
+  - prefab: {fileID: 4083371997689791020, guid: 70d82fde510ceed30aecfa3c02faacf8, type: 3}
+    scale: {x: 2, y: 2, z: 2}
+  - prefab: {fileID: 5219033256277212514, guid: 1dc1637035f7002e98e27fe480479522, type: 3}
+    scale: {x: 2, y: 2, z: 2}
+  - prefab: {fileID: 1164147744166238430, guid: dfeec57ddd4252c79b94987d6d9b754b, type: 3}
+    scale: {x: 2, y: 2, z: 2}
   renderSettings:
     fluidParticleMaterial: {fileID: 2100000, guid: 12d189c057effd74eb9f43721b3ed217, type: 2}
     boundaryParticleMaterial: {fileID: 2100000, guid: 257742b1fedac2f4791369b571260722, type: 2}
@@ -666,8 +615,8 @@ MonoBehaviour:
     drawFluidVolume: 1
     drawSimulationBounds: 1
     drawBarChart: 1
-  simulationSize: {x: 5, y: 17.5, z: 7}
-  barSize: {x: 3, y: 6.8, z: 3}
+  simulationSize: {x: 3, y: 10, z: 3}
+  barSize: {x: 2, y: 5, z: 2}
   particleSize: 2
 --- !u!4 &2005404775
 Transform:
@@ -681,5 +630,5 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 6
+  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
