@@ -398,10 +398,11 @@ MonoBehaviour:
     drawFluidVolume: 1
     drawSimulationBounds: 1
     drawBarChart: 1
-  simulationSize: {x: 5, y: 15, z: 5}
+  simulationSize: {x: 5, y: 19, z: 5}
   barSize: {x: 2, y: 5, z: 2}
   particleSize: 2
   material: {fileID: 2100000, guid: 0cc60b627dddb214c900246aaebc0cd4, type: 2}
+  currentDemoIndex: 0
 --- !u!4 &2005404775
 Transform:
   m_ObjectHideFlags: 0
@@ -425,31 +426,35 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1510455239549120103, guid: 48aa54a339cab10eca8ae39abf0506cd, type: 3}
       propertyPath: m_BackGroundColor.b
-      value: 0.3207547
+      value: 0.6415094
       objectReference: {fileID: 0}
     - target: {fileID: 1510455239549120103, guid: 48aa54a339cab10eca8ae39abf0506cd, type: 3}
       propertyPath: m_BackGroundColor.g
-      value: 0.3207547
+      value: 0.6415094
       objectReference: {fileID: 0}
     - target: {fileID: 1510455239549120103, guid: 48aa54a339cab10eca8ae39abf0506cd, type: 3}
       propertyPath: m_BackGroundColor.r
-      value: 0.3207547
+      value: 0.6415094
+      objectReference: {fileID: 0}
+    - target: {fileID: 4334206456418738939, guid: 48aa54a339cab10eca8ae39abf0506cd, type: 3}
+      propertyPath: m_FOVAxisMode
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4334206456418738939, guid: 48aa54a339cab10eca8ae39abf0506cd, type: 3}
       propertyPath: m_BackGroundColor.b
-      value: 0.3207547
+      value: 0.6415094
       objectReference: {fileID: 0}
     - target: {fileID: 4334206456418738939, guid: 48aa54a339cab10eca8ae39abf0506cd, type: 3}
       propertyPath: m_BackGroundColor.g
-      value: 0.3207547
+      value: 0.6415094
       objectReference: {fileID: 0}
     - target: {fileID: 4334206456418738939, guid: 48aa54a339cab10eca8ae39abf0506cd, type: 3}
       propertyPath: m_BackGroundColor.r
-      value: 0.3207547
+      value: 0.6415094
       objectReference: {fileID: 0}
     - target: {fileID: 5531723761143829045, guid: 48aa54a339cab10eca8ae39abf0506cd, type: 3}
       propertyPath: m_RootOrder
-      value: 2
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 5531723761143829045, guid: 48aa54a339cab10eca8ae39abf0506cd, type: 3}
       propertyPath: m_LocalPosition.x
@@ -461,7 +466,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5531723761143829045, guid: 48aa54a339cab10eca8ae39abf0506cd, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -15
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5531723761143829045, guid: 48aa54a339cab10eca8ae39abf0506cd, type: 3}
       propertyPath: m_LocalRotation.w
@@ -489,6 +494,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5531723761143829045, guid: 48aa54a339cab10eca8ae39abf0506cd, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5531723761143829046, guid: 48aa54a339cab10eca8ae39abf0506cd, type: 3}
+      propertyPath: m_Enabled
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5531723761143829050, guid: 48aa54a339cab10eca8ae39abf0506cd, type: 3}

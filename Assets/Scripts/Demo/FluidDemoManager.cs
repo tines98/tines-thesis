@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Factories;
 using UnityEngine;
@@ -10,13 +11,15 @@ namespace Demo{
         [SerializeField] private Vector3 barSize;
         [SerializeField] private ParticleSize particleSize;
         [SerializeField] private Material material;
+        
         private List<FluidDemo> fluidDemos;
         public int currentDemoIndex;
-
         private bool hasCreated;
         
         public void NextDemo(){
             currentDemoIndex++;
+            if (currentDemoIndex == prefabs.Count) AllDemosComplete();
+            PlaceCameraAtDemo();
         }
 
         public int GetDemoCount() => fluidDemos.Count;
@@ -31,7 +34,15 @@ namespace Demo{
 
         
         // Start is called before the first frame update
-        void Start() => CreateDemos();
+        void Start(){
+            CreateDemos();
+            PlaceCameraAtDemo();
+        }
+
+
+        void AllDemosComplete(){
+            throw new NotImplementedException();
+        }
 
 
         /// <summary>
@@ -68,7 +79,17 @@ namespace Demo{
                                                               * simulationSize.x 
                                                               * index;
 
+        private void PlaceCameraAtDemo(){
+            var mainCamera = Camera.main;
+            if (mainCamera == null) return;
 
+            var cameraPosition = new Vector3(){
+                x = DemoPosition(currentDemoIndex).x,
+                y = 0,
+                z = -mainCamera.orthographicSize / Mathf.Tan(30f * Mathf.Deg2Rad)
+            };
+            mainCamera.transform.position = cameraPosition;
+        }
 
         
         // GIZMOS
@@ -125,6 +146,7 @@ namespace Demo{
                                             bounds.size.y/2f, 
                                             bounds.size.z));
     
+        
         /// <summary>
         /// Draws a gizmo showing the simulation bounds
         /// </summary>
