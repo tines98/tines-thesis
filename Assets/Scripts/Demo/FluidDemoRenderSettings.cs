@@ -9,6 +9,7 @@ namespace Demo{
         public Material fluidParticleMaterial;
         public Material boundaryParticleMaterial;
         public Material volumeMaterial;
+        public Material cylinderMaterial;
     
         [Header("Mesh Settings")]
         public Mesh sphereMesh;

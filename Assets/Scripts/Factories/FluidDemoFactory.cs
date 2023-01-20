@@ -13,13 +13,16 @@ namespace Factories{
         /// <param name="demoPosition">Position to place the demo object</param>
         /// <param name="simulationSize">size of the simulation</param>
         /// <param name="barSize">size of the bar</param>
-        public static void CreateDemo(FluidDemoRenderSettings renderSettings, 
+        /// <param name="particleSize">particle radius to use in fluid demo</param>
+        /// <param name="material">material to use on model</param>
+        public static FluidDemo CreateDemo(FluidDemoRenderSettings renderSettings, 
                                       GameObject prefab, 
                                       Vector3 prefabScale, 
                                       Vector3 demoPosition, 
                                       Vector3 simulationSize, 
                                       Vector3 barSize,
-                                      ParticleSize particleSize){
+                                      ParticleSize particleSize, 
+                                      Material material){
             var demoGameObject = new GameObject("Created Demo"){
                 transform = {position = demoPosition},
                 tag = "Demo"
@@ -50,7 +53,9 @@ namespace Factories{
                             realPrefab, 
                             demoPosition+position-offset, 
                             rotation, 
-                            prefabScale);
+                            prefabScale,
+                            material);
+            return demo;
         }
 
 
@@ -156,7 +161,8 @@ namespace Factories{
         /// <param name="position">Position to place the model</param>
         /// <param name="rotation">Rotation to apply to the model</param>
         /// <param name="scale">Scale to apply to the model</param>
-        private static void CreateVoxelizer(Transform parent, GameObject prefab, Vector3 position, Quaternion rotation, Vector3 scale){
+        /// <param name="material">Material to apply to the model</param>
+        private static void CreateVoxelizer(Transform parent, GameObject prefab, Vector3 position, Quaternion rotation, Vector3 scale, Material material){
             var voxelizer = new GameObject("voxelizer"){
                 transform ={parent = parent}
             };
@@ -165,7 +171,8 @@ namespace Factories{
                                                          rotation,
                                                          voxelizer.transform);
             voxelizerGameObject.transform.localScale = scale;
-
+            voxelizerGameObject.GetComponent<MeshRenderer>().material = material;
+            voxelizerGameObject.AddComponent<DeathPlaneCulling>();
             voxelizer.AddComponent<VoxelizerDemo>();
         }
     }

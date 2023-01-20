@@ -77,12 +77,20 @@ Shader "PBDFluid/Volume"
 			
 			fixed4 frag (v2f IN) : SV_Target
 			{
-				float3 pos = _WorldSpaceCameraPos;
-				float3 grab = tex2Dproj(BackGroundTexture, IN.grabPos).rgb;
-
 				Ray r;
-				r.origin = pos;
-				r.dir = normalize(IN.worldPos - pos);
+				//If orthographic projection
+				if (unity_OrthoParams.w == 1.0){
+					r.origin = IN.worldPos;
+					r.dir = UNITY_MATRIX_IT_MV[2].xyz;
+				}
+				// if Perspective projection
+				else{
+					r.origin = _WorldSpaceCameraPos;
+					r.dir = normalize(IN.worldPos - r.origin);
+				}
+
+				
+				float3 grab = tex2Dproj(BackGroundTexture, IN.grabPos).rgb;
 
 				AABB aabb;
 				aabb.Min = float3(-0.5,-0.5,-0.5) * Scale + Translate;

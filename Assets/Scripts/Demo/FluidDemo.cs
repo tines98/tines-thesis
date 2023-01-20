@@ -108,7 +108,9 @@ namespace Demo{
         private void CreateBarChart() =>
             fluidBoundaryObjects.Add(barChart = CylinderBarFactory.CreateBarChart(transform, 
                                                                                   BarChartBounds.center, 
-                                                                                  BarChartBounds.size));
+                                                                                  BarChartBounds.size, 
+                                                                                  renderSettings.cylinderMesh, 
+                                                                                  renderSettings.cylinderMaterial));
 
 
         /// <summary>

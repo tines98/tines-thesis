@@ -22,7 +22,7 @@ namespace SimulationObjects{
         {
             voxelizerDemo = GetComponentInParent<VoxelizerDemo>();
             if (voxelizerDemo == null) voxelizerDemo = GetComponent<VoxelizerDemo>();
-            // voxelizerDemo.SetVoxelizedMeshVisibility(false);
+            voxelizerDemo.SetVoxelizedMeshVisibility(false);
             
             meshHollower = new MeshHollower(voxelizerDemo.Voxelizer.Voxels);
             ExteriorVoxels = new List<Box3>(meshHollower.HullVoxels.Count);

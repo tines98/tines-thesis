@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using Factories;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace Demo{
     public class FluidDemoManager : MonoBehaviour{
@@ -10,9 +9,27 @@ namespace Demo{
         [SerializeField] private Vector3 simulationSize;
         [SerializeField] private Vector3 barSize;
         [SerializeField] private ParticleSize particleSize;
+        [SerializeField] private Material material;
+        private List<FluidDemo> fluidDemos;
+        public int currentDemoIndex;
 
         private bool hasCreated;
+        
+        public void NextDemo(){
+            currentDemoIndex++;
+        }
 
+        public int GetDemoCount() => fluidDemos.Count;
+        
+        private FluidDemo CurrentDemo() => fluidDemos[currentDemoIndex];
+
+        public void UpdateDeathPlane(float value) => CurrentDemo().deathPlaneHeight = value;
+
+        public void StartDemo() => CurrentDemo().StartDemo();
+
+        public void StopDemo() => CurrentDemo().StopDemo();
+
+        
         // Start is called before the first frame update
         void Start() => CreateDemos();
 
@@ -21,8 +38,9 @@ namespace Demo{
         /// Iterates through <see cref="prefabs"/> and calls <see cref="CreateDemo"/> for each of them
         /// </summary>
         void CreateDemos(){
-            int index = 0;
-            prefabs.ForEach(prefab => CreateDemo(index++));
+            fluidDemos = new List<FluidDemo>(prefabs.Count);
+            var index = 0;
+            prefabs.ForEach(prefab => fluidDemos.Add(CreateDemo(index++)));
             hasCreated = true;
         }
 
@@ -30,14 +48,15 @@ namespace Demo{
         /// <summary>
         /// Creates a <see cref="FluidDemo"/> using the <see cref="FluidDemoFactory"/>
         /// </summary>
-        void CreateDemo(int index) => 
+        private FluidDemo CreateDemo(int index) => 
             FluidDemoFactory.CreateDemo(renderSettings, 
                                         prefabs[index].prefab,
                                         prefabs[index].scale,
                                         DemoPosition(index), 
                                         simulationSize, 
                                         barSize,
-                                        particleSize);
+                                        particleSize,
+                                        material);
 
 
         /// <summary>
@@ -45,10 +64,12 @@ namespace Demo{
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
-        Vector3 DemoPosition(int index) => transform.position + Vector3.right 
+        private Vector3 DemoPosition(int index) => transform.position + Vector3.right 
                                                               * simulationSize.x 
                                                               * index;
-    
+
+
+
         
         // GIZMOS
         private void OnDrawGizmos(){

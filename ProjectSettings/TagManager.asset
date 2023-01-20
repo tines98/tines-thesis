@@ -5,6 +5,7 @@ TagManager:
   serializedVersion: 2
   tags:
   - Demo
+  - Demo Manager
   layers:
   - Default
   - TransparentFX
