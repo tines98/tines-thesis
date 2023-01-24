@@ -14,7 +14,7 @@ namespace SimulationObjects.FluidBoundaryObject{
             var spacing = FluidDemo.Radius() * 2;
             var particles = ParticleFunnel(spacing);
             Debug.Log($"funnel has {particles.Count}");
-            ParticleSource = new ParticlesFromList(spacing, particles);
+            ParticleSource = new ParticlesFromList(spacing, particles, Matrix4x4.identity);
         }
 
         public void SetLowerRadius(float radius) => lowerRadius = radius;

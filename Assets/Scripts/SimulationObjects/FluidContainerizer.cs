@@ -35,6 +35,8 @@ namespace SimulationObjects{
             GlobalMeshBounds = new Bounds(trs.MultiplyPoint(voxelizerDemo.meshBounds.center), trs.MultiplyVector(voxelizerDemo.meshBounds.size));
             GlobalMeshBounds.SetMinMax(Vector3.Min(GlobalMeshBounds.min, GlobalMeshBounds.max),
                                        Vector3.Max(GlobalMeshBounds.min, GlobalMeshBounds.max));
+            Debug.Log(GlobalMeshBounds.size);
+            Debug.Log(voxelizerDemo.radius);
             Assert.IsTrue(ExteriorVoxels.Count > 0, "Exterior is empty");
             Assert.IsTrue(InteriorVoxels.Count > 0, "Interior is empty");
             Assert.IsTrue(IsReady(),"IsReady is implemented wrong");

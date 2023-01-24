@@ -8,21 +8,19 @@ namespace Factories{
         /// Factory method for <see cref="FluidDemo"/> 
         /// </summary>
         /// <param name="renderSettings">Render settings to give created demo</param>
-        /// <param name="prefab">3D model to use for the demo</param>
-        /// <param name="prefabScale">scale to apply to model</param>
+        /// <param name="scaleModel">model object</param>
         /// <param name="demoPosition">Position to place the demo object</param>
         /// <param name="simulationSize">size of the simulation</param>
         /// <param name="barSize">size of the bar</param>
         /// <param name="particleSize">particle radius to use in fluid demo</param>
         /// <param name="material">material to use on model</param>
         public static FluidDemo CreateDemo(FluidDemoRenderSettings renderSettings, 
-                                      GameObject prefab, 
-                                      Vector3 prefabScale, 
-                                      Vector3 demoPosition, 
-                                      Vector3 simulationSize, 
-                                      Vector3 barSize,
-                                      ParticleSize particleSize, 
-                                      Material material){
+                                           ScaleModel scaleModel,
+                                           Vector3 demoPosition, 
+                                           Vector3 simulationSize, 
+                                           Vector3 barSize,
+                                           ParticleSize particleSize, 
+                                           Material material){
             var demoGameObject = new GameObject("Created Demo"){
                 transform = {position = demoPosition},
                 tag = "Demo"
@@ -36,16 +34,17 @@ namespace Factories{
             // Set render settings
             demo.renderSettings = (FluidDemoRenderSettings) renderSettings.Clone();
 
-            var realPrefab = GetMeshFilterContainingGameObject(prefab);
+            var realPrefab = GetMeshFilterContainingGameObject(scaleModel.prefab);
+            realPrefab.name = scaleModel.prefab.name;
             var meshBounds = GetMeshBoundsFromPrefab(realPrefab);
 
             
-            var rotation = RotateModel(realPrefab, prefabScale);
-            var position = PlaceModel(realPrefab, prefabScale, 
+            var rotation = scaleModel.shouldRotate ? RotateModel(realPrefab, scaleModel.scale) : Quaternion.identity;
+            var position = PlaceModel(realPrefab, scaleModel.scale, 
                                       demo.SimulationBounds, 
                                       rotation);
             
-            var actualScale = AbsVector(rotation * prefabScale);
+            var actualScale = AbsVector(rotation * scaleModel.scale);
             meshBounds = RotateScaleBounds(meshBounds, rotation, actualScale);
             var offset = Vector3.Scale(meshBounds.center, actualScale - Vector3.one);
             
@@ -53,7 +52,7 @@ namespace Factories{
                             realPrefab, 
                             demoPosition+position-offset, 
                             rotation, 
-                            prefabScale,
+                            scaleModel.scale,
                             material);
             return demo;
         }
@@ -170,6 +169,7 @@ namespace Factories{
                                                          position, 
                                                          rotation,
                                                          voxelizer.transform);
+            voxelizerGameObject.name = prefab.name;
             voxelizerGameObject.transform.localScale = scale;
             voxelizerGameObject.GetComponent<MeshRenderer>().material = material;
             voxelizerGameObject.AddComponent<DeathPlaneCulling>();

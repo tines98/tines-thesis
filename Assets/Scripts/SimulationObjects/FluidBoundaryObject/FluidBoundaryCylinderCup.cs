@@ -9,7 +9,7 @@ namespace SimulationObjects.FluidBoundaryObject{
     public class FluidBoundaryCylinderCup : FluidBoundaryObject{
         [SerializeField] public float height;
         [SerializeField] public float radius;
-        [NonSerialized] public Bounds bounds;
+        [NonSerialized] public Bounds Bounds;
     
         public void CreateParticles()
         {
@@ -17,9 +17,9 @@ namespace SimulationObjects.FluidBoundaryObject{
             Assert.IsNotNull(FluidDemo);
             // ParticleSource = new ParticlesFromBounds(FluidBodyMeshDemo.Radius() * 2, OuterBounds(), InnerBounds());
             var spacing = FluidDemo.Radius() * 2f;
-            ParticleSource = new ParticlesFromList(spacing, CreateCylinderCup(spacing));
+            ParticleSource = new ParticlesFromList(spacing, CreateCylinderCup(spacing), Matrix4x4.identity);
             LoggingUtility.LogInfo($"FluidBoundaryCylinderCup {name} har a total of {ParticleSource.NumParticles} boundary particles!");
-            bounds = new Bounds(transform.position, 
+            Bounds = new Bounds(transform.position, 
                                 new Vector3(radius * 2f, 
                                             height, 
                                             radius * 2f));

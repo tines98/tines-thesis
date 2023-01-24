@@ -7,7 +7,7 @@ public class SplitCamera : MonoBehaviour{
     [SerializeField] private RenderTexture perspectiveTexture;
     [SerializeField] private RenderTexture orthographicTexture;
     [SerializeField] private Material material;
-    [SerializeField] private float splitHeight = 0.5f;
+    [Range(0f,1f)] public float splitHeight = 0.5f;
     
     private static readonly int PerspectiveTex = Shader.PropertyToID("_PerspectiveTex");
     private static readonly int OrthographicTex = Shader.PropertyToID("_OrthographicTex");

@@ -10,7 +10,6 @@ GameObject:
   m_Component:
   - component: {fileID: 8636913128108114838}
   - component: {fileID: 1510455239549120103}
-  - component: {fileID: 3958199226749614593}
   m_Layer: 0
   m_Name: Orthographic Camera
   m_TagString: Untagged
@@ -75,14 +74,6 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
---- !u!81 &3958199226749614593
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2299353208662210696}
-  m_Enabled: 1
 --- !u!1 &3156421524925288270
 GameObject:
   m_ObjectHideFlags: 0
@@ -93,7 +84,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1746557010684142260}
   - component: {fileID: 4334206456418738939}
-  - component: {fileID: 785005288848391052}
   m_Layer: 0
   m_Name: Perspective Camera
   m_TagString: Untagged
@@ -158,14 +148,6 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
---- !u!81 &785005288848391052
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3156421524925288270}
-  m_Enabled: 1
 --- !u!1 &5531723761143829050
 GameObject:
   m_ObjectHideFlags: 0
@@ -176,8 +158,8 @@ GameObject:
   m_Component:
   - component: {fileID: 5531723761143829045}
   - component: {fileID: 5531723761143829047}
-  - component: {fileID: 5531723761143829046}
   - component: {fileID: 5531723761143829044}
+  - component: {fileID: 8389068136216511051}
   m_Layer: 0
   m_Name: Split Camera
   m_TagString: MainCamera
@@ -244,25 +226,6 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
---- !u!114 &5531723761143829046
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5531723761143829050}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 80d9e79fea519ab42a4c3cd91ae84b65, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_speed: 50
-  sensitivityX: 15
-  sensitivityY: 15
-  minimumX: -360
-  maximumX: 360
-  minimumY: -89
-  maximumY: 89
 --- !u!114 &5531723761143829044
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -277,6 +240,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   perspectiveTexture: {fileID: 8400000, guid: 6d303d42aea7df9a3bbf73c44b25b316, type: 2}
   orthographicTexture: {fileID: 8400000, guid: e9f208090bcae8ea19f8b3a7af27c313, type: 2}
-  resultTexture: {fileID: 8400000, guid: 1cd51b8336ef207378395a365c635df0, type: 2}
   material: {fileID: 2100000, guid: 84f9e5016e946ac83aa48b0ed96c3791, type: 2}
   splitHeight: 0.5
+--- !u!114 &8389068136216511051
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5531723761143829050}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d0414a52182eb03fb3ca01651eeadd2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mainCamera: {fileID: 5531723761143829047}
+  perpectiveCamera: {fileID: 4334206456418738939}
+  orthoCamera: {fileID: 1510455239549120103}

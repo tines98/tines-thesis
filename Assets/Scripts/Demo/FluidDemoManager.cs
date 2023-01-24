@@ -15,6 +15,8 @@ namespace Demo{
         private List<FluidDemo> fluidDemos;
         public int currentDemoIndex;
         private bool hasCreated;
+        private Camera camera;
+        private CameraResizer cameraResizer;
         
         public void NextDemo(){
             currentDemoIndex++;
@@ -36,6 +38,8 @@ namespace Demo{
         // Start is called before the first frame update
         void Start(){
             CreateDemos();
+            camera = Camera.main;
+            if (camera != null) cameraResizer = camera.GetComponent<CameraResizer>();
             PlaceCameraAtDemo();
         }
 
@@ -61,8 +65,7 @@ namespace Demo{
         /// </summary>
         private FluidDemo CreateDemo(int index) => 
             FluidDemoFactory.CreateDemo(renderSettings, 
-                                        prefabs[index].prefab,
-                                        prefabs[index].scale,
+                                        prefabs[index],
                                         DemoPosition(index), 
                                         simulationSize, 
                                         barSize,
@@ -80,15 +83,16 @@ namespace Demo{
                                                               * index;
 
         private void PlaceCameraAtDemo(){
-            var mainCamera = Camera.main;
-            if (mainCamera == null) return;
-
-            var cameraPosition = new Vector3(){
-                x = DemoPosition(currentDemoIndex).x,
-                y = 0,
-                z = -mainCamera.orthographicSize / Mathf.Tan(30f * Mathf.Deg2Rad)
+            var demoPos = DemoPosition(currentDemoIndex);
+            cameraResizer.ResizeTo(simulationSize.y/2f);
+            // Places the camera so perspective and ortho camera line up at simulation
+            var cameraPosition = new Vector3{
+                x = demoPos.x,
+                y = demoPos.y,
+                z = -simulationSize.z/2f - camera.orthographicSize / Mathf.Tan(30f * Mathf.Deg2Rad)
             };
-            mainCamera.transform.position = cameraPosition;
+            camera.transform.position = cameraPosition;
+            cameraResizer.MoveSplitPoint(barSize.y,simulationSize.y);
         }
 
         
@@ -115,7 +119,9 @@ namespace Demo{
                                                 barSize));
                 
                 
-                var rotation = FluidDemoFactory.RotateModel(prefab, scale);
+                var rotation = prefabs[i].shouldRotate 
+                                   ? FluidDemoFactory.RotateModel(prefab, scale) 
+                                   : Quaternion.identity;
                 var position = demoPos + FluidDemoFactory.PlaceModel(prefab,
                                                                      scale,
                                                                      new Bounds(Vector3.zero, simulationSize),

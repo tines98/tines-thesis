@@ -12,12 +12,12 @@ using Utility;
 
 namespace Demo{
     public class FluidDemo : MonoBehaviour{
-        [NonSerialized] private const float Density = 500.0f;
+        [NonSerialized] private const float Density = 100.0f;
 
         // Serializables
         [NonSerialized] public Bounds SimulationBounds = new Bounds(Vector3.zero, new Vector3(6, 10, 6));
         [NonSerialized] public ParticleSize ParticleSize = ParticleSize.Medium;
-        [NonSerialized] public Bounds BarChartBounds;
+        public Bounds BarChartBounds;
         [SerializeField] [Range(0f, 5f)] public float deathPlaneHeight;
 
         [Header("Run")] 
@@ -25,9 +25,7 @@ namespace Demo{
         [SerializeField] private bool stopDemo;
         
         public FluidDemoRenderSettings renderSettings = new FluidDemoRenderSettings();
-
-        private Camera mainCamera;
-
+        
         // Fluid & Boundary Objects
         private FluidContainerizer fluidContainerizer;
         private FluidBoundaryCylinderCup barChart;
@@ -44,10 +42,7 @@ namespace Demo{
         // Booleans
         private bool hasStarted;
         private bool wasError;
-
-        private void Awake(){
-            mainCamera = Camera.main;
-        }
+        
 
         // ReSharper disable Unity.PerformanceAnalysis
         /// <summary>
@@ -61,7 +56,6 @@ namespace Demo{
             try{
                 GetFluidBoundaryObjects();
                 GetFluidObjects();
-                GetDeathPlane();
                 LoggingUtility.LogWithColor($"Fluid Demo: Found {fluidBoundaryObjects.Count} fluidBoundaryObjects!",
                                             Color.green);
                 LoggingUtility.LogWithColor("Fluid Demo: Found {fluidObjects.Length} fluidObjects!", Color.green);
@@ -98,7 +92,7 @@ namespace Demo{
             DeathPlane = DeathPlaneFactory.CreateDeathPlane(transform,
                                                             SimulationBounds,
                                                             fluidContainerizer.GlobalMeshBounds,
-                                                            barChart.bounds,
+                                                            barChart.Bounds,
                                                             Radius() * 2);
 
 
@@ -118,7 +112,7 @@ namespace Demo{
         /// </summary>
         private void CreateFunnel() =>
             fluidBoundaryObjects.Add(FunnelFactory.CreateFunnel(transform,
-                                                                barChart.bounds,
+                                                                barChart.Bounds,
                                                                 fluidContainerizer.GlobalMeshBounds,
                                                                 60.0f));
 
@@ -156,11 +150,7 @@ namespace Demo{
         /// </summary>
         private void GetFluidObjects() => fluidObjects = GetComponentsInChildren<FluidObject>();
 
-
-        /// <summary>
-        /// Searches child gameObjects for a DeathPlane component
-        /// </summary>
-        private void GetDeathPlane() => DeathPlane = GetComponentInChildren<DeathPlane>();
+        
         
         private void Update(){
             if (wasError) return;
@@ -213,7 +203,7 @@ namespace Demo{
         /// Draws the fluid particles
         /// </summary>
         private void DrawFluidParticles() =>
-            fluid.Draw(mainCamera,
+            fluid.Draw(null,
                        renderSettings.sphereMesh,
                        renderSettings.fluidParticleMaterial,
                        0);
@@ -223,7 +213,7 @@ namespace Demo{
         /// Draws the boundary particles
         /// </summary>
         private void DrawBoundaryParticles() =>
-            boundary.Draw(mainCamera,
+            boundary.Draw(null,
                           renderSettings.sphereMesh,
                           renderSettings.boundaryParticleMaterial,
                           0,

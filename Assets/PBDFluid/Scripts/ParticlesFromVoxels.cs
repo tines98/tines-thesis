@@ -1,5 +1,5 @@
-using System;
 using System.Collections.Generic;
+using System.Linq;
 using MeshVoxelizer.Scripts;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -18,39 +18,27 @@ namespace PBDFluid.Scripts
             Positions = new List<Vector3>();
         }
 
-        
+
         /// <summary>
         /// Seeds particles in each voxel
         /// </summary>
-        public override void CreateParticles() => voxels.ForEach(voxel => CreateParticleInVoxel(voxel));
-
-
-        private void CreateParticleInVoxel(Box3 voxel){
-            Positions.Add(trs.MultiplyPoint(voxel.Center));
+        public override void CreateParticles(){
+            //first pass
+            voxels.ForEach(voxel => CreateParticleInVoxel(voxel,false));
+            //second pass to make up for 0,5236 volume error
+            var error = 0.5236f;
+            var extraVoxelCount = Mathf.FloorToInt(voxels.Count * error);
+            var extraVoxels = voxels.Take(extraVoxelCount).ToList();
+            extraVoxels.ForEach(voxel => CreateParticleInVoxel(voxel,true));
         }
-        
-        /// <summary>
-        /// Seeds particles in a voxel
-        /// </summary>
-        private void CreateParticlesInVoxel(Box3 voxel){
-            var scaledVoxelSize = trs.MultiplyVector(voxel.Size);
-            var numX = (int)((scaledVoxelSize.x + HalfSpacing) / Spacing);
-            var numY = (int)((scaledVoxelSize.y + HalfSpacing) / Spacing);
-            var numZ = (int)((scaledVoxelSize.z + HalfSpacing) / Spacing);
-            Assert.IsTrue(numX>0 || numY>0 || numZ>0, $"Voxel too small for particle size {scaledVoxelSize.x + HalfSpacing} {Spacing}");
-            
-            for (var z = 0; z < numZ; z++) {
-                for (var y = 0; y < numY; y++) {
-                    for (var x = 0; x < numX; x++) {
-                        var pos = new Vector3 {
-                            x = Spacing * x + voxel.Min.x + HalfSpacing,
-                            y = Spacing * y + voxel.Min.y + HalfSpacing,
-                            z = Spacing * z + voxel.Min.z + HalfSpacing
-                        };
-                        Positions.Add(trs.MultiplyPoint(pos));
-                    }
-                }
-            }
+
+
+        private void CreateParticleInVoxel(Box3 voxel, bool shouldOffset){
+            var offset = .001f;
+            var offsetVector = new Vector3(offset, offset, offset);
+            var pos = voxel.Center;
+            if (shouldOffset) pos += offsetVector;
+            Positions.Add(trs.MultiplyPoint(pos));
         }
     }
 }

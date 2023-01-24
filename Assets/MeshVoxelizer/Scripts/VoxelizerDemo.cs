@@ -47,6 +47,7 @@ namespace MeshVoxelizer.Scripts
             }
             StartVoxelization();
             FillVoxels(Voxelizer.Voxels);
+            Debug.Log($"num voxels is {Voxels.Count}");
         }
 
         private void StartVoxelization(){
@@ -68,6 +69,7 @@ namespace MeshVoxelizer.Scripts
             
             // Calculate num voxels along each axis
             NumVoxels = CalcNumVoxels(meshSize);
+            Debug.Log("NumVoxels = " + NumVoxels);
             
             // Do Voxelization
             Voxelizer = new MeshVoxelizer(NumVoxels.x, 
@@ -139,7 +141,7 @@ namespace MeshVoxelizer.Scripts
         /// <param name="mat">Material for the created gameObject</param>
         /// <param name="copyTransform">Transform to copy from</param>
         private void CreateVoxelizedGameObject(Mesh mesh, Material mat, Transform copyTransform){
-            voxelizedGameObject = new GameObject("Voxelized") {
+            voxelizedGameObject = new GameObject($"Voxelized {copyTransform.gameObject.name}") {
                 transform = {
                     parent = copyTransform.parent,
                     localPosition = copyTransform.localPosition,

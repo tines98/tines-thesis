@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using Demo;
 using MeshVoxelizer.Scripts;
-using PBDFluid.Scripts;
 using UnityEngine;
 using UnityEngine.Assertions;
 using Utility;
@@ -32,9 +31,9 @@ namespace SimulationObjects.FluidBoundaryObject{
         private void CreateParticles(){
             start = true;
             voxels = fluidContainerizer.ExteriorVoxels;
-            ParticleSource = new ParticlesFromVoxels(FluidDemo.Radius() * 2, 
-                                                     voxels, 
-                                                     transform.localToWorldMatrix);
+            var particles = new List<Vector3>(voxels.Count);
+            voxels.ForEach(voxel => particles.Add(voxel.Center));
+            ParticleSource = new ParticlesFromList(FluidDemo.Radius(), particles, transform.localToWorldMatrix);
             ParticleSource.CreateParticles();
         
             LoggingUtility.LogInfo($"FluidBoundaryVoxels {name} har a total of {ParticleSource.NumParticles} boundary particles!");

@@ -18,7 +18,7 @@ namespace SimulationObjects.FluidBoundaryObject{
             spacing = FluidDemo.Radius() * 2;
             posList = new List<Vector3>();
             CreateBars();
-            ParticleSource = new ParticlesFromList(spacing, posList);
+            ParticleSource = new ParticlesFromList(spacing, posList, Matrix4x4.identity);
         }
 
         /// <summary>Creates the boundary particles for the entire barchart</summary>
