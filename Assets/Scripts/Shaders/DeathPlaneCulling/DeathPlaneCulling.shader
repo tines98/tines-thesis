@@ -6,8 +6,8 @@ Shader "Custom/DeathPlaneCulling"
     {
         _MainTex ("Base (RGB)", 2D) = "white" {}
         _Color ("Color (RGBA)", Color) = (1, 1, 1, 1) // add _Color property
-        deathPlanePosition ("death plane position", Vector) = (0,0,0,1)
-        deathPlaneSize ("death plane size", Vector) = (1,1,1,0)
+        _DeathPlanePosition ("death plane position", Vector) = (0,0,0,1)
+        _DeathPlaneSize ("death plane size", Vector) = (1,1,1,0)
     }
     CGINCLUDE
 	bool IsInDeathBox(float4 pos, float4 deathPlanePosition, float4 deathPlaneSize){
@@ -55,18 +55,18 @@ Shader "Custom/DeathPlaneCulling"
             sampler2D _MainTex;
             float4 _MainTex_ST;
             float4 _Color;
-            float4 deathPlanePosition;
-            float4 deathPlaneSize;
+            float4 _DeathPlanePosition;
+            float4 _DeathPlaneSize;
 
             v2f vert (appdata_t v)
             {
                 v2f o;
-                float4 wp = mul(unity_ObjectToWorld,v.vertex);
+                const float4 worldPosition = mul(unity_ObjectToWorld,v.vertex);
                 
                 o.vertex     = UnityObjectToClipPos(v.vertex);
                 v.texcoord.x = 1 - v.texcoord.x;
                 o.texcoord   = TRANSFORM_TEX(v.texcoord, _MainTex);
-                if (IsInDeathBox(wp,deathPlanePosition,deathPlaneSize))
+                if (IsInDeathBox(worldPosition,_DeathPlanePosition,_DeathPlaneSize))
                 {
                     o.texcoord = half2(-1,-1);
                 }

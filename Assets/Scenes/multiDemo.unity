@@ -428,7 +428,7 @@ MonoBehaviour:
   simulationSize: {x: 3, y: 8.9, z: 3}
   barSize: {x: 2, y: 5, z: 2}
   particleSize: 2
-  material: {fileID: 2100000, guid: 0cc60b627dddb214c900246aaebc0cd4, type: 2}
+  material: {fileID: 2100000, guid: 9d66bddb5d7ee84158188e75fbfcbe80, type: 2}
   currentDemoIndex: 0
 --- !u!4 &2005404775
 Transform:

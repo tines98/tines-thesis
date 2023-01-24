@@ -7,8 +7,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Crop Camera
-  m_Shader: {fileID: 4800000, guid: b551d132760eb08b49c2b470562174b7, type: 3}
+  m_Name: Death Plane Culling
+  m_Shader: {fileID: 4800000, guid: 1b070c0d428964877bb460b9420c7f1a, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -61,7 +61,7 @@ Material:
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
     - _GlossMapScale: 1
-    - _Glossiness: 0.5
+    - _Glossiness: 0.75
     - _GlossyReflections: 1
     - _Metallic: 0
     - _Mode: 0
@@ -74,7 +74,7 @@ Material:
     - _ZWrite: 1
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _DeathPlanePosition: {r: 0, g: -1, b: 0, a: 1}
+    - _DeathPlaneSize: {r: 10, g: 0.72, b: 10, a: 0}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - crop: {r: 1, g: 0.5, b: 0, a: 0}
-    - offset1: {r: 0, g: 0, b: 0, a: 0}
   m_BuildTextureStacks: []

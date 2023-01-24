@@ -7,8 +7,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Crop Camera 1
-  m_Shader: {fileID: 4800000, guid: b551d132760eb08b49c2b470562174b7, type: 3}
+  m_Name: Split Camera
+  m_Shader: {fileID: 4800000, guid: d0b3fed017492b71694a5c8971b0be02, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -51,8 +51,16 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _OrthographicTex:
+        m_Texture: {fileID: 8400000, guid: e9f208090bcae8ea19f8b3a7af27c313, type: 2}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _ParallaxMap:
         m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _PerspectiveTex:
+        m_Texture: {fileID: 8400000, guid: 6d303d42aea7df9a3bbf73c44b25b316, type: 2}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Floats:
@@ -69,12 +77,11 @@ Material:
     - _Parallax: 0.02
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
+    - _SplitHeight: 1
     - _SrcBlend: 1
     - _UVSec: 0
     - _ZWrite: 1
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - crop: {r: 1, g: 0.5, b: 0, a: 0}
-    - offset1: {r: 0, g: 0, b: 0, a: 0}
   m_BuildTextureStacks: []
