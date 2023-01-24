@@ -254,7 +254,23 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 4670471925584283882, guid: aac4a033795015e4dba45ff6bc84f485, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4670471925584283882, guid: aac4a033795015e4dba45ff6bc84f485, type: 3}
       propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7272464183606288799, guid: aac4a033795015e4dba45ff6bc84f485, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 4.5999756
+      objectReference: {fileID: 0}
+    - target: {fileID: 7272464183606288799, guid: aac4a033795015e4dba45ff6bc84f485, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 1.5050354
+      objectReference: {fileID: 0}
+    - target: {fileID: 8325377265521539289, guid: aac4a033795015e4dba45ff6bc84f485, type: 3}
+      propertyPath: m_AnchorMax.x
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8325377265521539289, guid: aac4a033795015e4dba45ff6bc84f485, type: 3}
@@ -411,7 +427,7 @@ MonoBehaviour:
     drawBarChart: 1
   simulationSize: {x: 3, y: 8.9, z: 3}
   barSize: {x: 2, y: 5, z: 2}
-  particleSize: 1
+  particleSize: 2
   material: {fileID: 2100000, guid: 0cc60b627dddb214c900246aaebc0cd4, type: 2}
   currentDemoIndex: 0
 --- !u!4 &2005404775
@@ -435,18 +451,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 4334206456418738939, guid: 48aa54a339cab10eca8ae39abf0506cd, type: 3}
-      propertyPath: m_BackGroundColor.b
-      value: 0.3584906
-      objectReference: {fileID: 0}
-    - target: {fileID: 4334206456418738939, guid: 48aa54a339cab10eca8ae39abf0506cd, type: 3}
-      propertyPath: m_BackGroundColor.g
-      value: 0.3584906
-      objectReference: {fileID: 0}
-    - target: {fileID: 4334206456418738939, guid: 48aa54a339cab10eca8ae39abf0506cd, type: 3}
-      propertyPath: m_BackGroundColor.r
-      value: 0.3584906
-      objectReference: {fileID: 0}
     - target: {fileID: 5531723761143829045, guid: 48aa54a339cab10eca8ae39abf0506cd, type: 3}
       propertyPath: m_RootOrder
       value: 3

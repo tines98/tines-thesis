@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Factories;
 using UnityEngine;
+using Utility;
 
 namespace Demo{
     public class FluidDemoManager : MonoBehaviour{
@@ -15,18 +16,20 @@ namespace Demo{
         private List<FluidDemo> fluidDemos;
         public int currentDemoIndex;
         private bool hasCreated;
-        private Camera camera;
+        private Camera mainCamera;
         private CameraResizer cameraResizer;
+        [NonSerialized] public bool finishedAllDemos;
         
         public void NextDemo(){
+            if (finishedAllDemos) return;
             currentDemoIndex++;
             if (currentDemoIndex == prefabs.Count) AllDemosComplete();
-            PlaceCameraAtDemo();
+            else PlaceCameraAtDemo();
         }
 
         public int GetDemoCount() => fluidDemos.Count;
         
-        private FluidDemo CurrentDemo() => fluidDemos[currentDemoIndex];
+        private FluidDemo CurrentDemo() => fluidDemos[currentDemoIndex % GetDemoCount()];
 
         public void UpdateDeathPlane(float value) => CurrentDemo().deathPlaneHeight = value;
 
@@ -38,14 +41,27 @@ namespace Demo{
         // Start is called before the first frame update
         void Start(){
             CreateDemos();
-            camera = Camera.main;
-            if (camera != null) cameraResizer = camera.GetComponent<CameraResizer>();
+            mainCamera = Camera.main;
+            if (mainCamera != null) cameraResizer = mainCamera.GetComponent<CameraResizer>();
             PlaceCameraAtDemo();
         }
 
 
         void AllDemosComplete(){
-            throw new NotImplementedException();
+            Debug.Log("All demos complete");
+            finishedAllDemos = true;
+            var firstDemo = DemoPosition(0);
+            var lastDemo = DemoPosition(prefabs.Count - 1);
+            var cameraSize = (lastDemo - firstDemo).magnitude;
+            cameraResizer.ResizeTo(cameraSize/2f);
+            cameraResizer.MoveSplitPoint(1f);
+            var midPoint = firstDemo + (lastDemo - firstDemo) / 2f;
+            var cameraPosition = new Vector3{
+                x = midPoint.x,
+                y = midPoint.y,
+                z = mainCamera.transform.position.z
+            };
+            mainCamera.transform.position = cameraPosition;
         }
 
 
@@ -78,9 +94,10 @@ namespace Demo{
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
-        private Vector3 DemoPosition(int index) => transform.position + Vector3.right 
-                                                              * simulationSize.x 
-                                                              * index;
+        private Vector3 DemoPosition(int index) => transform.position 
+                                                 + Vector3.right 
+                                                 * simulationSize.x 
+                                                 * index;
 
         private void PlaceCameraAtDemo(){
             var demoPos = DemoPosition(currentDemoIndex);
@@ -89,9 +106,9 @@ namespace Demo{
             var cameraPosition = new Vector3{
                 x = demoPos.x,
                 y = demoPos.y,
-                z = -simulationSize.z/2f - camera.orthographicSize / Mathf.Tan(30f * Mathf.Deg2Rad)
+                z = -simulationSize.z/2f - mainCamera.orthographicSize / Mathf.Tan(30f * Mathf.Deg2Rad)
             };
-            camera.transform.position = cameraPosition;
+            mainCamera.transform.position = cameraPosition;
             cameraResizer.MoveSplitPoint(barSize.y,simulationSize.y);
         }
 
@@ -128,15 +145,15 @@ namespace Demo{
                                                                      rotation);
                 var actualScale = FluidDemoFactory.AbsVector(rotation * scale);
                 var rotateScaleBounds = FluidDemoFactory.RotateScaleBounds(meshBounds, rotation, actualScale);
+
+                var pos = position - Vector3.Scale(rotateScaleBounds.center, actualScale - Vector3.one);
                 
                 // Draw model mesh
                 Gizmos.color = Color.green;
                 DrawModelGizmo(meshFilter.sharedMesh,
-                               position,
+                               pos,
                                rotation,
-                               scale,
-                               actualScale,
-                               rotateScaleBounds);
+                               scale);
             }
         }
 
@@ -160,11 +177,7 @@ namespace Demo{
             Gizmos.DrawWireCube(bounds.center,bounds.size);
         
 
-        private void DrawModelGizmo(Mesh mesh, Vector3 position, Quaternion rotation, Vector3 scale, Vector3 scale2, Bounds bounds) =>
-            Gizmos.DrawWireMesh(mesh, 
-                                position - Vector3.Scale(bounds.center, 
-                                                         scale2 - Vector3.one),
-                                rotation,
-                                scale);
+        private void DrawModelGizmo(Mesh mesh, Vector3 position, Quaternion rotation, Vector3 scale) =>
+            Gizmos.DrawWireMesh(mesh, position, rotation, scale);
     }
 }

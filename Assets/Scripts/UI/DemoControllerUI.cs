@@ -29,6 +29,10 @@ namespace UI{
         /// Updates the UI Text component to show which demo is currently selected
         /// </summary>
         void UpdateDemoNumberUI(){
+            if (fluidDemoManager.finishedAllDemos){
+                demoNumberUI.text = "Complete!";
+                return;
+            }
             // What the UI Text should show
             var demoNumberText = $"Demo: {fluidDemoManager.currentDemoIndex}/{fluidDemoManager.GetDemoCount()}";
             // Update UI Text if not correct
