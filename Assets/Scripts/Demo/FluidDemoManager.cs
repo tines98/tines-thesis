@@ -119,6 +119,7 @@ namespace Demo{
             
             for (int i = 0; i < prefabs.Count; i++){
                 var prefab = prefabs[i].prefab;
+                var scaleModel = prefabs[i];
                 var scale = prefabs[i].scale;
                 var meshFilter = prefabs[i].prefab.GetComponent<MeshFilter>();
                 if (meshFilter == null) meshFilter = prefab.GetComponentInChildren<MeshFilter>();
@@ -136,9 +137,19 @@ namespace Demo{
                                                 barSize));
                 
                 
-                var rotation = prefabs[i].shouldRotate 
-                                   ? FluidDemoFactory.RotateModel(prefab, scale) 
-                                   : Quaternion.identity;
+                // var rotation = prefabs[i].shouldRotate 
+                //                    ? FluidDemoFactory.RotateModel(prefab, scale) 
+                //                    : Quaternion.identity;
+                Quaternion rotation;
+                if (scaleModel.shouldRotate){
+                    rotation = FluidDemoFactory.RotateModel(prefab, scale);
+                }
+                else if (prefabs[i].forceRotate){
+                    rotation = Quaternion.LookRotation(scaleModel.forward, scaleModel.up);
+                }
+                else{
+                    rotation = Quaternion.identity;
+                }
                 var position = demoPos + FluidDemoFactory.PlaceModel(prefab,
                                                                      scale,
                                                                      new Bounds(Vector3.zero, simulationSize),

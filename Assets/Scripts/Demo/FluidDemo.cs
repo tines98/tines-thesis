@@ -104,7 +104,8 @@ namespace Demo{
                                                                                   BarChartBounds.center, 
                                                                                   BarChartBounds.size, 
                                                                                   renderSettings.cylinderMesh, 
-                                                                                  renderSettings.cylinderMaterial));
+                                                                                  renderSettings.cylinderMaterial, 
+                                                                                  Radius()));
 
 
         /// <summary>

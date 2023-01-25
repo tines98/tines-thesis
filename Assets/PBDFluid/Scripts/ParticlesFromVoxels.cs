@@ -26,10 +26,18 @@ namespace PBDFluid.Scripts
             //first pass
             voxels.ForEach(voxel => CreateParticleInVoxel(voxel,false));
             //second pass to make up for 0,5236 volume error
-            var error = 0.5236f;
+            var error = CalculateVolumeError(voxels[0], HalfSpacing);
+            Debug.Log("error = " + error);
+            Debug.Log("test = " + CalculateVolumeError(new Box3(Vector3.zero, new Vector3(2,2,2)), 1f));
             var extraVoxelCount = Mathf.FloorToInt(voxels.Count * error);
             var extraVoxels = voxels.Take(extraVoxelCount).ToList();
             extraVoxels.ForEach(voxel => CreateParticleInVoxel(voxel,true));
+        }
+
+        private float CalculateVolumeError(Box3 voxel, float particleRadius){
+            var voxelVolume = voxel.Size.x * voxel.Size.y * voxel.Size.z;
+            var particleVolume = 4f / 3f * Mathf.PI * particleRadius * particleRadius * particleRadius;
+            return (voxelVolume / particleVolume) - 1f;
         }
 
 

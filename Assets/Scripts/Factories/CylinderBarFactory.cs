@@ -4,19 +4,21 @@ using UnityEngine;
 namespace Factories{
     public class CylinderBarFactory
     {
-        public static FluidBoundaryCylinderCup CreateBarChart(Transform parent, Vector3 localPos, Vector3 chartSize, Mesh mesh, Material material){
+        public static FluidBoundaryCylinderCup CreateBarChart(Transform parent, Vector3 localPos, Vector3 chartSize, Mesh mesh, Material material, float particleRadius){
             var barChartGameObject = new GameObject("Barchart"){
                 transform ={
                     parent = parent,
                     localPosition = localPos
                 }
             };
+            
             AddMesh(barChartGameObject, mesh, material);
             var barChart = barChartGameObject.AddComponent<FluidBoundaryCylinderCup>();
+            var radius = Mathf.Max(chartSize.x, chartSize.z) / 2f;
             barChart.height = chartSize.y;
-            barChart.radius = Mathf.Max(chartSize.x, chartSize.z)/2f;
+            barChart.radius = radius + particleRadius;
             barChart.CreateParticles();
-            barChartGameObject.transform.localScale = new Vector3(barChart.radius*2f, 
+            barChartGameObject.transform.localScale = new Vector3(radius*2f, 
                                                                   barChart.height*0.5f, 
                                                                   barChart.radius*2f);
             return barChart;

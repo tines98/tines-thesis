@@ -39,8 +39,18 @@ namespace Factories{
             realPrefab.name = scaleModel.prefab.name;
             var meshBounds = GetMeshBoundsFromPrefab(realPrefab);
 
+            Quaternion rotation;
+            if (scaleModel.shouldRotate){
+                rotation = RotateModel(realPrefab, scaleModel.scale);
+            }
+            else if (scaleModel.forceRotate){
+                rotation = Quaternion.LookRotation(scaleModel.forward, scaleModel.up);
+            }
+            else{
+                rotation = Quaternion.identity;
+            }
             
-            var rotation = scaleModel.shouldRotate ? RotateModel(realPrefab, scaleModel.scale) : Quaternion.identity;
+            // var rotation = scaleModel.shouldRotate ?  : Quaternion.identity;
             var position = PlaceModel(realPrefab, scaleModel.scale, 
                                       demo.SimulationBounds, 
                                       rotation);
