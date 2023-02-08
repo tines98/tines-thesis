@@ -1,30 +1,28 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Factories;
-using MeshVoxelizer.Scripts;
 using PBDFluid.Scripts;
 using SimulationObjects;
 using SimulationObjects.FluidBoundaryObject;
 using SimulationObjects.FluidObject;
 using UnityEngine;
-using UnityEngine.Assertions;
 using Utility;
 
 namespace Demo{
     public class FluidDemo : MonoBehaviour{
         [NonSerialized] private const float Density = 100.0f;
 
-        // Serializables
         [NonSerialized] public Bounds SimulationBounds = new Bounds(Vector3.zero, new Vector3(6, 10, 6));
         [NonSerialized] public ParticleSize ParticleSize = ParticleSize.Medium;
-        public Bounds BarChartBounds;
-        [SerializeField] [Range(0f, 5f)] public float deathPlaneHeight;
+        [NonSerialized] public Bounds BarChartBounds;
+        [NonSerialized] [Range(0f, 5f)] public float DeathPlaneHeight;
 
         [Header("Run")] 
         [SerializeField] private bool run;
         [SerializeField] private bool stopDemo;
         
-        public FluidDemoRenderSettings renderSettings = new FluidDemoRenderSettings();
+        public FluidDemoRenderSettings renderSettings = new();
         
         // Fluid & Boundary Objects
         private FluidContainerizer fluidContainerizer;
@@ -69,11 +67,13 @@ namespace Demo{
                 CreateFluid();
                 CreateBoundary();
 
-                var bounds = new Bounds(transform.position, SimulationBounds.size);
-                fluid.Bounds = bounds;
-                solver = new FluidSolver(fluid, bounds, boundary);
-
-                volume = new RenderVolume(bounds, Radius());
+                fluid.Bounds = new Bounds(transform.position, 
+                                          SimulationBounds.size);
+                solver = new FluidSolver(fluid, 
+                                         fluid.Bounds, 
+                                         boundary);
+                volume = new RenderVolume(fluid.Bounds, 
+                                          Radius);
                 volume.CreateMesh(renderSettings.volumeMaterial);
             }
             catch{
@@ -93,7 +93,7 @@ namespace Demo{
                                                             SimulationBounds,
                                                             fluidContainerizer.GlobalMeshBounds,
                                                             barChart.Bounds,
-                                                            Radius() * 2);
+                                                            Radius * 2);
 
 
         /// <summary>
@@ -105,7 +105,7 @@ namespace Demo{
                                                                                   BarChartBounds.size, 
                                                                                   renderSettings.cylinderMesh, 
                                                                                   renderSettings.cylinderMaterial, 
-                                                                                  Radius()));
+                                                                                  Radius));
 
 
         /// <summary>
@@ -115,6 +115,7 @@ namespace Demo{
             fluidBoundaryObjects.Add(FunnelFactory.CreateFunnel(transform,
                                                                 barChart.Bounds,
                                                                 fluidContainerizer.GlobalMeshBounds,
+                                                                SimulationBounds,
                                                                 60.0f));
 
 
@@ -130,13 +131,14 @@ namespace Demo{
         /// as the boundary is thinner and the fluid many step
         /// through and leak out.
         /// </remarks>
-        /// <returns>The radius for particles</returns>
-        public float Radius() => ParticleSize switch{
-            ParticleSize.Low => 0.1f,
-            ParticleSize.Medium => 0.08f,
-            ParticleSize.High => 0.06f,
-            _ => 0.08f
-        };
+        /// <value>The radius for particles</value>
+        public float Radius =>
+            ParticleSize switch{
+                ParticleSize.Low => 0.1f,
+                ParticleSize.Medium => 0.08f,
+                ParticleSize.High => 0.06f,
+                _ => 0.08f
+            };
 
 
         /// <summary>
@@ -149,7 +151,8 @@ namespace Demo{
         /// <summary>
         /// Searches child gameObjects for FluidObject components
         /// </summary>
-        private void GetFluidObjects() => fluidObjects = GetComponentsInChildren<FluidObject>();
+        private void GetFluidObjects() => 
+            fluidObjects = GetComponentsInChildren<FluidObject>();
 
         
         
@@ -186,6 +189,7 @@ namespace Demo{
         /// Updates the solver and volume
         /// </summary>
         private void DemoStep(){
+            
             UpdateDeathPlane();
             var dt = Mathf.Clamp(Time.deltaTime, 1/65f, 1/50f);
             solver.StepPhysics(dt,
@@ -197,7 +201,7 @@ namespace Demo{
         }
         
 
-        private void UpdateDeathPlane() => DeathPlane.SliderHasChanged(deathPlaneHeight);
+        private void UpdateDeathPlane() => DeathPlane.SliderHasChanged(DeathPlaneHeight);
 
 
         /// <summary>
@@ -242,12 +246,13 @@ namespace Demo{
         /// Puts every fluid boundary object into a particle source and creates a new FluidBody
         /// </summary>
         private void CreateBoundary(){
-            var particleSources = new List<ParticleSource>(fluidBoundaryObjects.Count);
-            fluidBoundaryObjects.ForEach(obj => particleSources.Add(obj.ParticleSource));
-            var particleSource = new ParticlesFromSeveralBounds(Radius() * 2, particleSources.ToArray());
+            var particleSources = from fluidBoundaryObject in fluidBoundaryObjects 
+                                  select fluidBoundaryObject.ParticleSource;
+            var particleSource = new ParticlesFromSeveralBounds(Radius * 2, 
+                                                                particleSources.ToArray());
             particleSource.CreateParticles();
             boundary = new FluidBoundary(particleSource,
-                                         Radius(),
+                                         Radius,
                                          Density);
         }
 
@@ -256,13 +261,11 @@ namespace Demo{
         /// Puts every fluid object into a particle source and creates a new FluidBody
         /// </summary>
         private void CreateFluid(){
-            var particleSources = new ParticleSource[fluidObjects.Length];
-            for (var index = 0; index < fluidObjects.Length; index++)
-                particleSources[index] = fluidObjects[index].ParticleSource;
-            Assert.IsTrue(particleSources.Length > 0);
-            var particleSource = new ParticlesFromSeveralBounds(Radius() * 2, particleSources);
+            var particleSources = from fluidObject in fluidObjects 
+                                  select fluidObject.ParticleSource;
+            var particleSource = new ParticlesFromSeveralBounds(Radius * 2, particleSources.ToArray());
             particleSource.CreateParticles();
-            fluid = new FluidBody(particleSource, Radius(), Density, transform.localToWorldMatrix);
+            fluid = new FluidBody(particleSource, Radius, Density, transform.localToWorldMatrix);
         }
 
 
@@ -270,15 +273,23 @@ namespace Demo{
             //Simulation Bounds
             Gizmos.color = Color.yellow;
             if (renderSettings.drawSimulationBounds) DrawSimulationBounds();
-            Gizmos.color = Color.red;
+            Gizmos.color = Color.white;
             if (renderSettings.drawBarChart && renderSettings.cylinderMesh != null) DrawBarCylinderGizmo();
-            var voxDemo = GetComponentInChildren<VoxelizerDemo>();
-            var voxOne = voxDemo.GetVoxel(0, 0, 0);
-            Gizmos.DrawWireCube(voxOne.Center,voxOne.Size);
-            var numVox = voxDemo.NumVoxels;
-            var voxLast = voxDemo.GetVoxel(numVox);
-            Gizmos.DrawWireCube(voxLast.Center,voxLast.Size);
+            
+            if (!run) return;
+            var data = new Vector4[fluid.NumParticles];
+            fluid.Positions.GetData(data);
+            var anyZeroes = data.ToList().FindIndex((pos) => pos == Vector4.zero);
+            if (anyZeroes>=0) Debug.Log($"Holy shit there is one at index {anyZeroes}");
+            DrawFluidParticlesGizmo(data.ToList());
         }
+
+        private void DrawFluidParticleGizmo(Vector4 particle) => 
+            Gizmos.DrawWireCube(transform.transform.localToWorldMatrix * particle, 
+                                Vector3.one * Radius);
+
+        private void DrawFluidParticlesGizmo(List<Vector4> data) => 
+            data.ToList().ForEach(DrawFluidParticleGizmo); 
 
 
         /// <summary>

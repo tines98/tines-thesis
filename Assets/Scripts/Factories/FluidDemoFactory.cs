@@ -184,6 +184,8 @@ namespace Factories{
             voxelizerGameObject.transform.localScale = scale;
             voxelizerGameObject.GetComponent<MeshRenderer>().material = material;
             voxelizerGameObject.AddComponent<DeathPlaneCulling>();
+            // var spinner = voxelizerGameObject.AddComponent<Spinner>();
+            // spinner.spinSpeed = 75f;
             voxelizer.AddComponent<VoxelizerDemo>();
         }
     }

@@ -5,6 +5,7 @@ namespace Utility{
     public class CameraResizer : MonoBehaviour{
         [SerializeField] private Camera mainCamera;
         [SerializeField] private Camera orthoCamera;
+        [SerializeField] private Camera perspectiveCamera;
     
         public void ResizeTo(float size){
             Debug.Log($"resizing camera to {size}");
@@ -22,5 +23,7 @@ namespace Utility{
             var splitCamera = GetComponent<SplitCamera>();
             splitCamera.splitHeight = newSplitPoint;
         }
+
+        public float GetFOV() => perspectiveCamera.fieldOfView;
     }
 }

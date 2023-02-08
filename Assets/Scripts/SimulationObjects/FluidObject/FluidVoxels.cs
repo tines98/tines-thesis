@@ -32,8 +32,9 @@ namespace SimulationObjects.FluidObject{
         private void CreateParticles(){
             start = true;
             voxels = fluidContainerizer.InteriorVoxels;
-            ParticleSource = new ParticlesFromVoxels(FluidDemo.Radius() * 2, 
-                                                     voxels, 
+            ParticleSource = new ParticlesFromVoxels(FluidDemo.Radius * 2,
+                                                     voxels,
+                                                     voxelizerDemo.CalculateRealVolume(),
                                                      transform.localToWorldMatrix);
             ParticleSource.CreateParticles();
         
@@ -42,7 +43,7 @@ namespace SimulationObjects.FluidObject{
     
         private void Update(){
             if (start) return;
-            if (fluidContainerizer.IsReady()) CreateParticles();
+            if (fluidContainerizer.IsReady) CreateParticles();
         }
 
         private void OnDrawGizmos(){

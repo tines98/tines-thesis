@@ -15,7 +15,7 @@ namespace SimulationObjects.FluidBoundaryObject{
             FluidDemo = GetComponentInParent<FluidDemo>();
             Assert.IsNotNull(FluidDemo);
             if (height <= 0f) height = barBoundsList[0].size.y;
-            spacing = FluidDemo.Radius() * 2;
+            spacing = FluidDemo.Radius * 2;
             posList = new List<Vector3>();
             CreateBars();
             ParticleSource = new ParticlesFromList(spacing, posList, Matrix4x4.identity);
@@ -94,7 +94,7 @@ namespace SimulationObjects.FluidBoundaryObject{
     
         private void OnDrawGizmos(){
             if (barBoundsList == null) return;
-            Gizmos.color = Color.red;
+            Gizmos.color = Color.blue;
             barBoundsList.ForEach(DrawBarGizmo);
         }
 

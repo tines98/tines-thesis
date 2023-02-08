@@ -6,40 +6,49 @@ using Utility;
 
 namespace Demo{
     public class FluidDemoManager : MonoBehaviour{
-        [SerializeField] private List<ScaleModel> prefabs;
+        [SerializeField] private List<ScaleModel> scaleModels;
         [SerializeField] private FluidDemoRenderSettings renderSettings;
         [SerializeField] private Vector3 simulationSize;
         [SerializeField] private Vector3 barSize;
+        [SerializeField] private int barNotches = 5;
         [SerializeField] private ParticleSize particleSize;
         [SerializeField] private Material material;
-        
-        private List<FluidDemo> fluidDemos;
         public int currentDemoIndex;
+        private CameraResizer cameraResizer;
+        [NonSerialized] public bool FinishedAllDemos;
+
+        private List<FluidDemo> fluidDemos;
         private bool hasCreated;
         private Camera mainCamera;
-        private CameraResizer cameraResizer;
-        [NonSerialized] public bool finishedAllDemos;
-        
-        public void NextDemo(){
-            if (finishedAllDemos) return;
-            currentDemoIndex++;
-            if (currentDemoIndex == prefabs.Count) AllDemosComplete();
-            else PlaceCameraAtDemo();
-        }
 
-        public int GetDemoCount() => fluidDemos.Count;
-        
-        private FluidDemo CurrentDemo() => fluidDemos[currentDemoIndex % GetDemoCount()];
+        public int DemoCount => 
+            fluidDemos.Count;
 
-        public void UpdateDeathPlane(float value) => CurrentDemo().deathPlaneHeight = value;
+        private FluidDemo CurrentDemo => 
+            fluidDemos[currentDemoIndex % DemoCount];
 
-        public void StartDemo() => CurrentDemo().StartDemo();
+        private Vector3 FirstDemo => 
+            DemoPosition(0);
 
-        public void StopDemo() => CurrentDemo().StopDemo();
+        private Vector3 LastDemo => 
+            DemoPosition(scaleModels.Count - 1);
 
-        
+
+        private float CalculateCameraSize => 
+            (LastDemo - FirstDemo).magnitude / 2f;
+
+        private Vector3 MidPoint => 
+            FirstDemo + (LastDemo - FirstDemo)/2f;
+
+        private float CameraDepth =>
+            - simulationSize.z / 2f
+            - mainCamera.orthographicSize / Mathf.Tan(cameraResizer.GetFOV() / 2f * Mathf.Deg2Rad);
+
+
         // Start is called before the first frame update
         void Start(){
+            // renderSettings.cylinderMaterial.SetVector("_Tiling", new(1,barNotches));
+            renderSettings.cylinderMaterial.mainTextureScale = new Vector2(1,barNotches);
             CreateDemos();
             mainCamera = Camera.main;
             if (mainCamera != null) cameraResizer = mainCamera.GetComponent<CameraResizer>();
@@ -47,31 +56,60 @@ namespace Demo{
         }
 
 
+        // GIZMOS
+        private void OnDrawGizmos(){
+            if (hasCreated) return;
+            var i = 0;
+            scaleModels.ForEach(scaleModel => {
+                var demoPos = DemoPosition(i++);
+                
+                // Draw simulation bounds
+                Gizmos.color = Color.yellow;
+                DrawSimulationBounds(new Bounds(demoPos, simulationSize));
+        
+                // Draw cylinder
+                Gizmos.color = Color.magenta;
+                DrawBarCylinderGizmo(new Bounds(demoPos 
+                                              + Vector3.up * (barSize.y-simulationSize.y)/2f, 
+                                                barSize));
+                Gizmos.color = Color.green;
+                DrawScaleModelGizmos(scaleModel, demoPos);
+            });
+        }
+
+        public void NextDemo(){
+            if (FinishedAllDemos) return;
+            UpdateDeathPlane(0f);
+            currentDemoIndex++;
+            if (currentDemoIndex == scaleModels.Count) AllDemosComplete();
+            else PlaceCameraAtDemo();
+        }
+
+        public void UpdateDeathPlane(float value) => 
+            CurrentDemo.DeathPlaneHeight = value;
+
+        public void StartDemo() => 
+            CurrentDemo.StartDemo();
+
+        public void StopDemo() => 
+            CurrentDemo.StopDemo();
+
         void AllDemosComplete(){
             Debug.Log("All demos complete");
-            finishedAllDemos = true;
-            var firstDemo = DemoPosition(0);
-            var lastDemo = DemoPosition(prefabs.Count - 1);
-            var cameraSize = (lastDemo - firstDemo).magnitude;
-            cameraResizer.ResizeTo(cameraSize/2f);
+            FinishedAllDemos = true;
+            cameraResizer.ResizeTo(CalculateCameraSize);
             cameraResizer.MoveSplitPoint(1f);
-            var midPoint = firstDemo + (lastDemo - firstDemo) / 2f;
-            var cameraPosition = new Vector3{
-                x = midPoint.x,
-                y = midPoint.y,
-                z = mainCamera.transform.position.z
-            };
-            mainCamera.transform.position = cameraPosition;
+            MoveCamera(MidPoint, CameraDepth);
         }
 
 
         /// <summary>
-        /// Iterates through <see cref="prefabs"/> and calls <see cref="CreateDemo"/> for each of them
+        /// Iterates through <see cref="scaleModels"/> and calls <see cref="CreateDemo"/> for each of them
         /// </summary>
         void CreateDemos(){
-            fluidDemos = new List<FluidDemo>(prefabs.Count);
+            fluidDemos = new List<FluidDemo>(scaleModels.Count);
             var index = 0;
-            prefabs.ForEach(prefab => fluidDemos.Add(CreateDemo(index++)));
+            scaleModels.ForEach(_ => fluidDemos.Add(CreateDemo(index++)));
             hasCreated = true;
         }
 
@@ -81,7 +119,7 @@ namespace Demo{
         /// </summary>
         private FluidDemo CreateDemo(int index) => 
             FluidDemoFactory.CreateDemo(renderSettings, 
-                                        prefabs[index],
+                                        scaleModels[index],
                                         DemoPosition(index), 
                                         simulationSize, 
                                         barSize,
@@ -103,69 +141,49 @@ namespace Demo{
             var demoPos = DemoPosition(currentDemoIndex);
             cameraResizer.ResizeTo(simulationSize.y/2f);
             // Places the camera so perspective and ortho camera line up at simulation
-            var cameraPosition = new Vector3{
-                x = demoPos.x,
-                y = demoPos.y,
-                z = -simulationSize.z/2f - mainCamera.orthographicSize / Mathf.Tan(30f * Mathf.Deg2Rad)
-            };
-            mainCamera.transform.position = cameraPosition;
+            MoveCamera(demoPos, CameraDepth);
             cameraResizer.MoveSplitPoint(barSize.y,simulationSize.y);
         }
 
-        
-        // GIZMOS
-        private void OnDrawGizmos(){
-            if (hasCreated) return;
-            
-            for (int i = 0; i < prefabs.Count; i++){
-                var prefab = prefabs[i].prefab;
-                var scaleModel = prefabs[i];
-                var scale = prefabs[i].scale;
-                var meshFilter = prefabs[i].prefab.GetComponent<MeshFilter>();
-                if (meshFilter == null) meshFilter = prefab.GetComponentInChildren<MeshFilter>();
-                var meshBounds = meshFilter.sharedMesh.bounds;
-                var demoPos = DemoPosition(i);
-                
-                // Draw simulation Bounds
-                Gizmos.color = Color.yellow;
-                DrawSimulationBounds(new Bounds(demoPos, simulationSize));
-        
-                // Draw cylinder
-                Gizmos.color = Color.red;
-                DrawBarCylinderGizmo(new Bounds(demoPos 
-                                              + Vector3.up * (barSize.y-simulationSize.y)/2f, 
-                                                barSize));
-                
-                
-                // var rotation = prefabs[i].shouldRotate 
-                //                    ? FluidDemoFactory.RotateModel(prefab, scale) 
-                //                    : Quaternion.identity;
-                Quaternion rotation;
-                if (scaleModel.shouldRotate){
-                    rotation = FluidDemoFactory.RotateModel(prefab, scale);
-                }
-                else if (prefabs[i].forceRotate){
-                    rotation = Quaternion.LookRotation(scaleModel.forward, scaleModel.up);
-                }
-                else{
-                    rotation = Quaternion.identity;
-                }
-                var position = demoPos + FluidDemoFactory.PlaceModel(prefab,
-                                                                     scale,
-                                                                     new Bounds(Vector3.zero, simulationSize),
-                                                                     rotation);
-                var actualScale = FluidDemoFactory.AbsVector(rotation * scale);
-                var rotateScaleBounds = FluidDemoFactory.RotateScaleBounds(meshBounds, rotation, actualScale);
+        private void MoveCamera(Vector2 xy, float z) => 
+            mainCamera.transform.position = new Vector3(xy.x, xy.y, z);
 
-                var pos = position - Vector3.Scale(rotateScaleBounds.center, actualScale - Vector3.one);
-                
-                // Draw model mesh
-                Gizmos.color = Color.green;
-                DrawModelGizmo(meshFilter.sharedMesh,
-                               pos,
-                               rotation,
-                               scale);
-            }
+        private Quaternion GetScaleModelRotation(ScaleModel scaleModel){
+            if (scaleModel.shouldRotate)
+                return FluidDemoFactory.RotateModel(scaleModel.prefab, scaleModel.scale);
+            if (scaleModel.forceRotate)
+                return Quaternion.LookRotation(scaleModel.forward, scaleModel.up);
+            return Quaternion.identity;
+        }
+
+        private Vector3 GetScaleModelPosition(ScaleModel scaleModel, Vector3 demoPos, Quaternion rotation){
+            var simulationBounds = new Bounds(Vector3.zero, simulationSize);
+            var position = demoPos 
+                         + FluidDemoFactory.PlaceModel(scaleModel.prefab, 
+                                                       scaleModel.scale, 
+                                                       simulationBounds,
+                                                       rotation);
+            return position;
+        }
+
+        private void DrawScaleModelGizmos(ScaleModel scaleModel, Vector3 demoPos){
+            var rotation = GetScaleModelRotation(scaleModel);
+            var position = GetScaleModelPosition(scaleModel, demoPos, rotation);
+            
+            var meshFilter = scaleModel.prefab.GetComponent<MeshFilter>();
+            if (meshFilter == null) meshFilter = scaleModel.prefab.GetComponentInChildren<MeshFilter>();
+            
+            var actualScale = FluidDemoFactory.AbsVector(rotation * scaleModel.scale);
+            var rotateScaleBounds = FluidDemoFactory.RotateScaleBounds(meshFilter.sharedMesh.bounds, rotation, actualScale);
+
+            var pos = position - Vector3.Scale(rotateScaleBounds.center, actualScale - Vector3.one);
+            
+            // Draw model mesh
+            
+            DrawModelGizmo(meshFilter.sharedMesh,
+                           pos,
+                           rotation,
+                           scaleModel.scale);
         }
 
 
@@ -179,14 +197,14 @@ namespace Demo{
                                 new Vector3(bounds.size.x, 
                                             bounds.size.y/2f, 
                                             bounds.size.z));
-    
-        
+
+
         /// <summary>
         /// Draws a gizmo showing the simulation bounds
         /// </summary>
         private void DrawSimulationBounds(Bounds bounds) => 
             Gizmos.DrawWireCube(bounds.center,bounds.size);
-        
+
 
         private void DrawModelGizmo(Mesh mesh, Vector3 position, Quaternion rotation, Vector3 scale) =>
             Gizmos.DrawWireMesh(mesh, position, rotation, scale);

@@ -39,15 +39,15 @@ namespace SimulationObjects{
             Debug.Log(voxelizerDemo.radius);
             Assert.IsTrue(ExteriorVoxels.Count > 0, "Exterior is empty");
             Assert.IsTrue(InteriorVoxels.Count > 0, "Interior is empty");
-            Assert.IsTrue(IsReady(),"IsReady is implemented wrong");
+            Assert.IsTrue(IsReady,"IsReady is implemented wrong");
         }
 
     
         /// <returns>True if the fluid container is done being containerized</returns>
-        public bool IsReady() => ExteriorVoxels!=null 
-                              && InteriorVoxels!=null 
-                              && ExteriorVoxels.Count > 0 
-                              && InteriorVoxels.Count > 0;
+        public bool IsReady => ExteriorVoxels!=null 
+                            && InteriorVoxels!=null 
+                            && ExteriorVoxels.Count > 0 
+                            && InteriorVoxels.Count > 0;
     
     
         /// <summary>

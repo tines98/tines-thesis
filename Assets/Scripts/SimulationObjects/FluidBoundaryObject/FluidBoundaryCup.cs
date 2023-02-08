@@ -13,7 +13,7 @@ namespace SimulationObjects.FluidBoundaryObject{
             FluidDemo = GetComponentInParent<FluidDemo>();
             Assert.IsNotNull(FluidDemo);
             // ParticleSource = new ParticlesFromBounds(FluidBodyMeshDemo.Radius() * 2, OuterBounds(), InnerBounds());
-            var spacing = FluidDemo.Radius() * 2;
+            var spacing = FluidDemo.Radius * 2;
             ParticleSource = new ParticlesFromList(spacing, CreateCup(spacing), Matrix4x4.identity);
             LoggingUtility.LogInfo($"FluidBoundaryCup {name} har a total of {ParticleSource.NumParticles} boundary particles!");
         }
@@ -68,7 +68,7 @@ namespace SimulationObjects.FluidBoundaryObject{
         }
 
         private void OnDrawGizmos() {
-            Gizmos.color = Color.red;
+            Gizmos.color = Color.yellow;
             Gizmos.DrawWireCube(transform.position,size);
         }
     }

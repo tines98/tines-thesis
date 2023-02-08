@@ -35,6 +35,16 @@ namespace MeshVoxelizer.Scripts
                 return 2.0f * (d.x * d.y + d.x * d.z + d.y * d.z);
             }
         }
+        
+        public float Volume
+        {
+            get
+            {
+                return Width * Height * Depth;
+            }
+        }
+        
+        
 
         public Vector3 Min { get; set; }
 

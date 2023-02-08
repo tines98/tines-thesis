@@ -8,7 +8,6 @@ using Utility;
 namespace SimulationObjects.FluidBoundaryObject{
     public class FluidBoundaryVoxels : FluidBoundaryObject{
         [SerializeField] private bool drawGizmo;
-        private VoxelizerDemo voxelizerDemo;
         private FluidContainerizer fluidContainerizer;
         private List<Box3> voxels;
         private bool start;
@@ -20,11 +19,9 @@ namespace SimulationObjects.FluidBoundaryObject{
         
             FluidDemo = GetComponentInParent<FluidDemo>();
             Assert.IsNotNull(FluidDemo);
-        
-            voxelizerDemo = GetComponentInParent<VoxelizerDemo>();
-            if (voxelizerDemo == null) voxelizerDemo = GetComponent<VoxelizerDemo>();
-            Assert.IsNotNull(voxelizerDemo);
         }
+        
+        
 
         // ReSharper disable Unity.PerformanceAnalysis
         /// <summary> Creates boundary particles </summary>
@@ -33,7 +30,7 @@ namespace SimulationObjects.FluidBoundaryObject{
             voxels = fluidContainerizer.ExteriorVoxels;
             var particles = new List<Vector3>(voxels.Count);
             voxels.ForEach(voxel => particles.Add(voxel.Center));
-            ParticleSource = new ParticlesFromList(FluidDemo.Radius(), particles, transform.localToWorldMatrix);
+            ParticleSource = new ParticlesFromList(FluidDemo.Radius, particles, transform.localToWorldMatrix);
             ParticleSource.CreateParticles();
         
             LoggingUtility.LogInfo($"FluidBoundaryVoxels {name} har a total of {ParticleSource.NumParticles} boundary particles!");
@@ -42,7 +39,7 @@ namespace SimulationObjects.FluidBoundaryObject{
 
         private void Update(){
             if (start) return;
-            if (fluidContainerizer.IsReady()) CreateParticles();
+            if (fluidContainerizer.IsReady) CreateParticles();
         }
 
         private void OnDrawGizmos(){

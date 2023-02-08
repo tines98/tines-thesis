@@ -8,15 +8,39 @@ namespace PBDFluid.Scripts
 {
     public class ParticlesFromVoxels : ParticleSource
     {
+        /// <summary>
+        /// List of each voxel
+        /// </summary>
         private readonly List<Box3> voxels;
+        /// <summary>
+        /// transformation matrix to transform each particle by
+        /// </summary>
         private Matrix4x4 trs;
+        /// <summary>
+        /// volume loss from voxelization to compensate for
+        /// </summary>
+        private readonly float realVolume;
         
-        public ParticlesFromVoxels(float spacing, List<Box3> voxels, Matrix4x4 trs) : base(spacing) {
+        public ParticlesFromVoxels(float spacing, List<Box3> voxels, float realVolume,  Matrix4x4 trs) : base(spacing) {
             this.voxels = voxels;
             this.trs = trs;
+            this.realVolume = realVolume;
             Assert.IsTrue(voxels.Count > 0, "voxels is empty");
             Positions = new List<Vector3>();
         }
+        
+        /// <summary>
+        /// Returns the volume of a single particle
+        /// </summary>
+        private float ParticleVolume => 
+            4f/3f * Mathf.PI * HalfSpacing * HalfSpacing * HalfSpacing;
+        
+        
+        /// <summary>
+        /// Finds out how many extra particles are needed to compensate for volume loss in voxelization
+        /// </summary>
+        private int ExtraVoxelsCount => 
+            Mathf.RoundToInt(realVolume / ParticleVolume) - voxels.Count;
 
 
         /// <summary>
@@ -25,24 +49,14 @@ namespace PBDFluid.Scripts
         public override void CreateParticles(){
             //first pass
             voxels.ForEach(voxel => CreateParticleInVoxel(voxel,false));
-            //second pass to make up for 0,5236 volume error
-            var error = CalculateVolumeError(voxels[0], HalfSpacing);
-            Debug.Log("error = " + error);
-            Debug.Log("test = " + CalculateVolumeError(new Box3(Vector3.zero, new Vector3(2,2,2)), 1f));
-            var extraVoxelCount = Mathf.FloorToInt(voxels.Count * error);
-            var extraVoxels = voxels.Take(extraVoxelCount).ToList();
+            //second pass to make up for voxelization volume loss
+            var extraVoxels = voxels.Take(ExtraVoxelsCount).ToList();
             extraVoxels.ForEach(voxel => CreateParticleInVoxel(voxel,true));
         }
-
-        private float CalculateVolumeError(Box3 voxel, float particleRadius){
-            var voxelVolume = voxel.Size.x * voxel.Size.y * voxel.Size.z;
-            var particleVolume = 4f / 3f * Mathf.PI * particleRadius * particleRadius * particleRadius;
-            return (voxelVolume / particleVolume) - 1f;
-        }
-
-
+        
+        
         private void CreateParticleInVoxel(Box3 voxel, bool shouldOffset){
-            var offset = .001f;
+            const float offset = .001f;
             var offsetVector = new Vector3(offset, offset, offset);
             var pos = voxel.Center;
             if (shouldOffset) pos += offsetVector;

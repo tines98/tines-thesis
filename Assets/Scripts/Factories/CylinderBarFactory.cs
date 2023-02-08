@@ -20,7 +20,7 @@ namespace Factories{
             barChart.CreateParticles();
             barChartGameObject.transform.localScale = new Vector3(radius*2f, 
                                                                   barChart.height*0.5f, 
-                                                                  barChart.radius*2f);
+                                                                  radius*2f);
             return barChart;
         }
 

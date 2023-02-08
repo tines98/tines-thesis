@@ -1,8 +1,6 @@
-using System.Collections.Generic;
 using Demo;
 using UnityEngine;
 using UnityEngine.UI;
-using Utility;
 
 namespace UI{
     public class DemoControllerUI : MonoBehaviour{
@@ -29,12 +27,12 @@ namespace UI{
         /// Updates the UI Text component to show which demo is currently selected
         /// </summary>
         void UpdateDemoNumberUI(){
-            if (fluidDemoManager.finishedAllDemos){
+            if (fluidDemoManager.FinishedAllDemos){
                 demoNumberUI.text = "Complete!";
                 return;
             }
             // What the UI Text should show
-            var demoNumberText = $"Demo: {fluidDemoManager.currentDemoIndex}/{fluidDemoManager.GetDemoCount()}";
+            var demoNumberText = $"Demo: {fluidDemoManager.currentDemoIndex}/{fluidDemoManager.DemoCount}";
             // Update UI Text if not correct
             if (demoNumberUI.text != demoNumberText)
                 demoNumberUI.text = demoNumberText;

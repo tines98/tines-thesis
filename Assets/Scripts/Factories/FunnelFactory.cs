@@ -12,26 +12,28 @@ namespace Factories{
                 }
             };
             var funnelComp = funnelGameObject.AddComponent<Funnel>();
-            funnelComp.SetLowerRadius(lowerRadius);
-            funnelComp.SetUpperRadius(upperRadius);
-            funnelComp.SetHeight(height);
+            funnelComp.lowerRadius = lowerRadius;
+            funnelComp.upperRadius = upperRadius;
+            funnelComp.height = height;
             funnelComp.CreateParticles();
             return funnelComp;
         }
     
-        public static Funnel CreateFunnel(Transform parent, Bounds barBounds, Bounds meshBounds, float degrees){
+        public static Funnel CreateFunnel(Transform parent, Bounds barBounds, Bounds meshBounds, Bounds simulationBounds, float degrees){
             var lowerRadius = CalcLowerRadius(barBounds);
-            var upperRadius = CalcUpperRadius(meshBounds);
+            // var upperRadius = CalcUpperRadius(meshBounds);
+            var upperRadius = simulationBounds.extents.x;
             Debug.Log("upperRadius = " + upperRadius);
             Debug.Log("lowerRadius = " + lowerRadius);
-        
-            var height = CalcHeight(lowerRadius,
-                                    upperRadius,
-                                    degrees);
-            var maxHeight = MaxHeight(barBounds, meshBounds);
-            if (height > maxHeight){
-                height = maxHeight;
-            }
+
+            var height = meshBounds.min.y - barBounds.max.y;
+            // var height = CalcHeight(lowerRadius,
+            //                         upperRadius,
+            //                         degrees);
+            // var maxHeight = MaxHeight(barBounds, meshBounds);
+            // if (height > maxHeight){
+            //     height = maxHeight;
+            // }
             return CreateFunnel(parent,             
                                 CalcPosition(barBounds,parent.position),
                                 lowerRadius,

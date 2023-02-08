@@ -6,6 +6,7 @@ Shader "Hidden/SplitCamera"
         _PerspectiveTex ("Perspective Texture", 2D) = "white" {}
         _OrthographicTex ("Orthographic Texture", 2D) = "white" {}
         _SplitHeight ("Split Height", Range(0.0, 1.0)) = 0.5
+        _BlurZone ("Blur Zone", Range(0,0.25)) = 0.1
     }
     SubShader
     {
@@ -43,15 +44,26 @@ Shader "Hidden/SplitCamera"
             sampler2D _MainTex;
             sampler2D _PerspectiveTex;
             sampler2D _OrthographicTex;
-            float _SplitHeight;
+            half _SplitHeight;
+            half _BlurZone;
 
             fixed4 frag (v2f i) : SV_Target
             {
                 fixed4 col;
                 // fixed4 background = tex2D(_MainTex, i.uv);
-                if (i.uv.y > _SplitHeight){
+                float foo = i.uv.y - _SplitHeight;
+                if (foo > 0){
                     col = tex2D(_PerspectiveTex, i.uv);
                 }
+                else if (abs(foo)<_BlurZone){
+                    const half bottom = _SplitHeight-_BlurZone;
+                    const half t = (i.uv.y - bottom) / _BlurZone*2.0;
+                    col = tex2D(_OrthographicTex,  i.uv) * (1-t)
+                        + tex2D(_PerspectiveTex, i.uv) * (t);
+                }
+                // else if (i.uv.y > _SplitHeight+_BlurZone){
+                
+                // }
                 else{
                     col = tex2D(_OrthographicTex, i.uv);
                 }

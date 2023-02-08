@@ -4,36 +4,30 @@ using UnityEngine;
 
 namespace SimulationObjects.FluidBoundaryObject{
     public class Funnel : FluidBoundaryObject{
-        [SerializeField] private float lowerRadius;
-        [SerializeField] private float upperRadius;
-        [SerializeField] private float height;
+        public float lowerRadius;
+        public float upperRadius;
+        public float height;
+        
         [SerializeField] private bool drawFunnel;
 
         public void CreateParticles(){
             FluidDemo = GetComponentInParent<FluidDemo>();
-            var spacing = FluidDemo.Radius() * 2;
+            var spacing = FluidDemo.Radius * 2;
             var particles = ParticleFunnel(spacing);
             Debug.Log($"funnel has {particles.Count}");
             ParticleSource = new ParticlesFromList(spacing, particles, Matrix4x4.identity);
         }
 
-        public void SetLowerRadius(float radius) => lowerRadius = radius;
-    
-        public void SetUpperRadius(float radius) => upperRadius = radius;
+        private float FunnelAngle =>
+            Vector3.Angle(Vector3.up,
+                          new Vector3(0, height, upperRadius)
+                        - new Vector3(0, 0, lowerRadius));
 
-        public void SetHeight(float funnelHeight) => height = funnelHeight;
-
-        float CalcFunnelAngle() => Vector3.Angle(Vector3.up,
-                                                 new Vector3(0, height, upperRadius)
-                                               - new Vector3(0, 0, lowerRadius));
         List<Vector3> ParticleFunnel(float spacing){
             var particleFunnel = new List<Vector3>();
-            var angle = CalcFunnelAngle();
-            if (angle>45)
-                Debug.Log(CalcFunnelAngle());
-            for (var heightLevel = 0f; heightLevel < height; heightLevel += spacing){
-                var radius = Mathf.Lerp(lowerRadius, upperRadius, heightLevel / height);
-                particleFunnel.AddRange(ParticleCircle(radius, spacing, heightLevel));
+            for (var y = 0f; y < height; y += spacing){
+                var radius = Mathf.Lerp(lowerRadius, upperRadius, y / height);
+                particleFunnel.AddRange(ParticleCircle(radius, spacing, y));
             }
 
             return particleFunnel;
@@ -56,14 +50,14 @@ namespace SimulationObjects.FluidBoundaryObject{
         Vector3 PlaceParticle(float radius,
                               float theta,
                               float particleHeight,
-                              int particleIndex) => new Vector3(radius * Mathf.Cos(theta * particleIndex),
-                                                                particleHeight,
-                                                                radius * Mathf.Sin(theta * particleIndex));
+                              int particleIndex) => new(radius * Mathf.Cos(theta * particleIndex),
+                                                        particleHeight,
+                                                        radius * Mathf.Sin(theta * particleIndex));
 
         private void OnDrawGizmos(){
             if (!drawFunnel) return;
             float radius = .08f;
-            if (FluidDemo != null) radius = FluidDemo.Radius();
+            if (FluidDemo != null) radius = FluidDemo.Radius;
             var particleFunnel = ParticleFunnel(radius*2);
             var camPos = Camera.current.transform.position;
             particleFunnel.Sort((a, b) => (b - camPos).sqrMagnitude

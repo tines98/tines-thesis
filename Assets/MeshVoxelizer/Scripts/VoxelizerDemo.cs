@@ -27,29 +27,23 @@ namespace MeshVoxelizer.Scripts
         [SerializeField] private bool drawAABBTree;
 
         public Bounds meshBounds;
-        private FluidDemo fluidDemo;
-
-        private GameObject nonVoxelizedGameObject;
-        [NonSerialized] public Vector3Int NumVoxels;
-        private GameObject voxelizedGameObject;
-
         public MeshVoxelizer Voxelizer;
         
-
+        private GameObject nonVoxelizedGameObject;
+        private Mesh nonVoxelizedMesh;
+        private Vector3Int numVoxels;
+        private GameObject voxelizedGameObject;
+        private Mesh voxelizedMesh;
+        
         // Voxels included in the mesh
         public List<Box3> Voxels;
 
-        void Start()
-        {
-            if (partOfFluidSim) {
-                fluidDemo = GetComponentInParent<FluidDemo>();
-                Assert.IsNotNull(fluidDemo);
-                radius = fluidDemo.Radius();
-            }
+        void Start(){
+            if (partOfFluidSim)
+                radius = GetComponentInParent<FluidDemo>().Radius;
             StartVoxelization();
-            FillVoxels(Voxelizer.Voxels);
-            Debug.Log($"num voxels is {Voxels.Count}");
         }
+
 
         private void StartVoxelization(){
             //Get filter and renderer
@@ -57,71 +51,64 @@ namespace MeshVoxelizer.Scripts
             var meshRenderer = GetMeshRenderer();
             
             //Get non voxelized object
-            nonVoxelizedGameObject = filter.gameObject;
+            nonVoxelizedGameObject = filter!.gameObject;
             
             // Get mesh from model
-            var mesh = filter.sharedMesh;
-            meshBounds = mesh.bounds;
+            nonVoxelizedMesh = filter.sharedMesh;
+            meshBounds = nonVoxelizedMesh.bounds;
 
             // Get scaled mesh size
-            var lossyScale = nonVoxelizedGameObject.transform.lossyScale;
             var meshSize = Vector3.Scale(meshBounds.size, 
-                                         lossyScale);
+                                         nonVoxelizedGameObject.transform.lossyScale);
             
             // Calculate num voxels along each axis
-            NumVoxels = CalcNumVoxels(meshSize);
-            Debug.Log("NumVoxels = " + NumVoxels);
+            numVoxels = CalcNumVoxels(meshSize);
+            Debug.Log("NumVoxels = " + numVoxels);
             
             // Do Voxelization
-            Voxelizer = new MeshVoxelizer(NumVoxels.x, 
-                                          NumVoxels.y, 
-                                          NumVoxels.z);
-            Voxelizer.Voxelize(mesh.vertices,
-                               mesh.triangles,
+            Voxelizer = new MeshVoxelizer(numVoxels.x, 
+                                          numVoxels.y, 
+                                          numVoxels.z);
+            Voxelizer.Voxelize(nonVoxelizedMesh.vertices,
+                               nonVoxelizedMesh.triangles,
                                new Box3(meshBounds));
             
             // Create mesh
-            mesh = MeshCreator.CreateMesh(Voxelizer.Voxels, 
-                                          NumVoxels, 
-                                          Scale(), 
+            voxelizedMesh = MeshCreator.CreateMesh(Voxelizer.Voxels, 
+                                          numVoxels, 
+                                          Scale, 
                                           meshBounds.min);
             
             // Create the finished voxelized gameObject
-            CreateVoxelizedGameObject(mesh, 
+            CreateVoxelizedGameObject(voxelizedMesh, 
                                       meshRenderer.material, 
                                       nonVoxelizedGameObject.transform);
+            
+            FillVoxels(Voxelizer.Voxels);
         }
 
         
         private void FillVoxels(int[,,] voxels){
             Voxels = new List<Box3>();
-            for (var z = 0; z < NumVoxels.z; z++){
-                for (var y = 0; y < NumVoxels.y; y++){
-                    for (var x = 0; x < NumVoxels.x; x++){
+            for (var z = 0; z < numVoxels.z; z++){
+                for (var y = 0; y < numVoxels.y; y++){
+                    for (var x = 0; x < numVoxels.x; x++){
                         if (voxels[x, y, z] != 1) continue;
                         Voxels.Add(GetVoxel(x,y,z));
                     }
                 }
             }
         }
-        
 
-        private MeshFilter GetMeshFilter(){
-            var meshFilter = GetComponent<MeshFilter>();
-            if (meshFilter == null) 
-                meshFilter = GetComponentInChildren<MeshFilter>();
-            return meshFilter;
-        }
-        
-        
-        private MeshRenderer GetMeshRenderer(){
-            var meshRenderer = GetComponent<MeshRenderer>();
-            if (meshRenderer == null) 
-                meshRenderer = GetComponentInChildren<MeshRenderer>();
-            return meshRenderer;
-        }
 
-        
+        // ReSharper disable Unity.PerformanceAnalysis
+        private MeshFilter GetMeshFilter() => GetComponentInChildren<MeshFilter>();
+
+
+        // ReSharper disable Unity.PerformanceAnalysis
+        private MeshRenderer GetMeshRenderer() => GetComponentInChildren<MeshRenderer>();
+
+
         private Vector3Int CalcNumVoxels(Vector3 size) =>
             new Vector3Int((int) Math.Abs(Math.Ceiling(size.x / (radius * 2))),
                            (int) Math.Abs(Math.Ceiling(size.y / (radius * 2))),
@@ -129,10 +116,14 @@ namespace MeshVoxelizer.Scripts
 
         
         /// <returns>The scale of a voxel box</returns>
-        Vector3 Scale() => new Vector3(
-            meshBounds.size.x / NumVoxels.x,
-            meshBounds.size.y / NumVoxels.y,
-            meshBounds.size.z / NumVoxels.z);
+        Vector3 Scale => new(meshBounds.size.x / numVoxels.x,
+                             meshBounds.size.y / numVoxels.y,
+                             meshBounds.size.z / numVoxels.z);
+        
+        public float CalculateRealVolume() => 
+            MeshVolumeCalculator.VolumeOfMesh(nonVoxelizedMesh, 
+                                              nonVoxelizedGameObject.transform
+                                                                    .lossyScale);
 
         
         /// <summary>
@@ -167,13 +158,14 @@ namespace MeshVoxelizer.Scripts
         
         
         // ReSharper disable Unity.PerformanceAnalysis
-        public void SetVoxelizedMeshVisibility(bool shouldBeVisible) => voxelizedGameObject.GetComponent<Renderer>().enabled = shouldBeVisible;
+        public void SetVoxelizedMeshVisibility(bool shouldBeVisible) => 
+            voxelizedGameObject.GetComponent<Renderer>().enabled = shouldBeVisible;
 
         
         /// <returns>True if voxelized gameObject creation is complete</returns>
-        public bool IsFinished() => voxelizedGameObject != null;
+        public bool IsFinished => voxelizedGameObject != null;
 
-        public Matrix4x4 GetVoxelizedMeshMatrix() => voxelizedGameObject.transform.localToWorldMatrix;
+        public Matrix4x4 VoxelizedMeshMatrix => voxelizedGameObject.transform.localToWorldMatrix;
 
 
         /// <param name="x">X coordinate in the voxel grid</param>
@@ -186,15 +178,13 @@ namespace MeshVoxelizer.Scripts
         
         
         /// <inheritdoc cref="GetVoxel(int,int,int)"/>
-        public Box3 GetVoxel(Vector3 point){
-            // Scale it to mesh bounds
-            var scale = Scale();
-            var min = meshBounds.min + Vector3.Scale(point, scale);
-            var max = meshBounds.min + Vector3.Scale(point + Vector3.one, scale);
-            return new Box3(min, max);
-        }
-        
-        
+        private Box3 GetVoxel(Vector3 point) => 
+            new(){
+                Min = meshBounds.min + Vector3.Scale(point, Scale),
+                Max = meshBounds.min + Vector3.Scale(point + Vector3.one, Scale)
+            };
+
+
         //GIZMOS
         private void OnDrawGizmos()
         {

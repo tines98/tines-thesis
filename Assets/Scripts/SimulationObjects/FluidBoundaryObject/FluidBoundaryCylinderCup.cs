@@ -16,7 +16,7 @@ namespace SimulationObjects.FluidBoundaryObject{
             FluidDemo = GetComponentInParent<FluidDemo>();
             Assert.IsNotNull(FluidDemo);
             // ParticleSource = new ParticlesFromBounds(FluidBodyMeshDemo.Radius() * 2, OuterBounds(), InnerBounds());
-            var spacing = FluidDemo.Radius() * 2f;
+            var spacing = FluidDemo.Radius * 2f;
             ParticleSource = new ParticlesFromList(spacing, CreateCylinderCup(spacing), Matrix4x4.identity);
             LoggingUtility.LogInfo($"FluidBoundaryCylinderCup {name} har a total of {ParticleSource.NumParticles} boundary particles!");
             Bounds = new Bounds(transform.position, 
@@ -26,38 +26,44 @@ namespace SimulationObjects.FluidBoundaryObject{
         }
 
         List<Vector3> CreateCylinderCup(float spacing){
+            spacing *= 0.5f;
             var cylinderCup = new List<Vector3>();
             var halfHeight = height / 2f;
             cylinderCup.AddRange(CreateFloor(spacing, halfHeight));
-            cylinderCup.AddRange(CreateCylinder(spacing, halfHeight));
+            cylinderCup.AddRange(CreateCylinder(spacing, radius, -halfHeight, halfHeight));
+            //extra bottom guard
+            // cylinderCup.AddRange(CreateCylinder(spacing, radius+spacing/2f, -halfHeight, halfHeight));
+            // //extra floor
+            // cylinderCup.AddRange(CreateFloor(spacing, halfHeight-spacing/2f));
             return cylinderCup;
         }
 
         List<Vector3> CreateFloor(float spacing, float halfHeight){
             var floorParticles = new List<Vector3>();
-            var r = radius-spacing;
+            var r = radius;
             var numAddedParticles = 9999;
+            //keep trying to add circles of particles until no particles are added
             while (numAddedParticles>0){
-                var particles = ParticleCircle(r, spacing, -halfHeight);
+                var particles = ParticleCircle(spacing, r, -halfHeight);
                 numAddedParticles = particles.Count;
                 floorParticles.AddRange(particles);
                 r -= spacing;
             }
-            floorParticles.AddRange(ParticleCircle(r,spacing,halfHeight));
+            floorParticles.Add(transform.position-Vector3.up*halfHeight);
+            floorParticles.AddRange(ParticleCircle(spacing,r,halfHeight));
             return floorParticles;
         }
 
-        List<Vector3> CreateCylinder(float spacing, float halfHeight){
+        List<Vector3> CreateCylinder(float spacing, float cylinderRadius, float minY, float maxY){
             var particleFunnel = new List<Vector3>();
-        
-            for (var heightLevel = -halfHeight; heightLevel < halfHeight; heightLevel += spacing)
-                particleFunnel.AddRange(ParticleCircle(radius, 
-                                                       spacing, 
-                                                       heightLevel));
+            for (var y = minY; y < maxY; y += spacing)
+                particleFunnel.AddRange(ParticleCircle(spacing, 
+                                                       cylinderRadius, 
+                                                       y));
             return particleFunnel;
         }
     
-        List<Vector3> ParticleCircle(float r, float spacing, float particleHeight){
+        List<Vector3> ParticleCircle(float spacing, float r, float particleHeight){
             var totalPoints = (int) (2 * r * Mathf.PI / spacing);
             if (totalPoints <= 0) return new List<Vector3>(0);
             var particleCircle = new List<Vector3>(totalPoints);
@@ -76,9 +82,9 @@ namespace SimulationObjects.FluidBoundaryObject{
         Vector3 PlaceParticle(float r,
                               float theta,
                               float particleHeight,
-                              int particleIndex) => new Vector3(r * Mathf.Cos(theta * particleIndex),
-                                                                particleHeight,
-                                                                r * Mathf.Sin(theta * particleIndex));
+                              int particleIndex) => new(r * Mathf.Cos(theta * particleIndex),
+                                                        particleHeight,
+                                                        r * Mathf.Sin(theta * particleIndex));
 
     }
 }

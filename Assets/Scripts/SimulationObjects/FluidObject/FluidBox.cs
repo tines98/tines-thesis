@@ -12,19 +12,19 @@ namespace SimulationObjects.FluidObject{
         {
             FluidDemo = GetComponentInParent<FluidDemo>();
             Assert.IsNotNull(FluidDemo);
-            ParticleSource = new ParticlesFromBounds(FluidDemo.Radius() * 2, OuterBounds());
+            ParticleSource = new ParticlesFromBounds(FluidDemo.Radius * 2, OuterBounds);
         }
-    
+
         /// <summary>
         /// Creates a Bounds object corresponding to the fluid box
         /// </summary>
-        /// <returns>The Bounds object</returns>
-        private Bounds OuterBounds() => new Bounds(transform.position, size);
-    
-    
+        /// <value>The Bounds object</value>
+        private Bounds OuterBounds => new Bounds(transform.position, size);
+
+
         private void OnDrawGizmos() {
             Gizmos.color = Color.blue;
-            var outerBounds = OuterBounds();
+            var outerBounds = OuterBounds;
             Gizmos.DrawWireCube(outerBounds.center,outerBounds.size);
         }
     }
