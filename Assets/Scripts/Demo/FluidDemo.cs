@@ -11,7 +11,7 @@ using Utility;
 
 namespace Demo{
     public class FluidDemo : MonoBehaviour{
-        [NonSerialized] private const float Density = 100.0f;
+        [NonSerialized] private const float Density = 1000.0f;
 
         [NonSerialized] public Bounds SimulationBounds = new Bounds(Vector3.zero, new Vector3(6, 10, 6));
         [NonSerialized] public ParticleSize ParticleSize = ParticleSize.Medium;

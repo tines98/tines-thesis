@@ -16,7 +16,7 @@ namespace Factories{
             var barChart = barChartGameObject.AddComponent<FluidBoundaryCylinderCup>();
             var radius = Mathf.Max(chartSize.x, chartSize.z) / 2f;
             barChart.height = chartSize.y;
-            barChart.radius = radius + particleRadius;
+            barChart.radius = radius + particleRadius * 2f;
             barChart.CreateParticles();
             barChartGameObject.transform.localScale = new Vector3(radius*2f, 
                                                                   barChart.height*0.5f, 

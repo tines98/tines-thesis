@@ -131,7 +131,7 @@ namespace PBDFluid.Scripts
             float cellSize = ParticleRadius * 4.0f;
             SmoothingKernel K = new SmoothingKernel(cellSize);
 
-                GridHash grid = new GridHash(Bounds, NumParticles, cellSize);
+            GridHash grid = new GridHash(Bounds, NumParticles, cellSize);
             grid.Process(Positions);
 
             ComputeShader shader = Resources.Load("FluidBoundary") as ComputeShader;

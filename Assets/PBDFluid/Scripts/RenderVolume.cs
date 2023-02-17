@@ -17,12 +17,13 @@ namespace PBDFluid.Scripts
         public Vector3Int Groups { get; private set; }
 
         public RenderTexture Volume { get; private set; }
+        public RenderTexture SDF { get; private set; }
 
         private ComputeShader m_shader;
 
         private GameObject m_mesh;
-
-        public RenderVolume(Bounds bounds, float pixelSize)
+        
+            public RenderVolume(Bounds bounds, float pixelSize)
         {
             PixelSize = pixelSize;
 
@@ -61,6 +62,15 @@ namespace PBDFluid.Scripts
             Volume.wrapMode = TextureWrapMode.Clamp;
             Volume.filterMode = FilterMode.Bilinear;
             Volume.Create();
+            
+            SDF = new RenderTexture(width, height, 0, RenderTextureFormat.RFloat, RenderTextureReadWrite.Linear);
+            SDF.dimension = TextureDimension.Tex3D;
+            SDF.volumeDepth = depth;
+            SDF.useMipMap = false;
+            SDF.enableRandomWrite = true;
+            SDF.wrapMode = TextureWrapMode.Clamp;
+            SDF.filterMode = FilterMode.Bilinear;
+            SDF.Create();
 
             m_shader = Resources.Load("ComputeVolume") as ComputeShader;
         }
@@ -112,6 +122,7 @@ namespace PBDFluid.Scripts
             renderer.material.SetVector("Translate", m_mesh.transform.position);
             renderer.material.SetVector("Scale", m_mesh.transform.localScale);
             renderer.material.SetTexture("Volume", Volume);
+            renderer.material.SetTexture("SDF", SDF);
             renderer.material.SetVector("Size", Bounds.size);
 
         }
@@ -143,6 +154,7 @@ namespace PBDFluid.Scripts
             m_shader.SetBuffer(computeKernel, "Positions", body.Positions);
             m_shader.SetBuffer(computeKernel, "Densities", body.Densities);
             m_shader.SetTexture(computeKernel, "Volume", Volume);
+            m_shader.SetTexture(computeKernel, "SDF", SDF);
 
             m_shader.Dispatch(computeKernel, Groups.x, Groups.y, Groups.z);
 

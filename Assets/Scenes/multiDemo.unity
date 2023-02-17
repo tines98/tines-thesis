@@ -397,52 +397,29 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1e1f169b5f92a3190bf1080953174dfe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  prefabs:
-  - prefab: {fileID: 919132149155446097, guid: 710098c0a99435e37b350a9f125ed949, type: 3}
-    scale: {x: 3, y: 3, z: 3}
+  scaleModels:
+  - prefab: {fileID: 1164147744166238430, guid: dfeec57ddd4252c79b94987d6d9b754b, type: 3}
+    scale: {x: 1, y: 1, z: 1}
     shouldRotate: 1
     forceRotate: 0
-    up: {x: 0, y: 0, z: 0}
-    forward: {x: 0, y: 0, z: 0}
-  - prefab: {fileID: 919132149155446097, guid: 13e8527ef10e6679d8930b8ce0445990, type: 3}
-    scale: {x: 3, y: 3, z: 3}
-    shouldRotate: 1
-    forceRotate: 0
-    up: {x: 0, y: 0, z: 0}
-    forward: {x: 0, y: 0, z: 0}
-  - prefab: {fileID: 919132149155446097, guid: bd43d2fe097bc6af5a00562e9511db1a, type: 3}
-    scale: {x: 3, y: 3, z: 3}
-    shouldRotate: 1
-    forceRotate: 0
-    up: {x: 0, y: 0, z: 0}
-    forward: {x: 0, y: 0, z: 0}
-  - prefab: {fileID: 919132149155446097, guid: 5156655c55124ea6e9f43c41567dda68, type: 3}
-    scale: {x: 3, y: 3, z: 3}
-    shouldRotate: 1
-    forceRotate: 0
-    up: {x: 0, y: 0, z: 0}
-    forward: {x: 0, y: 0, z: 0}
-  - prefab: {fileID: 919132149155446097, guid: 8fad496878aa24d3a9fe9103f933a522, type: 3}
-    scale: {x: 3, y: 3, z: 3}
-    shouldRotate: 1
-    forceRotate: 0
-    up: {x: 0, y: 0, z: 0}
-    forward: {x: 0, y: 0, z: 0}
+    up: {x: 0, y: 1, z: 0}
+    forward: {x: 1, y: 0, z: 0}
   renderSettings:
     fluidParticleMaterial: {fileID: 2100000, guid: 12d189c057effd74eb9f43721b3ed217, type: 2}
     boundaryParticleMaterial: {fileID: 2100000, guid: 257742b1fedac2f4791369b571260722, type: 2}
-    volumeMaterial: {fileID: 2100000, guid: 32d2cd031f252b04b88a55d7d051391d, type: 2}
+    volumeMaterial: {fileID: 2100000, guid: 07ea3d52bb9ec5c3a892a7376bca91a7, type: 2}
     cylinderMaterial: {fileID: 2100000, guid: 4cb3310e560c593c4a974c5c41469ce1, type: 2}
-    sphereMesh: {fileID: 4300000, guid: 823956ce1b683574ca519f1f470eb81d, type: 3}
+    sphereMesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
     cylinderMesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
     drawGrid: 0
     drawBoundaryParticles: 0
-    drawFluidParticles: 1
+    drawFluidParticles: 0
     drawFluidVolume: 1
     drawSimulationBounds: 1
     drawBarChart: 1
-  simulationSize: {x: 3, y: 10, z: 3}
-  barSize: {x: 2, y: 4, z: 2}
+  simulationSize: {x: 2, y: 5, z: 2}
+  barSize: {x: 1, y: 2, z: 1}
+  barNotches: 20
   particleSize: 2
   material: {fileID: 2100000, guid: 9d66bddb5d7ee84158188e75fbfcbe80, type: 2}
   currentDemoIndex: 0
@@ -468,9 +445,41 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1510455239549120103, guid: 48aa54a339cab10eca8ae39abf0506cd, type: 3}
+      propertyPath: m_ClearFlags
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 1510455239549120103, guid: 48aa54a339cab10eca8ae39abf0506cd, type: 3}
+      propertyPath: m_BackGroundColor.b
+      value: 0.509434
+      objectReference: {fileID: 0}
+    - target: {fileID: 1510455239549120103, guid: 48aa54a339cab10eca8ae39abf0506cd, type: 3}
+      propertyPath: m_BackGroundColor.g
+      value: 0.509434
+      objectReference: {fileID: 0}
+    - target: {fileID: 1510455239549120103, guid: 48aa54a339cab10eca8ae39abf0506cd, type: 3}
+      propertyPath: m_BackGroundColor.r
+      value: 0.509434
+      objectReference: {fileID: 0}
+    - target: {fileID: 4334206456418738939, guid: 48aa54a339cab10eca8ae39abf0506cd, type: 3}
+      propertyPath: m_ClearFlags
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 4334206456418738939, guid: 48aa54a339cab10eca8ae39abf0506cd, type: 3}
       propertyPath: field of view
-      value: 80
+      value: 60
+      objectReference: {fileID: 0}
+    - target: {fileID: 4334206456418738939, guid: 48aa54a339cab10eca8ae39abf0506cd, type: 3}
+      propertyPath: m_BackGroundColor.b
+      value: 0.509434
+      objectReference: {fileID: 0}
+    - target: {fileID: 4334206456418738939, guid: 48aa54a339cab10eca8ae39abf0506cd, type: 3}
+      propertyPath: m_BackGroundColor.g
+      value: 0.509434
+      objectReference: {fileID: 0}
+    - target: {fileID: 4334206456418738939, guid: 48aa54a339cab10eca8ae39abf0506cd, type: 3}
+      propertyPath: m_BackGroundColor.r
+      value: 0.509434
       objectReference: {fileID: 0}
     - target: {fileID: 5531723761143829045, guid: 48aa54a339cab10eca8ae39abf0506cd, type: 3}
       propertyPath: m_RootOrder
@@ -515,6 +524,22 @@ PrefabInstance:
     - target: {fileID: 5531723761143829045, guid: 48aa54a339cab10eca8ae39abf0506cd, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5531723761143829047, guid: 48aa54a339cab10eca8ae39abf0506cd, type: 3}
+      propertyPath: m_ClearFlags
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 5531723761143829047, guid: 48aa54a339cab10eca8ae39abf0506cd, type: 3}
+      propertyPath: m_BackGroundColor.b
+      value: 0.509434
+      objectReference: {fileID: 0}
+    - target: {fileID: 5531723761143829047, guid: 48aa54a339cab10eca8ae39abf0506cd, type: 3}
+      propertyPath: m_BackGroundColor.g
+      value: 0.509434
+      objectReference: {fileID: 0}
+    - target: {fileID: 5531723761143829047, guid: 48aa54a339cab10eca8ae39abf0506cd, type: 3}
+      propertyPath: m_BackGroundColor.r
+      value: 0.509434
       objectReference: {fileID: 0}
     - target: {fileID: 5531723761143829050, guid: 48aa54a339cab10eca8ae39abf0506cd, type: 3}
       propertyPath: m_Name

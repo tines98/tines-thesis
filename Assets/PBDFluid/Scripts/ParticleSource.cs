@@ -9,7 +9,7 @@ namespace PBDFluid.Scripts
 
         public int NumParticles { get { return Positions.Count; } }
 
-        public IList<Vector3> Positions { get; protected set; }
+        public List<Vector3> Positions { get; protected set; }
 
         public float Spacing { get; private set; }
 

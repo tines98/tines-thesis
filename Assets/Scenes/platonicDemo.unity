@@ -190,104 +190,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &878537959
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 878537963}
-  - component: {fileID: 878537962}
-  - component: {fileID: 878537961}
-  - component: {fileID: 878537960}
-  m_Layer: 0
-  m_Name: Plane
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!64 &878537960
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 878537959}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 4
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
---- !u!23 &878537961
-MeshRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 878537959}
-  m_Enabled: 1
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
-  m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 2
-  m_RayTraceProcedural: 0
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 2100000, guid: 4cb3310e560c593c4a974c5c41469ce1, type: 2}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 3
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_AdditionalVertexStreams: {fileID: 0}
---- !u!33 &878537962
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 878537959}
-  m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
---- !u!4 &878537963
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 878537959}
-  m_LocalRotation: {x: 0, y: 0.7071068, z: -0.7071068, w: 0}
-  m_LocalPosition: {x: 0, y: -2.5, z: 2}
-  m_LocalScale: {x: 0.39997998, y: 1, z: 0.5}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 5
-  m_LocalEulerAnglesHint: {x: 90, y: 180, z: 0}
 --- !u!1001 &1643083417
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -423,7 +325,31 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   scaleModels:
-  - prefab: {fileID: 1164147744166238430, guid: dfeec57ddd4252c79b94987d6d9b754b, type: 3}
+  - prefab: {fileID: 919132149155446097, guid: 710098c0a99435e37b350a9f125ed949, type: 3}
+    scale: {x: 3, y: 3, z: 3}
+    shouldRotate: 0
+    forceRotate: 0
+    up: {x: 1, y: 0, z: 0}
+    forward: {x: 0, y: 0, z: -1}
+  - prefab: {fileID: 919132149155446097, guid: 13e8527ef10e6679d8930b8ce0445990, type: 3}
+    scale: {x: 3, y: 3, z: 3}
+    shouldRotate: 0
+    forceRotate: 0
+    up: {x: 1, y: 0, z: 0}
+    forward: {x: 0, y: 0, z: -1}
+  - prefab: {fileID: 919132149155446097, guid: bd43d2fe097bc6af5a00562e9511db1a, type: 3}
+    scale: {x: 3, y: 3, z: 3}
+    shouldRotate: 0
+    forceRotate: 0
+    up: {x: 1, y: 0, z: 0}
+    forward: {x: 0, y: 0, z: -1}
+  - prefab: {fileID: 919132149155446097, guid: 5156655c55124ea6e9f43c41567dda68, type: 3}
+    scale: {x: 3, y: 3, z: 3}
+    shouldRotate: 0
+    forceRotate: 0
+    up: {x: 1, y: 0, z: 0}
+    forward: {x: 0, y: 0, z: -1}
+  - prefab: {fileID: 919132149155446097, guid: 8fad496878aa24d3a9fe9103f933a522, type: 3}
     scale: {x: 3, y: 3, z: 3}
     shouldRotate: 0
     forceRotate: 0
@@ -432,7 +358,7 @@ MonoBehaviour:
   renderSettings:
     fluidParticleMaterial: {fileID: 2100000, guid: 12d189c057effd74eb9f43721b3ed217, type: 2}
     boundaryParticleMaterial: {fileID: 2100000, guid: 257742b1fedac2f4791369b571260722, type: 2}
-    volumeMaterial: {fileID: 2100000, guid: 38c01f4529916efc29568aeb525fd9a7, type: 2}
+    volumeMaterial: {fileID: 2100000, guid: 07ea3d52bb9ec5c3a892a7376bca91a7, type: 2}
     cylinderMaterial: {fileID: 2100000, guid: 4cb3310e560c593c4a974c5c41469ce1, type: 2}
     sphereMesh: {fileID: 4300000, guid: 823956ce1b683574ca519f1f470eb81d, type: 3}
     cylinderMesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
@@ -442,9 +368,9 @@ MonoBehaviour:
     drawFluidVolume: 1
     drawSimulationBounds: 1
     drawBarChart: 1
-  simulationSize: {x: 4, y: 10, z: 4}
-  barSize: {x: 3, y: 5, z: 3}
-  barNotches: 5
+  simulationSize: {x: 3, y: 10, z: 3}
+  barSize: {x: 2, y: 5, z: 2}
+  barNotches: 10
   particleSize: 2
   material: {fileID: 2100000, guid: 9d66bddb5d7ee84158188e75fbfcbe80, type: 2}
   currentDemoIndex: 0

@@ -186,8 +186,7 @@ void ComputeDensityAndPressure(int id, float3 pi, out float density, out float p
 		else
 		{
 			int m = n - NumParticles;
-			
-			// float4 b = mul(BoundaryMatrices[Particles2Boundary[m]], Boundary[m]);
+
 			float4 b = Boundary[m];
 			if (IsInDeathBox(b))
 			{

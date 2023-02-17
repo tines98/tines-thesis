@@ -37,7 +37,9 @@ StructuredBuffer<float> Densities;
 float VolumeScale;
 float3 VolumeSize;
 float3 VolumeTranslate;
+float3 CameraPosition;
 RWTexture3D<float> Volume;
+RWTexture3D<float> SDF;
 
 float Distance2(float3 a, float3 b)
 {
@@ -45,40 +47,87 @@ float Distance2(float3 a, float3 b)
 	return dot(ab, ab);
 }
 
-float Compute(float3 pi)
-{
-	int3 hashIndex = HashIndex(pi);
+float maxSignedDistance(float3 pi){
+	const int3 hashIndex = HashIndex(pi);
+	const int3 size = HashSize;
+	const int xi = hashIndex.x + 1;
+	const int yj = hashIndex.y;
+	const int zk = hashIndex.z;
+	const int hash = xi + yj * size.x + zk * size.x * size.y;
+	const int2 bounds = Table[hash];
+	return Distance2(pi, Positions[bounds.y].xyz);
+}
+
+float distance_to_camera(float3 position){
+	return Distance2(position, CameraPosition);
+}
+
+
+/**
+ * \brief 
+ * \param particle particle position
+ * \param cell cell position
+ * \return the signed distance to the fluid
+ */
+float signed_distance(float3 particle, float3 cell){
+	const float distance = Distance2(particle, cell);
+	const float particle_camera_dist = distance_to_camera(particle);
+	const float cell_camera_dist = distance_to_camera(cell);
+	// is particle closer to the camera than the cell center
+	if (particle_camera_dist < cell_camera_dist) //cell is inside fluid
+		return distance * -1; 
+	return distance;
+}
+
+/**
+ * \param a float to compare
+ * \param b float to compare
+ * \return the min of two floats, but retains the sign
+ */
+float signed_min(float a, float b){
+	return abs(a) < abs(b)
+		 ? a
+		 : b;
+}
+
+float Compute(float3 cell_position, out float min_signed_distance_squared){
+	int3 hashIndex = HashIndex(cell_position);
 	int3 size = HashSize;
 
 	float density = 0;
+	// Get the fall back distance to 
+	min_signed_distance_squared = KernelRadius2;
 
-	for (int k = -1; k <= 1; k++)
-	{
-		for (int j = -1; j <= 1; j++)
-		{
-			for (int i = -1; i <= 1; i++)
-			{
-				int xi = hashIndex.x + i;
-				int yj = hashIndex.y + j;
-				int zk = hashIndex.z + k;
+	for (int k = -1; k <= 1; k++){
+		for (int j = -1; j <= 1; j++){
+			for (int i = -1; i <= 1; i++){
+				const int xi = hashIndex.x + i;
+				const int yj = hashIndex.y + j;
+				const int zk = hashIndex.z + k;
 
 				if (xi < 0 || xi >= size.x) continue;
 				if (yj < 0 || yj >= size.y) continue;
 				if (zk < 0 || zk >= size.z) continue;
 
-				int hash = xi + yj * size.x + zk * size.x * size.y;
+				const int hash = xi + yj * size.x + zk * size.x * size.y;
 				int2 bounds = Table[hash];
+				// Minimum distance to a particle
+				
 
-				for (int idx = bounds.x; idx <= bounds.y; idx++)
-				{
-					int n = IndexMap[idx].y;
+				for (int idx = bounds.x; idx <= bounds.y; idx++){
+					const int n = IndexMap[idx].y;
 					if (n > NumParticles) continue;
 
-					float3 pn = Positions[n].xyz;
-					float dist2 = Distance2(pi, pn);
-					if (dist2 >= KernelRadius2) continue;
+					const float3 particle_position = Positions[n].xyz;
+					const float distance_squared = Distance2(cell_position, particle_position);
+					min_signed_distance_squared = signed_min(min_signed_distance_squared, distance_squared - KernelRadius2);
+					if (distance_squared >= KernelRadius2) continue;
 
-					density += Densities[n] * Poly6Kernel(dist2);
+					
+					// const float sig_dist = signed_distance(pn, pi);
+					// signed_dist = signed_min(signed_dist, sig_dist);
+
+					density += Densities[n] * Poly6Kernel(distance_squared);
 				}
 			}
 		}
@@ -90,17 +139,13 @@ float Compute(float3 pi)
 #pragma kernel ComputeVolume
 
 [numthreads(THREADS, THREADS, THREADS)]
-void ComputeVolume(int3 id : SV_DispatchThreadID)
-{
-
-	if (id.x < VolumeSize.x && id.y < VolumeSize.y && id.z < VolumeSize.z)
-	{
-		float3 pi = VolumeTranslate + id * VolumeScale;
-
-		float density = Compute(pi);
+void ComputeVolume(int3 id : SV_DispatchThreadID){
+	if (id.x < VolumeSize.x && id.y < VolumeSize.y && id.z < VolumeSize.z){
+		const float3 cell_position = VolumeTranslate + id * VolumeScale;
+		float signed_dist = 0;
+		float density = Compute(cell_position, signed_dist);
 
 		Volume[id] = density * ParticleVolume;
-
+		SDF[id] = signed_dist;
 	}
-
 }

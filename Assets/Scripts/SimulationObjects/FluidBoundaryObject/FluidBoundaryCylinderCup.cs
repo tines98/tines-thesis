@@ -29,8 +29,13 @@ namespace SimulationObjects.FluidBoundaryObject{
             spacing *= 0.5f;
             var cylinderCup = new List<Vector3>();
             var halfHeight = height / 2f;
-            cylinderCup.AddRange(CreateFloor(spacing, halfHeight));
-            cylinderCup.AddRange(CreateCylinder(spacing, radius, -halfHeight, halfHeight));
+            cylinderCup.AddRange(CreateFloor(spacing, 
+                                             radius, 
+                                             halfHeight+spacing));
+            cylinderCup.AddRange(CreateCylinder(spacing, 
+                                                radius, 
+                                                -halfHeight, 
+                                                halfHeight));
             //extra bottom guard
             // cylinderCup.AddRange(CreateCylinder(spacing, radius+spacing/2f, -halfHeight, halfHeight));
             // //extra floor
@@ -38,9 +43,9 @@ namespace SimulationObjects.FluidBoundaryObject{
             return cylinderCup;
         }
 
-        List<Vector3> CreateFloor(float spacing, float halfHeight){
+        List<Vector3> CreateFloor(float spacing, float outerRadius, float halfHeight){
             var floorParticles = new List<Vector3>();
-            var r = radius;
+            var r = outerRadius;
             var numAddedParticles = 9999;
             //keep trying to add circles of particles until no particles are added
             while (numAddedParticles>0){
@@ -86,5 +91,13 @@ namespace SimulationObjects.FluidBoundaryObject{
                                                         particleHeight,
                                                         r * Mathf.Sin(theta * particleIndex));
 
+        private void OnDrawGizmos(){
+            Gizmos.color = Color.red;
+            ParticleSource.Positions.ForEach(particle => 
+                Gizmos.DrawWireCube(particle, 
+                                    new Vector3(ParticleSource.Spacing,
+                                                ParticleSource.Spacing,
+                                                ParticleSource.Spacing)));
+        }
     }
 }
