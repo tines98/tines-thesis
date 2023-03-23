@@ -60,7 +60,7 @@ namespace PBDFluid.Scripts
             Volume.useMipMap = false;
             Volume.enableRandomWrite = true;
             Volume.wrapMode = TextureWrapMode.Clamp;
-            Volume.filterMode = FilterMode.Bilinear;
+            Volume.filterMode = FilterMode.Trilinear;
             Volume.Create();
             
             SDF = new RenderTexture(width, height, 0, RenderTextureFormat.RFloat, RenderTextureReadWrite.Linear);
@@ -69,7 +69,7 @@ namespace PBDFluid.Scripts
             SDF.useMipMap = false;
             SDF.enableRandomWrite = true;
             SDF.wrapMode = TextureWrapMode.Clamp;
-            SDF.filterMode = FilterMode.Bilinear;
+            SDF.filterMode = FilterMode.Trilinear;
             SDF.Create();
 
             m_shader = Resources.Load("ComputeVolume") as ComputeShader;

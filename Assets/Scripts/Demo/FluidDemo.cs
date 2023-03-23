@@ -6,6 +6,7 @@ using PBDFluid.Scripts;
 using SimulationObjects;
 using SimulationObjects.FluidBoundaryObject;
 using SimulationObjects.FluidObject;
+using TMPro;
 using UnityEngine;
 using Utility;
 
@@ -40,6 +41,8 @@ namespace Demo{
         // Booleans
         private bool hasStarted;
         private bool wasError;
+
+        public String VolumeText;
         
 
         // ReSharper disable Unity.PerformanceAnalysis
@@ -153,6 +156,14 @@ namespace Demo{
         /// </summary>
         private void GetFluidObjects() => 
             fluidObjects = GetComponentsInChildren<FluidObject>();
+
+        public void CreateText(){
+            var pos = transform.position + SimulationBounds.min + Vector3.right * 1.5f;
+            var text = Instantiate(renderSettings.floatingTextPrefab, pos, Quaternion.identity, transform);
+            var textMeshPro = text.GetComponent<TextMeshPro>();
+            var realVolume = fluidContainerizer.voxelizerDemo.CalculateRealVolume();
+            textMeshPro.text = Math.Round(realVolume, 2).ToString();
+        }
 
         
         

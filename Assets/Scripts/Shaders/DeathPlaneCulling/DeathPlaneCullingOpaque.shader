@@ -76,7 +76,7 @@ Shader "Custom/DeathPlaneCullingOpaque"
             o.Smoothness = _Glossiness;
             if (IsInDeathBox(float4(IN.worldPos,1), _DeathPlanePosition, _DeathPlaneSize + + float4(0,_CutLineLength,0,0)))
                 o.Alpha = 0;
-            else if (IsInDeathBox(float4(IN.worldPos,1), _DeathPlanePosition, _DeathPlaneSize + float4(0,_CutLineLength*2,0,0))){
+            else if (_DeathPlaneSize.y>0.0001 && IsInDeathBox(float4(IN.worldPos,1), _DeathPlanePosition, _DeathPlaneSize + float4(0,_CutLineLength*2,0,0))){
                 o.Alpha = 1;
                 o.Albedo = _CutLineColor * _InteriorDarkening;
             }
@@ -131,7 +131,7 @@ Shader "Custom/DeathPlaneCullingOpaque"
             o.Smoothness = _Glossiness;
             if (IsInDeathBox(float4(IN.worldPos,1), _DeathPlanePosition, _DeathPlaneSize + + float4(0,_CutLineLength,0,0)))
                 o.Alpha = 0;
-            else if (IsInDeathBox(float4(IN.worldPos,1), _DeathPlanePosition, _DeathPlaneSize + float4(0,_CutLineLength*2,0,0))){
+            else if (_DeathPlaneSize.y>0.0001 && IsInDeathBox(float4(IN.worldPos,1), _DeathPlanePosition, _DeathPlaneSize + float4(0,_CutLineLength*2,0,0))){
                 o.Alpha = 1;
                 o.Albedo = _CutLineColor;
             }

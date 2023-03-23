@@ -57,7 +57,7 @@ float Compute(int id, float3 pi)
 	//density of the boundary but I find the fluid 
 	//leaks out so Im just using a const value.
 
-	/*
+	
 	for (int k = -1; k <= 1; k++)
 	{
 		for (int j = -1; j <= 1; j++)
@@ -89,7 +89,7 @@ float Compute(int id, float3 pi)
 			}
 		}
 	}
-	*/
+	
 
 	float volume = 1.0f / delta;
 	return Density * volume;

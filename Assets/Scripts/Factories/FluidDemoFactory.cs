@@ -21,7 +21,8 @@ namespace Factories{
                                            Vector3 simulationSize, 
                                            Vector3 barSize,
                                            ParticleSize particleSize, 
-                                           Material material){
+                                           Material material,
+                                           Texture texture){
             var demoGameObject = new GameObject("Created Demo"){
                 transform = {position = demoPosition},
                 tag = "Demo"
@@ -53,7 +54,7 @@ namespace Factories{
             // var rotation = scaleModel.shouldRotate ?  : Quaternion.identity;
             var position = PlaceModel(realPrefab, scaleModel.scale, 
                                       demo.SimulationBounds, 
-                                      rotation);
+                                      rotation, ParticleSizeUtility.ToRadius(particleSize));
             
             var actualScale = AbsVector(rotation * scaleModel.scale);
             meshBounds = RotateScaleBounds(meshBounds, rotation, actualScale);
@@ -64,7 +65,8 @@ namespace Factories{
                             demoPosition+position-offset, 
                             rotation, 
                             scaleModel.scale,
-                            material);
+                            material,
+                            texture);
             return demo;
         }
 
@@ -77,8 +79,9 @@ namespace Factories{
         /// <param name="scale">Extra Scale to apply to model</param>
         /// <param name="simulationBounds">The simulation bounds</param>
         /// <param name="rotation">Rotation that the model is rotated at</param>
+        /// <param name="particleRadius">particle Radius</param>
         /// <returns>Vector that indicates the needed position change</returns>
-        public static Vector3 PlaceModel(GameObject prefab, Vector3 scale, Bounds simulationBounds, Quaternion rotation){
+        public static Vector3 PlaceModel(GameObject prefab, Vector3 scale, Bounds simulationBounds, Quaternion rotation, float particleRadius){
             // Apply Rotation to Scale 
             var actualScale = AbsVector(rotation * scale);
             
@@ -89,7 +92,9 @@ namespace Factories{
             var meshMaxCenter = GetTopCenterOfBounds(meshBounds);
             // Top Center of Simulation Bounds
             var simulationTopCenter = GetTopCenterOfBounds(simulationBounds);
-            return simulationTopCenter - meshMaxCenter;
+            return simulationTopCenter
+                 - meshMaxCenter
+                 - Vector3.up * particleRadius * 2f;
         }
 
         public static Bounds RotateScaleBounds(Bounds bounds, Quaternion rotation, Vector3 scale){
@@ -172,7 +177,7 @@ namespace Factories{
         /// <param name="rotation">Rotation to apply to the model</param>
         /// <param name="scale">Scale to apply to the model</param>
         /// <param name="material">Material to apply to the model</param>
-        private static void CreateVoxelizer(Transform parent, GameObject prefab, Vector3 position, Quaternion rotation, Vector3 scale, Material material){
+        private static void CreateVoxelizer(Transform parent, GameObject prefab, Vector3 position, Quaternion rotation, Vector3 scale, Material material, Texture texture){
             var voxelizer = new GameObject("voxelizer"){
                 transform ={parent = parent}
             };
@@ -182,7 +187,10 @@ namespace Factories{
                                                          voxelizer.transform);
             voxelizerGameObject.name = prefab.name;
             voxelizerGameObject.transform.localScale = scale;
-            voxelizerGameObject.GetComponent<MeshRenderer>().material = material;
+            var meshRenderer = voxelizerGameObject.GetComponent<MeshRenderer>();
+            meshRenderer.material = material;
+            if (texture != null) meshRenderer.material.mainTexture = texture;
+            
             voxelizerGameObject.AddComponent<DeathPlaneCulling>();
             // var spinner = voxelizerGameObject.AddComponent<Spinner>();
             // spinner.spinSpeed = 75f;

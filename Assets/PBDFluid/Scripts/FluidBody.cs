@@ -65,7 +65,7 @@ namespace PBDFluid.Scripts
                 CreateArgBuffer(mesh.GetIndexCount(0));
 
             material.SetBuffer("positions", Positions);
-            material.SetColor("color", Color.white);
+            // material.SetColor("_Color", Color.white);
             material.SetFloat("diameter", ParticleDiameter);
             material.SetInt("useMatrix",0);
 

@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Factories;
+using TMPro;
 using UnityEngine;
 using Utility;
 
@@ -20,6 +22,7 @@ namespace Demo{
         private List<FluidDemo> fluidDemos;
         private bool hasCreated;
         private Camera mainCamera;
+        private float largestVolume;
 
         public int DemoCount => 
             fluidDemos.Count;
@@ -36,71 +39,57 @@ namespace Demo{
 
         private float CalculateCameraSize => 
             (LastDemo - FirstDemo).magnitude / 2f;
-
+        
         private Vector3 MidPoint => 
             FirstDemo + (LastDemo - FirstDemo)/2f;
 
         private float CameraDepth =>
             - simulationSize.z / 2f
             - mainCamera.orthographicSize / Mathf.Tan(cameraResizer.GetFOV() / 2f * Mathf.Deg2Rad);
-
-
-        // Start is called before the first frame update
+        
+        /// Start is called before the first frame update
         void Start(){
-            // renderSettings.cylinderMaterial.SetVector("_Tiling", new(1,barNotches));
-            renderSettings.cylinderMaterial.mainTextureScale = new Vector2(1,barNotches);
-            CreateDemos();
             mainCamera = Camera.main;
-            if (mainCamera != null) cameraResizer = mainCamera.GetComponent<CameraResizer>();
+            var maxVolume = GetLargestVolume();
+            var barDiameter = CalculateBarSize(maxVolume);
+            barSize = new Vector3(barDiameter, 
+                                  simulationSize.y / 2f, 
+                                  barDiameter);
+            renderSettings.cylinderMaterial
+                          .mainTextureScale = new Vector2(1,barNotches);
+            CreateBackPlane();
+            CreateDemos();
+            if (mainCamera != null) 
+                cameraResizer = mainCamera.GetComponent<CameraResizer>();
             PlaceCameraAtDemo();
         }
 
-
-        // GIZMOS
-        private void OnDrawGizmos(){
-            if (hasCreated) return;
-            var i = 0;
-            scaleModels.ForEach(scaleModel => {
-                var demoPos = DemoPosition(i++);
-                
-                // Draw simulation bounds
-                Gizmos.color = Color.yellow;
-                DrawSimulationBounds(new Bounds(demoPos, simulationSize));
-        
-                // Draw cylinder
-                Gizmos.color = Color.magenta;
-                DrawBarCylinderGizmo(new Bounds(demoPos 
-                                              + Vector3.up * (barSize.y-simulationSize.y)/2f, 
-                                                barSize));
-                Gizmos.color = Color.green;
-                DrawScaleModelGizmos(scaleModel, demoPos);
-            });
+        void CreateBackPlane(){
+            var plane = GameObject.CreatePrimitive(PrimitiveType.Plane);
+            plane.GetComponent<MeshRenderer>().sharedMaterial = renderSettings.cylinderMaterial;
+            // Rotate Plane
+            plane.transform.rotation = Quaternion.Euler(90, 0, 0);
+            // Scale Plane
+            var xScale = simulationSize.x * scaleModels.Count / 10f;
+            var zScale = simulationSize.y / 20f;
+            plane.transform.localScale = new Vector3(xScale, 1, zScale);
+            // Translate Plane
+            plane.transform.position = new Vector3(MidPoint.x, 
+                                                   -5 * zScale, 
+                                                   simulationSize.z / 2f);
         }
 
-        public void NextDemo(){
-            if (FinishedAllDemos) return;
-            UpdateDeathPlane(0f);
-            currentDemoIndex++;
-            if (currentDemoIndex == scaleModels.Count) AllDemosComplete();
-            else PlaceCameraAtDemo();
-        }
+        float CalculateBarSize(float volume) => Mathf.Sqrt(volume / 
+                                                           (Mathf.PI * simulationSize.y / 2f))
+                                              * 2f;
 
-        public void UpdateDeathPlane(float value) => 
-            CurrentDemo.DeathPlaneHeight = value;
-
-        public void StartDemo() => 
-            CurrentDemo.StartDemo();
-
-        public void StopDemo() => 
-            CurrentDemo.StopDemo();
-
-        void AllDemosComplete(){
-            Debug.Log("All demos complete");
-            FinishedAllDemos = true;
-            cameraResizer.ResizeTo(CalculateCameraSize);
-            cameraResizer.MoveSplitPoint(1f);
-            MoveCamera(MidPoint, CameraDepth);
-        }
+        Mesh GetMesh(ScaleModel scaleModel) => 
+            scaleModel.prefab.GetComponent<MeshFilter>() 
+                ? scaleModel.prefab.GetComponent<MeshFilter>().sharedMesh 
+                : scaleModel.prefab.GetComponentInChildren<MeshFilter>().sharedMesh;
+        float GetLargestVolume()  => scaleModels.Max(e =>
+            MeshVolumeCalculator.VolumeOfMesh(GetMesh(e),
+                                              e.scale));
 
 
         /// <summary>
@@ -112,6 +101,45 @@ namespace Demo{
             scaleModels.ForEach(_ => fluidDemos.Add(CreateDemo(index++)));
             hasCreated = true;
         }
+        
+        public void UpdateDeathPlane(float value) => 
+            CurrentDemo.DeathPlaneHeight = value;
+
+        public void NextDemo(){
+            if (FinishedAllDemos) return;
+            UpdateDeathPlane(0f);
+            currentDemoIndex++;
+            if (currentDemoIndex == scaleModels.Count) AllDemosComplete();
+            else PlaceCameraAtDemo();
+        }
+        
+        public void StartDemo() => 
+            CurrentDemo.StartDemo();
+
+        public void StopDemo() => 
+            CurrentDemo.StopDemo();
+
+        void AllDemosComplete(){
+            Debug.Log("All demos complete");
+            FinishedAllDemos = true;
+            cameraResizer.ResizeTo(simulationSize.y/2f);
+            fluidDemos.ForEach(a => a.CreateText());
+            CreateText();
+            // cameraResizer.MoveSplitPoint(.5f);
+            MoveCamera(MidPoint, CameraDepth);
+        }
+
+        private void CreateText(){
+            var pos = transform.position + new Vector3(-simulationSize.x, -simulationSize.y/2f + barSize.y, 0);
+            var text = Instantiate(renderSettings.floatingTextPrefab, pos, Quaternion.identity, transform);
+            var textMeshPro = text.GetComponent<TextMeshPro>();
+            var radius = barSize.x / 2f;
+            var realVolume = Mathf.PI * radius * radius * barSize.y;
+            textMeshPro.text = Math.Round(realVolume, 2).ToString();
+        }
+
+
+        
 
 
         /// <summary>
@@ -124,7 +152,8 @@ namespace Demo{
                                         simulationSize, 
                                         barSize,
                                         particleSize,
-                                        material);
+                                        material,
+                                        scaleModels[index].Texture);
 
 
         /// <summary>
@@ -162,8 +191,31 @@ namespace Demo{
                          + FluidDemoFactory.PlaceModel(scaleModel.prefab, 
                                                        scaleModel.scale, 
                                                        simulationBounds,
-                                                       rotation);
+                                                       rotation, 
+                                                       ParticleSizeUtility.ToRadius(particleSize));
             return position;
+        }
+        
+        
+        // GIZMOS
+        private void OnDrawGizmos(){
+            if (hasCreated) return;
+            var i = 0;
+            scaleModels.ForEach(scaleModel => {
+                var demoPos = DemoPosition(i++);
+                
+                // Draw simulation bounds
+                Gizmos.color = Color.yellow;
+                DrawSimulationBounds(new Bounds(demoPos, simulationSize));
+        
+                // Draw cylinder
+                Gizmos.color = Color.magenta;
+                DrawBarCylinderGizmo(new Bounds(demoPos 
+                                              + Vector3.up * (barSize.y-simulationSize.y)/2f, 
+                                                barSize));
+                Gizmos.color = Color.green;
+                DrawScaleModelGizmos(scaleModel, demoPos);
+            });
         }
 
         private void DrawScaleModelGizmos(ScaleModel scaleModel, Vector3 demoPos){

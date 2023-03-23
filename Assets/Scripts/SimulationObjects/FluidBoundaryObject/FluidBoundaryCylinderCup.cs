@@ -10,6 +10,7 @@ namespace SimulationObjects.FluidBoundaryObject{
         [SerializeField] public float height;
         [SerializeField] public float radius;
         [NonSerialized] public Bounds Bounds;
+        [SerializeField] private bool drawGizmo;
     
         public void CreateParticles()
         {
@@ -92,6 +93,7 @@ namespace SimulationObjects.FluidBoundaryObject{
                                                         r * Mathf.Sin(theta * particleIndex));
 
         private void OnDrawGizmos(){
+            if (!drawGizmo) return;
             Gizmos.color = Color.red;
             ParticleSource.Positions.ForEach(particle => 
                 Gizmos.DrawWireCube(particle, 

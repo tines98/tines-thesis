@@ -10,4 +10,5 @@ public class ScaleModel{
     public bool forceRotate = false;
     public Vector3 up;
     public Vector3 forward;
+    public Texture Texture;
 }

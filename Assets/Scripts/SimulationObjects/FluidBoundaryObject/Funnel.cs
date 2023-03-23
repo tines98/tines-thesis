@@ -29,6 +29,10 @@ namespace SimulationObjects.FluidBoundaryObject{
                 var radius = Mathf.Lerp(lowerRadius, upperRadius, y / height);
                 particleFunnel.AddRange(ParticleCircle(radius, spacing, y));
             }
+            //Extra
+            for (int y = 1; y < 20; y++){
+                particleFunnel.AddRange(ParticleCircle(upperRadius, spacing, height+y*spacing));
+            }
 
             return particleFunnel;
         }

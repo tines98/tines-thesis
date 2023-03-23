@@ -16,8 +16,7 @@ float KernelRadius;
 float KernelRadius2;
 float Poly6;
 
-float Pow3(float v)
-{
+float Pow3(float v){
 	return v * v * v;
 }
 
@@ -41,42 +40,9 @@ float3 CameraPosition;
 RWTexture3D<float> Volume;
 RWTexture3D<float> SDF;
 
-float Distance2(float3 a, float3 b)
-{
-	float3 ab = a - b;
+float Distance2(float3 a, float3 b){
+	const float3 ab = a - b;
 	return dot(ab, ab);
-}
-
-float maxSignedDistance(float3 pi){
-	const int3 hashIndex = HashIndex(pi);
-	const int3 size = HashSize;
-	const int xi = hashIndex.x + 1;
-	const int yj = hashIndex.y;
-	const int zk = hashIndex.z;
-	const int hash = xi + yj * size.x + zk * size.x * size.y;
-	const int2 bounds = Table[hash];
-	return Distance2(pi, Positions[bounds.y].xyz);
-}
-
-float distance_to_camera(float3 position){
-	return Distance2(position, CameraPosition);
-}
-
-
-/**
- * \brief 
- * \param particle particle position
- * \param cell cell position
- * \return the signed distance to the fluid
- */
-float signed_distance(float3 particle, float3 cell){
-	const float distance = Distance2(particle, cell);
-	const float particle_camera_dist = distance_to_camera(particle);
-	const float cell_camera_dist = distance_to_camera(cell);
-	// is particle closer to the camera than the cell center
-	if (particle_camera_dist < cell_camera_dist) //cell is inside fluid
-		return distance * -1; 
-	return distance;
 }
 
 /**
@@ -85,9 +51,7 @@ float signed_distance(float3 particle, float3 cell){
  * \return the min of two floats, but retains the sign
  */
 float signed_min(float a, float b){
-	return abs(a) < abs(b)
-		 ? a
-		 : b;
+	return abs(a) < abs(b) ? a : b;
 }
 
 float Compute(float3 cell_position, out float min_signed_distance_squared){
@@ -113,26 +77,22 @@ float Compute(float3 cell_position, out float min_signed_distance_squared){
 				int2 bounds = Table[hash];
 				// Minimum distance to a particle
 				
-
 				for (int idx = bounds.x; idx <= bounds.y; idx++){
 					const int n = IndexMap[idx].y;
 					if (n > NumParticles) continue;
 
 					const float3 particle_position = Positions[n].xyz;
 					const float distance_squared = Distance2(cell_position, particle_position);
-					min_signed_distance_squared = signed_min(min_signed_distance_squared, distance_squared - KernelRadius2);
 					if (distance_squared >= KernelRadius2) continue;
-
 					
-					// const float sig_dist = signed_distance(pn, pi);
-					// signed_dist = signed_min(signed_dist, sig_dist);
-
+					min_signed_distance_squared = min(min_signed_distance_squared,
+													  distance_squared);
+					
 					density += Densities[n] * Poly6Kernel(distance_squared);
 				}
 			}
 		}
 	}
-
 	return density / Density;
 }
 
@@ -143,7 +103,7 @@ void ComputeVolume(int3 id : SV_DispatchThreadID){
 	if (id.x < VolumeSize.x && id.y < VolumeSize.y && id.z < VolumeSize.z){
 		const float3 cell_position = VolumeTranslate + id * VolumeScale;
 		float signed_dist = 0;
-		float density = Compute(cell_position, signed_dist);
+		const float density = Compute(cell_position, signed_dist);
 
 		Volume[id] = density * ParticleVolume;
 		SDF[id] = signed_dist;

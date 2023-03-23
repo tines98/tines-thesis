@@ -10,7 +10,7 @@ namespace SimulationObjects{
     {
         [SerializeField] private bool drawGrid;
         [SerializeField] private bool drawMeshBounds;
-        private VoxelizerDemo voxelizerDemo;
+        public VoxelizerDemo voxelizerDemo;
         private MeshHollower meshHollower;
         [NonSerialized] public Bounds GlobalMeshBounds;
 

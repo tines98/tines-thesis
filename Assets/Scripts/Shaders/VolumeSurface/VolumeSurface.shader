@@ -5,7 +5,8 @@ Shader "Custom/VolumeSurface"
         _Color ("Color", Color) = (1,1,1,1)
         _Glossiness ("Smoothness", Range(0,1)) = 0.5
         _Metallic ("Metallic", Range(0,1)) = 0.0
-    	_SurfaceThreshold ("Denisty Threshold", Range(0,0.06)) = 0.01
+    	_SurfaceThreshold ("Denisty Threshold", Range(0,0.2)) = 0.01
+    	_Epsilon ("Epsilon", Range(0.0001, 0.1)) = 0.001
     }
     SubShader
     {
@@ -48,6 +49,7 @@ Shader "Custom/VolumeSurface"
         sampler3D Volume;
         sampler3D SDF;
         float _SurfaceThreshold;
+        float _Epsilon;
         float3 Translate;
         float3 Scale;
         float3 Size;
@@ -63,7 +65,7 @@ Shader "Custom/VolumeSurface"
         
 		/// Calculates the gradient in the density field
         float3 gradient(float3 pos) {
-            float3 eps = float3(0.001, 0.0, 0.0);
+            float3 eps = float3(_Epsilon, 0.0, 0.0);
             float3 grad;
             grad.x = sample_density(pos + eps.xyy) - sample_density(pos - eps.xyy);
             grad.y = sample_density(pos + eps.yxy) - sample_density(pos - eps.yxy);
@@ -126,7 +128,7 @@ Shader "Custom/VolumeSurface"
 		bool ray_march(float3 ray_start, float3 ray_dir, float3 ray_stop, out float3 ray_position){
 			float total_dist = 0;
             ray_position = ray_start;
-            const float max_dist = distance(ray_stop,ray_start);
+			const float max_dist = distance(ray_stop,ray_start);
 			float dist = 1.0;
 			for (int i = 0; i < MAX_STEPS; i++) {
 				const float density = sample_SDF(ray_position);
@@ -140,7 +142,6 @@ Shader "Custom/VolumeSurface"
 				if (total_dist >= max_dist)
 					break;
 			}
-			
 			return dist < _SurfaceThreshold;
         }
         
@@ -162,7 +163,7 @@ Shader "Custom/VolumeSurface"
 		}
 
         /// Samples the sky cubemap and returns the reflection color
-        half3 reflectionColor(float3 ray_dir, float3 normal){
+        half3 reflection_color(float3 ray_dir, float3 normal){
 			const half3 world_reflection = reflect(-ray_dir, normal);
 			const half4 sky_data = UNITY_SAMPLE_TEXCUBE(unity_SpecCube0, world_reflection);
 	        // decode cubemap data into actual color
@@ -176,11 +177,18 @@ Shader "Custom/VolumeSurface"
         //convert to texture space
         void translate_ray(Ray ray, float t_near, float t_far, out float3 ray_start, out float3 ray_stop){
 			ray_start = ray.origin + ray.dir * t_near;
-			ray_stop = ray.origin + ray.dir * t_far;
 			ray_start -= Translate;
-			ray_stop -= Translate;
 			ray_start = (ray_start + 0.5 * Scale) / Scale;
+			ray_stop = ray.origin + ray.dir * t_far;
+			ray_stop -= Translate;
 			ray_stop = (ray_stop + 0.5 * Scale) / Scale;
+		}
+
+        float3 translate_ray(Ray ray, float clipping_plane){
+	        float3 ray_pos = ray.origin + ray.dir * clipping_plane;
+			ray_pos -= Translate;
+			ray_pos = (ray_pos + 0.5 * Scale) / Scale;
+			return ray_pos;
 		}
 
         
@@ -205,18 +213,17 @@ Shader "Custom/VolumeSurface"
 	  
 			//if eye is in cube then start ray at eye
 			if (t_near < 0.0) t_near = 0.0;
+			const float3 ray_start = translate_ray(ray, t_near);
+			const float3 ray_stop = translate_ray(ray, t_far);
 	  
-			float3 ray_start;
-			float3 ray_stop;
-	  
-			translate_ray(ray, t_near, t_far, ray_start, ray_stop);
 	        const float3 ray_dir = normalize(ray_stop-ray_start);
 			// Will be changed by ray march 
 			float3 ray_pos = ray_start;
 	        const bool result = ray_march(ray_start, ray_dir, ray_stop, ray_pos);
 			if (result == true){
 				const float3 normal = gradient(ray_pos);
-				o.Albedo = _Color * diffuse(normal, ray.dir) * 0.5 + 0.5;
+				// o.Albedo = _Color * reflectionColor(ray_dir, normal) * diffuse(normal, ray_dir);
+				o.Albedo = _Color * diffuse(normal, ray_dir);
 				o.Alpha = 1;
 			}
 			else{
@@ -230,5 +237,5 @@ Shader "Custom/VolumeSurface"
         }
         ENDCG
     }
-    FallBack "Diffuse"
+//    FallBack "Diffuse"
 }
