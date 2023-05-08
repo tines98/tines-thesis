@@ -42,6 +42,10 @@ namespace Demo{
         private bool hasStarted;
         private bool wasError;
 
+        public bool overrideEpsilon;
+        [Range(1,120)]
+        public float epsilon = 60f;
+
         public String VolumeText;
         
 
@@ -55,6 +59,7 @@ namespace Demo{
             run = true;
             fluidBoundaryObjects = new List<FluidBoundaryObject>();
             try{
+                Debug.Log("Epsilon = " + Epsilon);
                 GetFluidBoundaryObjects();
                 GetFluidObjects();
                 LoggingUtility.LogWithColor($"Fluid Demo: Found {fluidBoundaryObjects.Count} fluidBoundaryObjects!",
@@ -66,7 +71,7 @@ namespace Demo{
                 CreateBarChart();
                 CreateFunnel();
                 CreateDeathPlane();
-
+                
                 CreateFluid();
                 CreateBoundary();
 
@@ -195,6 +200,13 @@ namespace Demo{
             stopDemo = false;
         }
 
+        private float Epsilon => ParticleSize switch{
+            ParticleSize.Low => 5f,
+            ParticleSize.Medium => renderSettings.epsilon,
+            ParticleSize.High => 60f,
+            _ => throw new ArgumentOutOfRangeException()
+        };
+
 
         /// <summary>
         /// Updates the solver and volume
@@ -202,10 +214,14 @@ namespace Demo{
         private void DemoStep(){
             
             UpdateDeathPlane();
-            var dt = Mathf.Clamp(Time.deltaTime, 1/65f, 1/50f);
+            // var dt = Mathf.Clamp(Time.deltaTime, 1/65f, 1/50f);
+            var dt = 1 / 60f;
             solver.StepPhysics(dt,
                                DeathPlane.transform.position,
-                               DeathPlane.size);
+                               DeathPlane.size,
+                               overrideEpsilon 
+                                   ? epsilon 
+                                   : Epsilon);
             volume.FillVolume(fluid,
                               solver.Hash,
                               solver.Kernel);
@@ -259,6 +275,7 @@ namespace Demo{
         private void CreateBoundary(){
             var particleSources = from fluidBoundaryObject in fluidBoundaryObjects 
                                   select fluidBoundaryObject.ParticleSource;
+            
             var particleSource = new ParticlesFromSeveralBounds(Radius * 2, 
                                                                 particleSources.ToArray());
             particleSource.CreateParticles();
@@ -292,12 +309,12 @@ namespace Demo{
             fluid.Positions.GetData(data);
             var anyZeroes = data.ToList().FindIndex((pos) => pos == Vector4.zero);
             if (anyZeroes>=0) Debug.Log($"Holy shit there is one at index {anyZeroes}");
+            Gizmos.color = Color.blue;
             DrawFluidParticlesGizmo(data.ToList());
         }
 
         private void DrawFluidParticleGizmo(Vector4 particle) => 
-            Gizmos.DrawWireCube(transform.transform.localToWorldMatrix * particle, 
-                                Vector3.one * Radius);
+            Gizmos.DrawWireSphere(transform.localToWorldMatrix * particle, Radius);
 
         private void DrawFluidParticlesGizmo(List<Vector4> data) => 
             data.ToList().ForEach(DrawFluidParticleGizmo); 

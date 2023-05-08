@@ -23,6 +23,7 @@ float Poly6Zero;
 float Poly6;
 float SpikyGrad;
 float ViscLap;
+float Epsilon;
 
 float Pow2(float v)
 {
@@ -178,20 +179,17 @@ void ComputeDensityAndPressure(int id, float3 pi, out float density, out float p
 		float dist2;
 		float3 diff;
 		float psi = 0.f;
-		if (n < NumParticles)
-		{
+		if (n < NumParticles){ // Fluid Particle
 			diff = pi - PredictedREAD[n].xyz;
 			dist2 = Length2(diff);
 		}
-		else
-		{
+		else{ // Boundary Particle
 			int m = n - NumParticles;
 
 			float4 b = Boundary[m];
-			if (IsInDeathBox(b))
-			{
-				b = float4(999,999,999,0);
-			}
+
+			if (IsInDeathBox(b)) continue;
+
 			diff = pi - b.xyz;
 			psi = b.w;
 			dist2 = Length2(diff);
@@ -199,15 +197,13 @@ void ComputeDensityAndPressure(int id, float3 pi, out float density, out float p
 
 		if (dist2 >= KernelRadius2) continue;
 
-		if (n < NumParticles)
-		{
+		if (n < NumParticles){ // Fluid Particle
 			density += ParticleMass * Poly6Kernel(dist2);
 			float3 gradC_j = -MassMulInvDensity * SpikyGradKernel(diff, dist2);
 			sum_grad_C2 += dot(gradC_j, gradC_j);
 			gradC_i -= gradC_j;
 		}
-		else
-		{
+		else{ // Boundary Particle
 			density += psi * Poly6Kernel(dist2);
 			float3 gradC_j = -psi * InvDensity * SpikyGradKernel(diff, dist2);
 			sum_grad_C2 += Length2(gradC_j);
@@ -231,7 +227,8 @@ void ComputeDensityAndPressure(int id, float3 pi, out float density, out float p
 		//kernel borders. The value may need to increase
 		//as the number of particles increase.
 		// e = 60.0f
-		float e = 30.0f;
+		// float e = 10.0f;
+		float e = Epsilon;
 		pressure = -C / (sum_grad_C2 + e);
 	}
 

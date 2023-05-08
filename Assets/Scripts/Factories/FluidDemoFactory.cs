@@ -1,6 +1,7 @@
 using Demo;
 using MeshVoxelizer.Scripts;
 using Shaders.DeathPlaneCulling;
+using SimulationObjects.FluidBoundaryObject;
 using UnityEngine;
 
 namespace Factories{

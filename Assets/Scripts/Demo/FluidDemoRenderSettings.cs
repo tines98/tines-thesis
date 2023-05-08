@@ -23,6 +23,7 @@ namespace Demo{
         public bool drawSimulationBounds;
         public bool drawBarChart;
         public GameObject floatingTextPrefab;
+        public float epsilon;
 
         public object Clone() => MemberwiseClone();
     }

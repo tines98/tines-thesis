@@ -7,7 +7,7 @@ using Utility;
 namespace SimulationObjects.FluidBoundaryObject{
     public class FluidBoundaryBox : FluidBoundaryObject
     {
-        [SerializeField] private Vector3 size;
+        public Vector3 size;
         private void Start()
         {
             FluidDemo = GetComponentInParent<FluidDemo>();

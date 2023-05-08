@@ -19,6 +19,6 @@ namespace Shaders.Split_Camera{
             material.SetFloat(SplitHeight, splitHeight);
         
             Graphics.Blit(src, dest, material);
-        }
+        }   
     }
 }

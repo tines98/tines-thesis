@@ -17,7 +17,7 @@ namespace SimulationObjects.FluidBoundaryObject{
             FluidDemo = GetComponentInParent<FluidDemo>();
             Assert.IsNotNull(FluidDemo);
             // ParticleSource = new ParticlesFromBounds(FluidBodyMeshDemo.Radius() * 2, OuterBounds(), InnerBounds());
-            var spacing = FluidDemo.Radius * 2f;
+            var spacing = FluidDemo.Radius;// * 2f;
             ParticleSource = new ParticlesFromList(spacing, CreateCylinderCup(spacing), Matrix4x4.identity);
             LoggingUtility.LogInfo($"FluidBoundaryCylinderCup {name} har a total of {ParticleSource.NumParticles} boundary particles!");
             Bounds = new Bounds(transform.position, 
@@ -27,12 +27,11 @@ namespace SimulationObjects.FluidBoundaryObject{
         }
 
         List<Vector3> CreateCylinderCup(float spacing){
-            spacing *= 0.5f;
             var cylinderCup = new List<Vector3>();
-            var halfHeight = height / 2f;
+            var halfHeight = (height / 2f) + spacing * 2f;
             cylinderCup.AddRange(CreateFloor(spacing, 
                                              radius, 
-                                             halfHeight+spacing));
+                                             halfHeight));
             cylinderCup.AddRange(CreateCylinder(spacing, 
                                                 radius, 
                                                 -halfHeight, 

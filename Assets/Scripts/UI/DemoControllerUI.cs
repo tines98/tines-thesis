@@ -32,7 +32,7 @@ namespace UI{
                 return;
             }
             // What the UI Text should show
-            var demoNumberText = $"Demo: {fluidDemoManager.currentDemoIndex}/{fluidDemoManager.DemoCount}";
+            var demoNumberText = $"Demo: {fluidDemoManager.CurrentDemoIndex}/{fluidDemoManager.DemoCount}";
             // Update UI Text if not correct
             if (demoNumberUI.text != demoNumberText)
                 demoNumberUI.text = demoNumberText;

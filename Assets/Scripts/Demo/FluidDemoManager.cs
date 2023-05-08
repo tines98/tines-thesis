@@ -15,7 +15,8 @@ namespace Demo{
         [SerializeField] private int barNotches = 5;
         [SerializeField] private ParticleSize particleSize;
         [SerializeField] private Material material;
-        public int currentDemoIndex;
+        
+        [NonSerialized] public int CurrentDemoIndex;
         private CameraResizer cameraResizer;
         [NonSerialized] public bool FinishedAllDemos;
 
@@ -27,22 +28,30 @@ namespace Demo{
         public int DemoCount => 
             fluidDemos.Count;
 
+        /// <summary>
+        /// Returns the current demo
+        /// </summary>
         private FluidDemo CurrentDemo => 
-            fluidDemos[currentDemoIndex % DemoCount];
+            fluidDemos[CurrentDemoIndex % DemoCount];
 
-        private Vector3 FirstDemo => 
-            DemoPosition(0);
+        /// <summary>
+        /// Returns the first demo's position
+        /// </summary>
+        private Vector3 FirstDemoPosition => DemoPosition(0);
 
-        private Vector3 LastDemo => 
-            DemoPosition(scaleModels.Count - 1);
-
-
-        private float CalculateCameraSize => 
-            (LastDemo - FirstDemo).magnitude / 2f;
+        /// <summary>
+        /// Returns the last demo's position
+        /// </summary>
+        private Vector3 LastDemoPosition => DemoPosition(scaleModels.Count - 1);
         
-        private Vector3 MidPoint => 
-            FirstDemo + (LastDemo - FirstDemo)/2f;
+        /// <summary>
+        /// Returns the mid point of the box formed by all demos combined
+        /// </summary>
+        private Vector3 MidPoint => FirstDemoPosition + (LastDemoPosition - FirstDemoPosition)/2f;
 
+        /// <summary>
+        /// Calculates the z-position the camera needs to line up the two projections
+        /// </summary>
         private float CameraDepth =>
             - simulationSize.z / 2f
             - mainCamera.orthographicSize / Mathf.Tan(cameraResizer.GetFOV() / 2f * Mathf.Deg2Rad);
@@ -51,7 +60,7 @@ namespace Demo{
         void Start(){
             mainCamera = Camera.main;
             var maxVolume = GetLargestVolume();
-            var barDiameter = CalculateBarSize(maxVolume);
+            var barDiameter = CalculateBarSize(Mathf.Ceil(maxVolume));
             barSize = new Vector3(barDiameter, 
                                   simulationSize.y / 2f, 
                                   barDiameter);
@@ -64,6 +73,9 @@ namespace Demo{
             PlaceCameraAtDemo();
         }
 
+        /// <summary>
+        /// Creates the plane at the back of the simulations
+        /// </summary>
         void CreateBackPlane(){
             var plane = GameObject.CreatePrimitive(PrimitiveType.Plane);
             plane.GetComponent<MeshRenderer>().sharedMaterial = renderSettings.cylinderMaterial;
@@ -80,8 +92,7 @@ namespace Demo{
         }
 
         float CalculateBarSize(float volume) => Mathf.Sqrt(volume / 
-                                                           (Mathf.PI * simulationSize.y / 2f))
-                                              * 2f;
+                                                           (Mathf.PI * simulationSize.y / 2f)) * 2f;
 
         Mesh GetMesh(ScaleModel scaleModel) => 
             scaleModel.prefab.GetComponent<MeshFilter>() 
@@ -108,8 +119,8 @@ namespace Demo{
         public void NextDemo(){
             if (FinishedAllDemos) return;
             UpdateDeathPlane(0f);
-            currentDemoIndex++;
-            if (currentDemoIndex == scaleModels.Count) AllDemosComplete();
+            CurrentDemoIndex++;
+            if (CurrentDemoIndex == scaleModels.Count) AllDemosComplete();
             else PlaceCameraAtDemo();
         }
         
@@ -166,14 +177,22 @@ namespace Demo{
                                                  * simulationSize.x 
                                                  * index;
 
+        /// <summary>
+        /// Places the camera in front of the current demo
+        /// </summary>
         private void PlaceCameraAtDemo(){
-            var demoPos = DemoPosition(currentDemoIndex);
+            var demoPos = DemoPosition(CurrentDemoIndex);
             cameraResizer.ResizeTo(simulationSize.y/2f);
             // Places the camera so perspective and ortho camera line up at simulation
             MoveCamera(demoPos, CameraDepth);
             cameraResizer.MoveSplitPoint(barSize.y,simulationSize.y);
         }
 
+        /// <summary>
+        /// Moves the camera to the specified position
+        /// </summary>
+        /// <param name="xy">xy position to place the camera at</param>
+        /// <param name="z">depth/z position to place the camera at</param>
         private void MoveCamera(Vector2 xy, float z) => 
             mainCamera.transform.position = new Vector3(xy.x, xy.y, z);
 
@@ -185,18 +204,14 @@ namespace Demo{
             return Quaternion.identity;
         }
 
-        private Vector3 GetScaleModelPosition(ScaleModel scaleModel, Vector3 demoPos, Quaternion rotation){
-            var simulationBounds = new Bounds(Vector3.zero, simulationSize);
-            var position = demoPos 
-                         + FluidDemoFactory.PlaceModel(scaleModel.prefab, 
-                                                       scaleModel.scale, 
-                                                       simulationBounds,
-                                                       rotation, 
-                                                       ParticleSizeUtility.ToRadius(particleSize));
-            return position;
-        }
-        
-        
+        private Vector3 GetScaleModelPosition(ScaleModel scaleModel, Vector3 demoPos, Quaternion rotation) => 
+            demoPos + FluidDemoFactory.PlaceModel(scaleModel.prefab, 
+                                                  scaleModel.scale, 
+                                                  new Bounds(Vector3.zero, simulationSize),
+                                                  rotation, 
+                                                  ParticleSizeUtility.ToRadius(particleSize));
+
+
         // GIZMOS
         private void OnDrawGizmos(){
             if (hasCreated) return;
@@ -208,11 +223,11 @@ namespace Demo{
                 Gizmos.color = Color.yellow;
                 DrawSimulationBounds(new Bounds(demoPos, simulationSize));
         
-                // Draw cylinder
-                Gizmos.color = Color.magenta;
-                DrawBarCylinderGizmo(new Bounds(demoPos 
-                                              + Vector3.up * (barSize.y-simulationSize.y)/2f, 
-                                                barSize));
+                // // Draw cylinder
+                // Gizmos.color = Color.magenta;
+                // DrawBarCylinderGizmo(new Bounds(demoPos 
+                //                               + Vector3.up * (barSize.y-simulationSize.y)/2f, 
+                //                                 barSize));
                 Gizmos.color = Color.green;
                 DrawScaleModelGizmos(scaleModel, demoPos);
             });

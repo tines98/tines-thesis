@@ -52,22 +52,21 @@ Shader "Hidden/SplitCamera" {
                     return tex2D(_PerspectiveTex, uv);
                 }
                 // Blur
-                if (abs(frag_height)<_BlurZone){
-                    const half bottom = _SplitHeight-_BlurZone;
-                    const half t = (uv.y - bottom) / _BlurZone*2.0;
-                    return tex2D(_OrthographicTex,  uv) * (1-t)
-                         + tex2D(_PerspectiveTex, uv) * t;
-                }
+                // if (abs(frag_height)<_BlurZone){
+                //     const half bottom = _SplitHeight-_BlurZone;
+                //     const half t = (uv.y - bottom) / _BlurZone*2.0;
+                //     return tex2D(_OrthographicTex,  uv) * (1-t)
+                //          + tex2D(_PerspectiveTex, uv) * t;
+                // }
                 //Orthographic
                 return tex2D(_OrthographicTex, uv);
             }
 
             fixed4 frag (v2f i) : SV_Target {
                 fixed4 col = split_camera(i.uv);
-                const float4 background = tex2D(_MainTex, i .uv);
-                
-                return col * col.a
-                     + background * (1-col.a);
+                const float4 background = tex2D(_MainTex, i.uv);
+                // return col;
+                return col;
             }
             ENDCG
         }
