@@ -1,0 +1,33 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+RWStructuredBuffer<float> volumes;
+RWStructuredBuffer<int> triangles;
+RWStructuredBuffer<float3> vertices;
+float3 scale;
+
+float TriangleVolume(float3 p1, float3 p2, float3 p3){
+    float v321 = p3.x*p2.y*p1.z;
+    float v231 = p2.x*p3.y*p1.z;
+    float v312 = p3.x*p1.y*p2.z;
+    float v132 = p1.x*p3.y*p2.z;
+    float v213 = p2.x*p1.y*p3.z;
+    float v123 = p1.x*p2.y*p3.z;
+    return (1.0f/6.0f)*(-v321 + v231 + v312 - v132 - v213 + v123);
+}
+
+[numthreads(128,1,1)]
+void CSMain (uint3 id : SV_DispatchThreadID){
+    // TODO: insert actual code here!
+    int idx = id.x * 3;
+    float3 p1 = vertices[triangles[idx]]     * scale;
+    float3 p2 = vertices[triangles[idx + 1]] * scale;
+    float3 p3 = vertices[triangles[idx + 2]] * scale;
+
+    // volumes[id.x] = p1.x;//TriangleVolume(p1,p2,p3);
+    // volumes[id.x] = p1.y;//TriangleVolume(p1,p2,p3);
+    // volumes[id.x] = p1.z;//TriangleVolume(p1,p2,p3);
+    volumes[id.x] = TriangleVolume(p1,p2,p3);
+}

@@ -13,7 +13,7 @@ namespace SimulationObjects.FluidBoundaryObject{
             FluidDemo = GetComponentInParent<FluidDemo>();
             Assert.IsNotNull(FluidDemo);
             ParticleSource = new ParticlesFromBounds(FluidDemo.Radius * 2, OuterBounds(), InnerBounds());
-            LoggingUtility.LogInfo($"FluidBoundaryBox {name} har a total of {ParticleSource.NumParticles} boundary particles!");
+            // LoggingUtility.LogInfo($"FluidBoundaryBox {name} har a total of {ParticleSource.NumParticles} boundary particles!");
         }
 
         /// <returns>The bounds of the box</returns>

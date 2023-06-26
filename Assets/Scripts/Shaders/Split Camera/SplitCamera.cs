@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Profiling;
 
 namespace Shaders.Split_Camera{
     public class SplitCamera : MonoBehaviour{
@@ -13,12 +14,14 @@ namespace Shaders.Split_Camera{
         private static readonly int SplitHeight = Shader.PropertyToID("_SplitHeight");
 
         private void OnRenderImage(RenderTexture src, RenderTexture dest){
+            Profiler.BeginSample("Split Camera");
             material.SetTexture(PerspectiveTex, perspectiveTexture);
             material.SetTexture(OrthographicTex, orthographicTexture);
             material.SetTexture(MainTex, src);
             material.SetFloat(SplitHeight, splitHeight);
         
             Graphics.Blit(src, dest, material);
+            Profiler.EndSample();
         }   
     }
 }

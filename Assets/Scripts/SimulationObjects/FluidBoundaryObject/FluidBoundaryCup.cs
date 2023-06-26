@@ -15,7 +15,7 @@ namespace SimulationObjects.FluidBoundaryObject{
             // ParticleSource = new ParticlesFromBounds(FluidBodyMeshDemo.Radius() * 2, OuterBounds(), InnerBounds());
             var spacing = FluidDemo.Radius * 2;
             ParticleSource = new ParticlesFromList(spacing, CreateCup(spacing), Matrix4x4.identity);
-            LoggingUtility.LogInfo($"FluidBoundaryCup {name} har a total of {ParticleSource.NumParticles} boundary particles!");
+            // LoggingUtility.LogInfo($"FluidBoundaryCup {name} har a total of {ParticleSource.NumParticles} boundary particles!");
         }
 
         private List<Vector3> CreateCup(float spacing){

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Factories;
 using TMPro;
@@ -24,6 +25,7 @@ namespace Demo{
         private bool hasCreated;
         private Camera mainCamera;
         private float largestVolume;
+        [SerializeField] private bool useRealVolume;
 
         public int DemoCount => 
             fluidDemos.Count;
@@ -59,11 +61,13 @@ namespace Demo{
         /// Start is called before the first frame update
         void Start(){
             mainCamera = Camera.main;
-            var maxVolume = GetLargestVolume();
-            var barDiameter = CalculateBarSize(Mathf.Ceil(maxVolume));
-            barSize = new Vector3(barDiameter, 
-                                  simulationSize.y / 2f, 
-                                  barDiameter);
+            if (useRealVolume){
+                var maxVolume = GetLargestVolume();
+                var barDiameter = CalculateBarSize(maxVolume);
+                barSize = new Vector3(barDiameter, 
+                                      simulationSize.y / 2f, 
+                                      barDiameter);
+            }
             renderSettings.cylinderMaterial
                           .mainTextureScale = new Vector2(1,barNotches);
             CreateBackPlane();
@@ -98,9 +102,14 @@ namespace Demo{
             scaleModel.prefab.GetComponent<MeshFilter>() 
                 ? scaleModel.prefab.GetComponent<MeshFilter>().sharedMesh 
                 : scaleModel.prefab.GetComponentInChildren<MeshFilter>().sharedMesh;
-        float GetLargestVolume()  => scaleModels.Max(e =>
-            MeshVolumeCalculator.VolumeOfMesh(GetMesh(e),
-                                              e.scale));
+
+        float GetLargestVolume(){
+            scaleModels.ForEach(scaleModel => {
+                scaleModel.realVolume = MeshVolumeCalculator.GetVolumeCS(GetMesh(scaleModel),
+                                                                          scaleModel.scale);
+            });
+            return scaleModels.Max(e => e.realVolume);   
+        }
 
 
         /// <summary>
@@ -111,6 +120,8 @@ namespace Demo{
             var index = 0;
             scaleModels.ForEach(_ => fluidDemos.Add(CreateDemo(index++)));
             hasCreated = true;
+            if (useRealVolume)
+                scaleModels.ForEach(e => Debug.Log($"realVolume of {e.prefab.name} is {e.realVolume}"));
         }
         
         public void UpdateDeathPlane(float value) => 
@@ -134,9 +145,9 @@ namespace Demo{
             Debug.Log("All demos complete");
             FinishedAllDemos = true;
             cameraResizer.ResizeTo(simulationSize.y/2f);
-            fluidDemos.ForEach(a => a.CreateText());
+            if (useRealVolume)
+                fluidDemos.ForEach(a => a.CreateText());
             CreateText();
-            // cameraResizer.MoveSplitPoint(.5f);
             MoveCamera(MidPoint, CameraDepth);
         }
 
@@ -146,7 +157,7 @@ namespace Demo{
             var textMeshPro = text.GetComponent<TextMeshPro>();
             var radius = barSize.x / 2f;
             var realVolume = Mathf.PI * radius * radius * barSize.y;
-            textMeshPro.text = Math.Round(realVolume, 2).ToString();
+            textMeshPro.text = Math.Round(realVolume, 2).ToString(CultureInfo.InvariantCulture);
         }
 
 
@@ -199,7 +210,7 @@ namespace Demo{
         private Quaternion GetScaleModelRotation(ScaleModel scaleModel){
             if (scaleModel.shouldRotate)
                 return FluidDemoFactory.RotateModel(scaleModel.prefab, scaleModel.scale);
-            if (scaleModel.forceRotate)
+            if (scaleModel.setUpAndForwardVectors)
                 return Quaternion.LookRotation(scaleModel.forward, scaleModel.up);
             return Quaternion.identity;
         }
@@ -223,11 +234,13 @@ namespace Demo{
                 Gizmos.color = Color.yellow;
                 DrawSimulationBounds(new Bounds(demoPos, simulationSize));
         
-                // // Draw cylinder
-                // Gizmos.color = Color.magenta;
-                // DrawBarCylinderGizmo(new Bounds(demoPos 
-                //                               + Vector3.up * (barSize.y-simulationSize.y)/2f, 
-                //                                 barSize));
+                // Draw cylinder
+                if (!useRealVolume){
+                    Gizmos.color = Color.magenta;
+                    DrawBarCylinderGizmo(new Bounds(demoPos 
+                                                  + Vector3.up * (barSize.y-simulationSize.y)/2f, 
+                                                    barSize));
+                }
                 Gizmos.color = Color.green;
                 DrawScaleModelGizmos(scaleModel, demoPos);
             });

@@ -1,0 +1,78 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel point_sprite
+
+
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+RWTexture2D<float> render_texture;
+StructuredBuffer<float4> positions;
+RWStructuredBuffer<float4> ss_positions;
+
+float2 texture_resolution;
+float4x4 v_matrix;
+float4x4 p_matrix;
+float radius;
+
+[numthreads(128,1,1)]
+void point_sprite (uint3 id : SV_DispatchThreadID)
+{
+    const float4 position = float4(positions[id.x].xyz,1);
+    const float4 size = float4(radius,radius,radius,0);
+    const float4 clip_space_position = mul(p_matrix, mul(v_matrix, position));
+    const float4 clip_space_size = mul(p_matrix, mul(v_matrix, size));
+    const float4 device_position = float4(
+        clip_space_position.x/clip_space_position.w,
+        clip_space_position.y/clip_space_position.w,
+        clip_space_position.z/clip_space_position.w,
+        clip_space_position.w
+    );
+    const float4 device_size = float4(
+        clip_space_size.x/clip_space_size.w,
+        clip_space_size.y/clip_space_size.w,
+        clip_space_size.z/clip_space_size.w,
+        clip_space_size.w
+    );
+    float2 uv = 0.5 + device_position.xy * 0.5;
+    ss_positions[id.x] = float4(uv,device_size.x,clip_space_position.w);
+}
+//
+// Texture2D<float> render_texture_read;
+// float blur_distance;
+//
+// float sample_depth(float2 uv){
+//     return render_texture_read[uv];
+// }
+//
+// float box_blur(float2 uv, float dist){
+//     float3 a = float3(dist,0,-dist);
+//
+//     
+//     const float2 ct = uv + a.yx;
+//     const float2 rt = uv + a.xx;
+//     const float2 rc = uv + a.xy;
+//     const float2 rb = uv + a.xz;
+//     const float2 cb = uv + a.yz;
+//     const float2 lb = uv + a.zz;
+//     const float2 lc = uv + a.zy;
+//     const float2 lt = uv + a.zx;
+//
+//     const float sum = sample_depth(uv)
+//                     + sample_depth(ct)
+//                     + sample_depth(rt)
+//                     + sample_depth(rc)
+//                     + sample_depth(rb)
+//                     + sample_depth(cb)
+//                     + sample_depth(lb)
+//                     + sample_depth(lc)
+//                     + sample_depth(lt);
+//     
+//     return sum / 9.0;
+// }
+// #pragma kernel blur
+// [numthreads(128,1,1)]
+// void blur(uint3 id : SV_DispatchThreadID){
+//     // Get Pixel position
+//     const float2 uv = id.xy/texture_resolution;
+//
+//     render_texture[uv] = box_blur(uv, blur_distance);
+// }

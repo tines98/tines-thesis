@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.44657898, g: 0.4964133, b: 0.5748178, a: 1}
+  m_IndirectSpecularColor: {r: 0.44658792, g: 0.49642283, b: 0.5748252, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -225,6 +225,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: UI
       objectReference: {fileID: 0}
+    - target: {fileID: 9028637445809610260, guid: aac4a033795015e4dba45ff6bc84f485, type: 3}
+      propertyPath: m_TargetDisplay
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 9028637445809610263, guid: aac4a033795015e4dba45ff6bc84f485, type: 3}
       propertyPath: m_Pivot.x
       value: 0
@@ -311,90 +315,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: aac4a033795015e4dba45ff6bc84f485, type: 3}
---- !u!1 &1676012244
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1676012247}
-  - component: {fileID: 1676012246}
-  - component: {fileID: 1676012245}
-  m_Layer: 0
-  m_Name: Camera
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!81 &1676012245
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1676012244}
-  m_Enabled: 1
---- !u!20 &1676012246
-Camera:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1676012244}
-  m_Enabled: 1
-  serializedVersion: 2
-  m_ClearFlags: 1
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
-  m_projectionMatrixMode: 1
-  m_GateFitMode: 2
-  m_FOVAxisMode: 0
-  m_SensorSize: {x: 36, y: 24}
-  m_LensShift: {x: 0, y: 0}
-  m_FocalLength: 50
-  m_NormalizedViewPortRect:
-    serializedVersion: 2
-    x: 0
-    y: 0
-    width: 1
-    height: 1
-  near clip plane: 0.3
-  far clip plane: 1000
-  field of view: 60
-  orthographic: 0
-  orthographic size: 5
-  m_Depth: 0
-  m_CullingMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_RenderingPath: -1
-  m_TargetTexture: {fileID: 0}
-  m_TargetDisplay: 1
-  m_TargetEye: 3
-  m_HDR: 1
-  m_AllowMSAA: 1
-  m_AllowDynamicResolution: 0
-  m_ForceIntoRT: 0
-  m_OcclusionCulling: 1
-  m_StereoConvergence: 10
-  m_StereoSeparation: 0.022
---- !u!4 &1676012247
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1676012244}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -20.740381}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 5
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1977994282
 GameObject:
   m_ObjectHideFlags: 0
@@ -482,7 +402,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1977994282}
   m_LocalRotation: {x: 0.40821788, y: -0.23456968, z: 0.10938163, w: 0.8754261}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: -13.32, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -519,26 +439,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   scaleModels:
-  - prefab: {fileID: 919132149155446097, guid: 13e8527ef10e6679d8930b8ce0445990, type: 3}
-    scale: {x: 5, y: 5, z: 5}
-    shouldRotate: 0
-    forceRotate: 0
-    up: {x: 0, y: 1, z: 0}
-    forward: {x: 0, y: 0, z: -1}
-    Texture: {fileID: 0}
-  - prefab: {fileID: 919132149155446097, guid: 13e8527ef10e6679d8930b8ce0445990, type: 3}
-    scale: {x: 5.5, y: 5.5, z: 5.5}
-    shouldRotate: 0
-    forceRotate: 0
-    up: {x: 0, y: 1, z: 0}
-    forward: {x: 0, y: 0, z: -1}
-    Texture: {fileID: 0}
-  - prefab: {fileID: 919132149155446097, guid: 13e8527ef10e6679d8930b8ce0445990, type: 3}
-    scale: {x: 6, y: 6, z: 6}
-    shouldRotate: 0
-    forceRotate: 0
-    up: {x: 0, y: 1, z: 0}
-    forward: {x: 0, y: 0, z: -1}
+  - prefab: {fileID: 1164147744166238430, guid: dfeec57ddd4252c79b94987d6d9b754b, type: 3}
+    scale: {x: 2, y: 2, z: 2}
+    shouldRotate: 1
+    setUpAndForwardVectors: 0
+    up: {x: -1, y: 0, z: 0}
+    forward: {x: 0, y: 1, z: 0}
     Texture: {fileID: 0}
   renderSettings:
     fluidParticleMaterial: {fileID: 2100000, guid: 12d189c057effd74eb9f43721b3ed217, type: 2}
@@ -554,12 +460,15 @@ MonoBehaviour:
     drawSimulationBounds: 1
     drawBarChart: 1
     floatingTextPrefab: {fileID: 2288759993300053628, guid: db8603c642cddaf0b987e28dd54f5849, type: 3}
-    epsilon: 60
-  simulationSize: {x: 5, y: 11, z: 5}
-  barSize: {x: 5, y: 0.5, z: 5}
+    overrideEpsilon: 1
+    epsilon: 26
+    deltaTime: 0.016666668
+  simulationSize: {x: 4, y: 12, z: 4}
+  barSize: {x: 0.1, y: 0.1, z: 0.1}
   barNotches: 10
-  particleSize: 1
+  particleSize: 2
   material: {fileID: 2100000, guid: 9d66bddb5d7ee84158188e75fbfcbe80, type: 2}
+  useRealVolume: 1
 --- !u!4 &2005404775
 Transform:
   m_ObjectHideFlags: 0
@@ -582,18 +491,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 1510455239549120103, guid: 48aa54a339cab10eca8ae39abf0506cd, type: 3}
-      propertyPath: m_ClearFlags
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4334206456418738939, guid: 48aa54a339cab10eca8ae39abf0506cd, type: 3}
-      propertyPath: m_ClearFlags
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4334206456418738939, guid: 48aa54a339cab10eca8ae39abf0506cd, type: 3}
-      propertyPath: m_OcclusionCulling
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 5531723761143829045, guid: 48aa54a339cab10eca8ae39abf0506cd, type: 3}
       propertyPath: m_RootOrder
       value: 2

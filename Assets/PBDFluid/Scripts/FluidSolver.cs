@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+using UnityEngine.Profiling;
 
 namespace PBDFluid.Scripts
 {
@@ -55,6 +56,7 @@ namespace PBDFluid.Scripts
 
         public void StepPhysics(float dt, Vector3 deathPlanePosition, Vector3 deathPlaneSize, float epsilon){
             if (dt <= 0.0) return;
+            Profiler.BeginSample("Solver Step");
             if (SolverIterations <= 0 || ConstraintIterations <= 0) return;
 
             dt /= SolverIterations;
@@ -97,6 +99,7 @@ namespace PBDFluid.Scripts
                 SolveViscosity();
                 UpdatePositions();
             }
+            Profiler.EndSample();
         }
 
         private void PredictPositions(float dt)

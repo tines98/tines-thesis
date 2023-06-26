@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+using UnityEngine.Profiling;
 using UnityEngine.Rendering;
 
 namespace PBDFluid.Scripts
@@ -134,7 +135,7 @@ namespace PBDFluid.Scripts
         /// </summary>
         public void FillVolume(FluidBody body, GridHash grid, SmoothingKernel kernel)
         {
-
+            Profiler.BeginSample("Volume Fill");
             int computeKernel = m_shader.FindKernel("ComputeVolume");
 
             m_shader.SetFloat("VolumeScale", PixelSize);
@@ -157,7 +158,7 @@ namespace PBDFluid.Scripts
             m_shader.SetTexture(computeKernel, "SDF", SDF);
 
             m_shader.Dispatch(computeKernel, Groups.x, Groups.y, Groups.z);
-
+            Profiler.EndSample();
         }
 
     }

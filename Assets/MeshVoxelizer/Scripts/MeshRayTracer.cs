@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
+using UnityEngine.Profiling;
 
 namespace MeshVoxelizer.Scripts
 {
@@ -50,33 +52,22 @@ namespace MeshVoxelizer.Scripts
             Nodes = new List<AABBNode>((int)(NumFaces * 1.5));
             Faces = new int[NumFaces];
             FaceBounds = new List<Box3>();
-
+			Profiler.BeginSample("AABB tree creation");
             Build();
+            Profiler.EndSample();
         }
 
-        public List<Box3> GetBounds(int level = -1)
-        {
-            List<Box3> bounds = new List<Box3>();
+        public List<Box3> GetBounds(int level = -1) => 
+	        (from node in Nodes where node.Level == level || level == -1 select node.Bounds).ToList();
 
-            for (int i = 0; i < Nodes.Count; i++)
-            {
-                if (Nodes[i].Level == level || level == -1)
-                    bounds.Add(Nodes[i].Bounds);
-            }
-
-            return bounds;
-        }
-
-        private void Build()
-        {
-
-            MaxDepth = 0;
+        private void Build(){
+	        MaxDepth = 0;
             InnerNodes = 0;
             LeafNodes = 0;
             CurrentDepth = 0;
             FaceBounds.Clear();
 
-            for (int i = 0; i < NumFaces; i++)
+            for (var i = 0; i < NumFaces; i++)
             {
                 Box3 top = CalculateFaceBounds(i);
 

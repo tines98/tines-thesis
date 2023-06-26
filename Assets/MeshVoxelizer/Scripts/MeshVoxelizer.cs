@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Profiling;
 
 namespace MeshVoxelizer.Scripts {
 	public class MeshVoxelizer {
@@ -36,7 +37,7 @@ namespace MeshVoxelizer.Scripts {
 	        var offset = new Vector3(0.5f/Width, 0.5f/Height, 0.5f/Depth);
 
             var eps = 1e-7f * extents.z;
-
+			Profiler.BeginSample("Voxelization Tree Tracing");
             for (var x = 0; x < Width; ++x)
 	        {
 		        for (var y = 0; y < Height; ++y)
@@ -75,7 +76,7 @@ namespace MeshVoxelizer.Scripts {
 			        }
 		        }
 	        }
-	
+			Profiler.EndSample();
             //end
         }
 

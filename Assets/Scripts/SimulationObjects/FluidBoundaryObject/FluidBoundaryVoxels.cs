@@ -30,10 +30,10 @@ namespace SimulationObjects.FluidBoundaryObject{
             voxels = fluidContainerizer.ExteriorVoxels;
             var particles = new List<Vector3>(voxels.Count);
             voxels.ForEach(voxel => particles.Add(voxel.Center));
-            ParticleSource = new ParticlesFromList(FluidDemo.Radius, particles, transform.localToWorldMatrix);
+            ParticleSource = new ParticlesFromList(FluidDemo.Radius, particles, Matrix4x4.identity); //transform.localToWorldMatrix);
             ParticleSource.CreateParticles();
         
-            LoggingUtility.LogInfo($"FluidBoundaryVoxels {name} har a total of {ParticleSource.NumParticles} boundary particles!");
+            // LoggingUtility.LogInfo($"FluidBoundaryVoxels {name} har a total of {ParticleSource.NumParticles} boundary particles!");
             // voxelizerDemo.HideVoxelizedMesh();
         }
 
@@ -44,11 +44,10 @@ namespace SimulationObjects.FluidBoundaryObject{
 
         private void OnDrawGizmos(){
             Gizmos.color = Color.red;
-            if (drawGizmo) DrawBoundaryVoxels(transform.localToWorldMatrix);
+            if (drawGizmo) DrawBoundaryVoxels(Matrix4x4.identity);
         }
     
-        private void DrawBoundaryVoxels(Matrix4x4 trs) => voxels.ForEach(voxel => 
-            Gizmos.DrawWireCube(trs.MultiplyPoint(voxel.Center), 
-                                trs.MultiplyVector(voxel.Size)));
+        private void DrawBoundaryVoxels(Matrix4x4 trs) => 
+            voxels.ForEach(voxel => Gizmos.DrawWireCube(voxel.Center, voxel.Size));
     }
 }

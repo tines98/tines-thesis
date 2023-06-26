@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Factories;
@@ -8,6 +9,7 @@ using SimulationObjects.FluidBoundaryObject;
 using SimulationObjects.FluidObject;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Profiling;
 using Utility;
 
 namespace Demo{
@@ -22,6 +24,7 @@ namespace Demo{
         [Header("Run")] 
         [SerializeField] private bool run;
         [SerializeField] private bool stopDemo;
+        public float realVolume;
         
         public FluidDemoRenderSettings renderSettings = new();
         
@@ -41,10 +44,6 @@ namespace Demo{
         // Booleans
         private bool hasStarted;
         private bool wasError;
-
-        public bool overrideEpsilon;
-        [Range(1,120)]
-        public float epsilon = 60f;
 
         public String VolumeText;
         
@@ -90,6 +89,7 @@ namespace Demo{
             }
 
             hasStarted = true;
+            StartCoroutine(DemoStep());
         }
 
 
@@ -162,16 +162,14 @@ namespace Demo{
         private void GetFluidObjects() => 
             fluidObjects = GetComponentsInChildren<FluidObject>();
 
-        public void CreateText(){
+        public void CreateText(){    
             var pos = transform.position + SimulationBounds.min + Vector3.right * 1.5f;
             var text = Instantiate(renderSettings.floatingTextPrefab, pos, Quaternion.identity, transform);
             var textMeshPro = text.GetComponent<TextMeshPro>();
-            var realVolume = fluidContainerizer.voxelizerDemo.CalculateRealVolume();
             textMeshPro.text = Math.Round(realVolume, 2).ToString();
         }
 
-        
-        
+
         private void Update(){
             if (wasError) return;
             if (!hasStarted){
@@ -179,7 +177,7 @@ namespace Demo{
                 return;
             }
             
-            if (run) DemoStep();
+            // if (run) DemoStep();
 
             volume.Hide = !renderSettings.drawFluidVolume;
 
@@ -198,6 +196,7 @@ namespace Demo{
             boundary?.Dispose();
             renderSettings.drawBoundaryParticles = false;
             stopDemo = false;
+            StopCoroutine(DemoStep());
         }
 
         private float Epsilon => ParticleSize switch{
@@ -207,24 +206,26 @@ namespace Demo{
             _ => throw new ArgumentOutOfRangeException()
         };
 
+        private bool isRun => run;
 
         /// <summary>
         /// Updates the solver and volume
         /// </summary>
-        private void DemoStep(){
-            
-            UpdateDeathPlane();
-            // var dt = Mathf.Clamp(Time.deltaTime, 1/65f, 1/50f);
-            var dt = 1 / 60f;
-            solver.StepPhysics(dt,
-                               DeathPlane.transform.position,
-                               DeathPlane.size,
-                               overrideEpsilon 
-                                   ? epsilon 
-                                   : Epsilon);
-            volume.FillVolume(fluid,
-                              solver.Hash,
-                              solver.Kernel);
+        private IEnumerator DemoStep(){ 
+            while (run){
+                UpdateDeathPlane();
+                solver.StepPhysics(renderSettings.deltaTime,
+                                   DeathPlane.transform.position,
+                                   DeathPlane.size,
+                                   renderSettings.overrideEpsilon 
+                                       ? renderSettings.epsilon 
+                                       : Epsilon);
+                volume.FillVolume(fluid,
+                                  solver.Hash,
+                                  solver.Kernel);
+
+                yield return new WaitForSeconds(renderSettings.deltaTime);
+            }
         }
         
 

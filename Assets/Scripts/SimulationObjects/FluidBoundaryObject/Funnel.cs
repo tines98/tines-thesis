@@ -14,7 +14,7 @@ namespace SimulationObjects.FluidBoundaryObject{
             FluidDemo = GetComponentInParent<FluidDemo>();
             var spacing = FluidDemo.Radius * 2;
             var particles = ParticleFunnel(spacing);
-            Debug.Log($"funnel has {particles.Count}");
+            // Debug.Log($"funnel has {particles.Count}");
             ParticleSource = new ParticlesFromList(spacing, particles, Matrix4x4.identity);
         }
 

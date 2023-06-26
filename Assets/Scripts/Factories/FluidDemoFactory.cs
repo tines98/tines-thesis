@@ -36,6 +36,7 @@ namespace Factories{
             demo.BarChartBounds = new Bounds(new Vector3(0, (barSize.y-simulationSize.y)/2f, 0), barSize);
             // Set render settings
             demo.renderSettings = (FluidDemoRenderSettings) renderSettings.Clone();
+            demo.realVolume = scaleModel.realVolume;
 
             var realPrefab = GetMeshFilterContainingGameObject(scaleModel.prefab);
             realPrefab.name = scaleModel.prefab.name;
@@ -45,7 +46,7 @@ namespace Factories{
             if (scaleModel.shouldRotate){
                 rotation = RotateModel(realPrefab, scaleModel.scale);
             }
-            else if (scaleModel.forceRotate){
+            else if (scaleModel.setUpAndForwardVectors){
                 rotation = Quaternion.LookRotation(scaleModel.forward, scaleModel.up);
             }
             else{
@@ -67,7 +68,9 @@ namespace Factories{
                             rotation, 
                             scaleModel.scale,
                             material,
-                            texture);
+                            texture, 
+                            particleSize, 
+                            scaleModel.realVolume);
             return demo;
         }
 
@@ -178,7 +181,7 @@ namespace Factories{
         /// <param name="rotation">Rotation to apply to the model</param>
         /// <param name="scale">Scale to apply to the model</param>
         /// <param name="material">Material to apply to the model</param>
-        private static void CreateVoxelizer(Transform parent, GameObject prefab, Vector3 position, Quaternion rotation, Vector3 scale, Material material, Texture texture){
+        private static void CreateVoxelizer(Transform parent, GameObject prefab, Vector3 position, Quaternion rotation, Vector3 scale, Material material, Texture texture, ParticleSize particleSize, float realVolume){
             var voxelizer = new GameObject("voxelizer"){
                 transform ={parent = parent}
             };
@@ -193,9 +196,11 @@ namespace Factories{
             if (texture != null) meshRenderer.material.mainTexture = texture;
             
             voxelizerGameObject.AddComponent<DeathPlaneCulling>();
-            // var spinner = voxelizerGameObject.AddComponent<Spinner>();
-            // spinner.spinSpeed = 75f;
-            voxelizer.AddComponent<VoxelizerDemo>();
+            // voxelizer.AddComponent<VoxelizerDemo>();
+            var voxelizedMesh = voxelizerGameObject.AddComponent<VoxelizedMesh>();
+            voxelizedMesh._halfSize = ParticleSizeUtility.ToRadius(particleSize);
+            voxelizedMesh.realVolume = realVolume;
+            voxelizedMesh.StartVoxelization();
         }
     }
 }

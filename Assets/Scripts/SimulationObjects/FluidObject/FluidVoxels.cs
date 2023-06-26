@@ -9,8 +9,9 @@ using Utility;
 namespace SimulationObjects.FluidObject{
     public class FluidVoxels : FluidObject{
         [SerializeField] private bool drawGizmo;
+        [SerializeField] private float drawGizmoRadius;
         private FluidContainerizer fluidContainerizer;
-        private VoxelizerDemo voxelizerDemo;
+        private VoxelizedMesh voxelizerDemo;
         private List<Box3> voxels;
         private bool start;
     
@@ -22,8 +23,8 @@ namespace SimulationObjects.FluidObject{
             FluidDemo = GetComponentInParent<FluidDemo>();
             Assert.IsNotNull(FluidDemo);
         
-            voxelizerDemo = GetComponentInParent<VoxelizerDemo>();
-            if (voxelizerDemo == null) voxelizerDemo = GetComponent<VoxelizerDemo>();
+            voxelizerDemo = GetComponentInParent<VoxelizedMesh>();
+            if (voxelizerDemo == null) voxelizerDemo = GetComponent<VoxelizedMesh>();
             Assert.IsNotNull(voxelizerDemo);
         }
 
@@ -34,11 +35,12 @@ namespace SimulationObjects.FluidObject{
             voxels = fluidContainerizer.InteriorVoxels;
             ParticleSource = new ParticlesFromVoxels(FluidDemo.Radius * 2,
                                                      voxels,
-                                                     voxelizerDemo.CalculateRealVolume(),
-                                                     transform.localToWorldMatrix);
+                                                     voxelizerDemo.realVolume,
+                                                     voxelizerDemo.realVolume > 0f, 
+                                                     Matrix4x4.identity);//transform.localToWorldMatrix);
             ParticleSource.CreateParticles();
         
-            LoggingUtility.LogInfo($"FluidVoxels {name} har a total of {ParticleSource.NumParticles} fluid particles!");
+            // LoggingUtility.LogInfo($"FluidVoxels {name} har a total of {ParticleSource.NumParticles} fluid particles!");
         }
     
         private void Update(){
@@ -48,11 +50,11 @@ namespace SimulationObjects.FluidObject{
 
         private void OnDrawGizmos(){
             Gizmos.color = Color.blue;
-            if (drawGizmo) DrawFluidVoxelsGizmo(transform.localToWorldMatrix);
+            if (drawGizmo) DrawFluidVoxelsGizmo(Matrix4x4.identity);
+            // if (!drawGizmo) DrawFluidVoxelsGizmo2(Matrix4x4.identity);
         }
     
-        private void DrawFluidVoxelsGizmo(Matrix4x4 trs) => voxels.ForEach(voxel => 
-            Gizmos.DrawWireCube(trs.MultiplyPoint(voxel.Center), 
-                                trs.MultiplyVector(voxel.Size)));
+        private void DrawFluidVoxelsGizmo(Matrix4x4 trs) => 
+            voxels.ForEach(voxel => Gizmos.DrawWireSphere(voxel.Center, drawGizmoRadius));
     }
 }

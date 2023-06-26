@@ -23,7 +23,11 @@ namespace Demo{
         public bool drawSimulationBounds;
         public bool drawBarChart;
         public GameObject floatingTextPrefab;
+        public bool overrideEpsilon;
+        [Range(1,300)]
         public float epsilon;
+
+        public float deltaTime = 1f / 60f;
 
         public object Clone() => MemberwiseClone();
     }

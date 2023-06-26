@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: eba98044b88f402fb4733a8cd1a5089f
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - _meshFilter: {instanceID: 0}
+  - _meshCollider: {instanceID: 0}
+  - _gridPointMaterial: {instanceID: 0}
+  - _blocksMaterial: {instanceID: 0}
+  - _voxelizeComputeShader: {fileID: 7200000, guid: 4b2486b15d1ffb6428efd3720e210b76, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

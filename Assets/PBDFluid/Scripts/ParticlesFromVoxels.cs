@@ -20,11 +20,14 @@ namespace PBDFluid.Scripts
         /// volume loss from voxelization to compensate for
         /// </summary>
         private readonly float realVolume;
+
+        private bool useRealVolume;
         
-        public ParticlesFromVoxels(float spacing, List<Box3> voxels, float realVolume,  Matrix4x4 trs) : base(spacing) {
+        public ParticlesFromVoxels(float spacing, List<Box3> voxels, float realVolume, bool useRealVolume,  Matrix4x4 trs) : base(spacing) {
             this.voxels = voxels;
             this.trs = trs;
             this.realVolume = realVolume;
+            this.useRealVolume = useRealVolume;
             Assert.IsTrue(voxels.Count > 0, "voxels is empty");
             Positions = new List<Vector3>();
         }
@@ -47,11 +50,23 @@ namespace PBDFluid.Scripts
         /// Seeds particles in each voxel
         /// </summary>
         public override void CreateParticles(){
-            //first pass
-            voxels.ForEach(voxel => CreateParticleInVoxel(voxel,false));
-            //second pass to make up for voxelization volume loss
-            var extraVoxels = voxels.Take(ExtraVoxelsCount).ToList();
-            extraVoxels.ForEach(voxel => CreateParticleInVoxel(voxel,true));
+            if (!useRealVolume){
+                voxels.ForEach(voxel => CreateParticleInVoxel(voxel,false));
+                return;
+            }
+            if (ExtraVoxelsCount < 0){
+                Debug.Log("EXTRA VOXELS COUNT IS NEGATIVE");
+                voxels.Take(voxels.Count-ExtraVoxelsCount)
+                      .ToList()
+                      .ForEach(voxel => CreateParticleInVoxel(voxel, false));
+            }
+            else{
+                //first pass
+                voxels.ForEach(voxel => CreateParticleInVoxel(voxel,false));
+                //second pass to make up for voxelization volume loss
+                var extraVoxels = voxels.Take(ExtraVoxelsCount).ToList();
+                extraVoxels.ForEach(voxel => CreateParticleInVoxel(voxel,true));
+            }
         }
         
         
